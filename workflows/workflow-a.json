@@ -1,0 +1,47 @@
+{
+  "last_node_id": 1,
+  "last_link_id": 0,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "AmbientLoopRender",
+      "pos": [
+        120,
+        120
+      ],
+      "size": [
+        430,
+        330
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "manifest",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "AmbientLoopRender"
+      },
+      "widgets_values": [
+        "/workspace/ambient-loop/examples/rainy-window/project.json",
+        "/workspace/ambient-loop/outputs/loop",
+        "1080p",
+        "1440p",
+        6,
+        "rainy-window",
+        42,
+        4
+      ]
+    }
+  ],
+  "links": [],
+  "groups": [],
+  "config": {},
+  "extra": {},
+  "version": 0.4
+}

@@ -1,0 +1,2561 @@
+﻿{
+    "sha":  "bf499d46247d6191c902b8240cadee40c5b7171c",
+    "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/trees/bf499d46247d6191c902b8240cadee40c5b7171c",
+    "tree":  [
+                 {
+                     "path":  ".gitattributes",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "ca9680db0a678df6e8d2c8c1f300f6e285a47e0b",
+                     "size":  143,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/ca9680db0a678df6e8d2c8c1f300f6e285a47e0b"
+                 },
+                 {
+                     "path":  ".github",
+                     "mode":  "040000",
+                     "type":  "tree",
+                     "sha":  "ac38bb8d6862284d869fad881ac2f70bee75e8bb",
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/trees/ac38bb8d6862284d869fad881ac2f70bee75e8bb"
+                 },
+                 {
+                     "path":  ".github/workflows",
+                     "mode":  "040000",
+                     "type":  "tree",
+                     "sha":  "ec1fad927fd29cb2afe90fbf24adcbc31e21d6c1",
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/trees/ec1fad927fd29cb2afe90fbf24adcbc31e21d6c1"
+                 },
+                 {
+                     "path":  ".github/workflows/ci.yml",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "9e8cdf465bb6cf55f987099a885a69fa7dda2c8f",
+                     "size":  4230,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/9e8cdf465bb6cf55f987099a885a69fa7dda2c8f"
+                 },
+                 {
+                     "path":  ".github/workflows/nightly.yml",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "7d6d7a576bef6c41d3fe62973979a58ef2d1f53e",
+                     "size":  1208,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/7d6d7a576bef6c41d3fe62973979a58ef2d1f53e"
+                 },
+                 {
+                     "path":  ".github/workflows/publish.yml",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "0a6c599df5a865114b13662414ca9d01401f7f1a",
+                     "size":  860,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/0a6c599df5a865114b13662414ca9d01401f7f1a"
+                 },
+                 {
+                     "path":  ".github/workflows/release-on-tag.yml",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "be89b4d94506d24342b697051ba382bb670d372b",
+                     "size":  1674,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/be89b4d94506d24342b697051ba382bb670d372b"
+                 },
+                 {
+                     "path":  ".gitignore",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "93cbaef9603cb8d8c59dffabd4c2d35404bfe293",
+                     "size":  486,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/93cbaef9603cb8d8c59dffabd4c2d35404bfe293"
+                 },
+                 {
+                     "path":  "LICENSE",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "ea05d1eac992a0ce31d5dac5ec67d99f46ab01c7",
+                     "size":  1068,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/ea05d1eac992a0ce31d5dac5ec67d99f46ab01c7"
+                 },
+                 {
+                     "path":  "README.md",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "46fc8c801391f9ee1b942aa95e21c28f0db8c7b9",
+                     "size":  21983,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/46fc8c801391f9ee1b942aa95e21c28f0db8c7b9"
+                 },
+                 {
+                     "path":  "__init__.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "e13a6481053f06bc24825715aa19652e7378daba",
+                     "size":  5340,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/e13a6481053f06bc24825715aa19652e7378daba"
+                 },
+                 {
+                     "path":  "docs",
+                     "mode":  "040000",
+                     "type":  "tree",
+                     "sha":  "08d39b1f2151ef8df2c2c2c779a36ba292144a3e",
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/trees/08d39b1f2151ef8df2c2c2c779a36ba292144a3e"
+                 },
+                 {
+                     "path":  "docs/IMAGEOPS_CODEX_5_6_SOL_9_OF_10_CORRECTION_PLAN.md",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "baac67ebfc774994e89dfd66148a7570e861b797",
+                     "size":  38836,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/baac67ebfc774994e89dfd66148a7570e861b797"
+                 },
+                 {
+                     "path":  "docs/IMAGEOPS_PRO_COMPOSITING_EVOLUTION_CODEX_5_6_SOL.md",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "d20f48ae058180629c5c0510113678835bfa9771",
+                     "size":  83304,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/d20f48ae058180629c5c0510113678835bfa9771"
+                 },
+                 {
+                     "path":  "docs/OpsBlur.gif",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "fba356aa2925139f9f404f40fb92ca8d7b7b5102",
+                     "size":  1459743,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/fba356aa2925139f9f404f40fb92ca8d7b7b5102"
+                 },
+                 {
+                     "path":  "docs/OpsChannels.gif",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "577d41dac3b67041350f7782251f4593da10306a",
+                     "size":  984537,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/577d41dac3b67041350f7782251f4593da10306a"
+                 },
+                 {
+                     "path":  "docs/OpsClamp.gif",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "4f4647046709e5a1d23ad1d0aaa37053797f3b3b",
+                     "size":  633735,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/4f4647046709e5a1d23ad1d0aaa37053797f3b3b"
+                 },
+                 {
+                     "path":  "docs/OpsColorCorect.gif",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "3c5d0543bc9e8ca6411965568b18156bb2598eb4",
+                     "size":  3133750,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/3c5d0543bc9e8ca6411965568b18156bb2598eb4"
+                 },
+                 {
+                     "path":  "docs/OpsComp.gif",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "67cbad392e39de5dcb14974723b734294cf1311d",
+                     "size":  2718427,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/67cbad392e39de5dcb14974723b734294cf1311d"
+                 },
+                 {
+                     "path":  "docs/OpsCornerPin.gif",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "413ca0d41d82287158c0ed91346f33ac0ef65d17",
+                     "size":  831593,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/413ca0d41d82287158c0ed91346f33ac0ef65d17"
+                 },
+                 {
+                     "path":  "docs/OpsCrop.gif",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "41f50f6680985417c5eb14bd554e14677ec9db18",
+                     "size":  2255995,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/41f50f6680985417c5eb14bd554e14677ec9db18"
+                 },
+                 {
+                     "path":  "docs/OpsDistort.gif",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "4fba781db81fd1f32034b9ccc300a71900661d24",
+                     "size":  7436115,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/4fba781db81fd1f32034b9ccc300a71900661d24"
+                 },
+                 {
+                     "path":  "docs/OpsInvert.gif",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "ba7d2f51250670af8b7269312c4a14b133be7a21",
+                     "size":  299853,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/ba7d2f51250670af8b7269312c4a14b133be7a21"
+                 },
+                 {
+                     "path":  "docs/OpsMaskConvert.gif",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "603d47537e2d5c628974e09e3dc98ee0b7b801c6",
+                     "size":  1065410,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/603d47537e2d5c628974e09e3dc98ee0b7b801c6"
+                 },
+                 {
+                     "path":  "docs/OpsMerge.gif",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "8bebb43e8deba91910f90ae3ff4bb841d3ccf29b",
+                     "size":  891144,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/8bebb43e8deba91910f90ae3ff4bb841d3ccf29b"
+                 },
+                 {
+                     "path":  "docs/OpsNoise.gif",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "7d9c0d165a67d344b5bd978250150016d2f4bee7",
+                     "size":  16247349,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/7d9c0d165a67d344b5bd978250150016d2f4bee7"
+                 },
+                 {
+                     "path":  "docs/OpsPadOut.gif",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "4984044e7307cc844167f01fc547cc9045c88965",
+                     "size":  733909,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/4984044e7307cc844167f01fc547cc9045c88965"
+                 },
+                 {
+                     "path":  "docs/OpsPaint.gif",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "0b4926c2bb96ef3bfa8b252c8751aa4b791b36a3",
+                     "size":  1575880,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/0b4926c2bb96ef3bfa8b252c8751aa4b791b36a3"
+                 },
+                 {
+                     "path":  "docs/OpsSpherize.gif",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "14faf962d24ee7a4675aa631195c0054c361c17a",
+                     "size":  1156458,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/14faf962d24ee7a4675aa631195c0054c361c17a"
+                 },
+                 {
+                     "path":  "docs/OpsTransform.gif",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "1a9a92691f147d27d203e1073b13769af4a3fe5b",
+                     "size":  1615337,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/1a9a92691f147d27d203e1073b13769af4a3fe5b"
+                 },
+                 {
+                     "path":  "esbuild.mjs",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "0b3905932f30344e158234968c57f3fd76914501",
+                     "size":  959,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/0b3905932f30344e158234968c57f3fd76914501"
+                 },
+                 {
+                     "path":  "example",
+                     "mode":  "040000",
+                     "type":  "tree",
+                     "sha":  "259c987d962c89c4701259157dc18e0cb81cba19",
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/trees/259c987d962c89c4701259157dc18e0cb81cba19"
+                 },
+                 {
+                     "path":  "example/All Nodes MIO.json",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "ca06e0de503d75c2389b514fc83d64f504b161d7",
+                     "size":  72799,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/ca06e0de503d75c2389b514fc83d64f504b161d7"
+                 },
+                 {
+                     "path":  "imageops_nodes.json",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "5cd4e872510aad46c36afbbd33811dd10ce97d3c",
+                     "size":  5708,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/5cd4e872510aad46c36afbbd33811dd10ce97d3c"
+                 },
+                 {
+                     "path":  "js",
+                     "mode":  "040000",
+                     "type":  "tree",
+                     "sha":  "dbdfb55a0e1fd28e1386fa3ebc5cec4268c57fcc",
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/trees/dbdfb55a0e1fd28e1386fa3ebc5cec4268c57fcc"
+                 },
+                 {
+                     "path":  "js/imageops_live_preview.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "478406d92f2d109f7d5515379cd2b09c4a2934c7",
+                     "size":  388,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/478406d92f2d109f7d5515379cd2b09c4a2934c7"
+                 },
+                 {
+                     "path":  "js/package.json",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "3dbc1ca591c0557e35b6004aeba250e6a70b56e3",
+                     "size":  23,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/3dbc1ca591c0557e35b6004aeba250e6a70b56e3"
+                 },
+                 {
+                     "path":  "js/preview",
+                     "mode":  "040000",
+                     "type":  "tree",
+                     "sha":  "8210da63f62eb320a9600dc220c87ee0700b27d0",
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/trees/8210da63f62eb320a9600dc220c87ee0700b27d0"
+                 },
+                 {
+                     "path":  "js/preview/adapters",
+                     "mode":  "040000",
+                     "type":  "tree",
+                     "sha":  "fadcd36ded82478cb3e596cf178c9c086f6ae812",
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/trees/fadcd36ded82478cb3e596cf178c9c086f6ae812"
+                 },
+                 {
+                     "path":  "js/preview/adapters/core.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "bb574db97341413bc08b05fbb562d330b0a610eb",
+                     "size":  9457,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/bb574db97341413bc08b05fbb562d330b0a610eb"
+                 },
+                 {
+                     "path":  "js/preview/adapters/generic.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "a7203fa7b093b6951dfa5de7873ec2cc7ce8e5e2",
+                     "size":  11542,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/a7203fa7b093b6951dfa5de7873ec2cc7ce8e5e2"
+                 },
+                 {
+                     "path":  "js/preview/adapters/imageops.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "f3a9443e891be462a8b8a69c3c79c7d945620635",
+                     "size":  17697,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/f3a9443e891be462a8b8a69c3c79c7d945620635"
+                 },
+                 {
+                     "path":  "js/preview/adapters/vhs.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "d4204d5a50d2443ae6a56e8798e02db0480a5fe3",
+                     "size":  248,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/d4204d5a50d2443ae6a56e8798e02db0480a5fe3"
+                 },
+                 {
+                     "path":  "js/preview/adapters/was.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "1fe632841909ce59c894a546f3698513f0575993",
+                     "size":  1958,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/1fe632841909ce59c894a546f3698513f0575993"
+                 },
+                 {
+                     "path":  "js/preview/color.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "07ad3e11ab491c957acde97b3ac5e1607e02c18a",
+                     "size":  4490,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/07ad3e11ab491c957acde97b3ac5e1607e02c18a"
+                 },
+                 {
+                     "path":  "js/preview/comp.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "9558603f4a5fbd19a829bdde266831943a3c2345",
+                     "size":  9400,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/9558603f4a5fbd19a829bdde266831943a3c2345"
+                 },
+                 {
+                     "path":  "js/preview/config.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "67bbe80159beef94b7605e0d24a0928363dd3cab",
+                     "size":  1573,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/67bbe80159beef94b7605e0d24a0928363dd3cab"
+                 },
+                 {
+                     "path":  "js/preview/constants.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "fdf2d0f38b2fd7a40d3b7c0de00ae5a449f69200",
+                     "size":  1674,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/fdf2d0f38b2fd7a40d3b7c0de00ae5a449f69200"
+                 },
+                 {
+                     "path":  "js/preview/core",
+                     "mode":  "040000",
+                     "type":  "tree",
+                     "sha":  "fc958e231c5e64ed3921108674beacab2ebd9bc1",
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/trees/fc958e231c5e64ed3921108674beacab2ebd9bc1"
+                 },
+                 {
+                     "path":  "js/preview/core/graph.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "b9e9eaf8d8ef5a072a6821bdddeca2ef5b153191",
+                     "size":  9606,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/b9e9eaf8d8ef5a072a6821bdddeca2ef5b153191"
+                 },
+                 {
+                     "path":  "js/preview/core/index.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "ed277e363669be0c7bae12b09302003b4f285b40",
+                     "size":  147,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/ed277e363669be0c7bae12b09302003b4f285b40"
+                 },
+                 {
+                     "path":  "js/preview/core/media.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "7a66898ed84d70493af53cf3b6669c79592f399b",
+                     "size":  3436,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/7a66898ed84d70493af53cf3b6669c79592f399b"
+                 },
+                 {
+                     "path":  "js/preview/core/renderer.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "490592a75b3720a2098f8b944f8598af5669214f",
+                     "size":  13531,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/490592a75b3720a2098f8b944f8598af5669214f"
+                 },
+                 {
+                     "path":  "js/preview/core/scheduler.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "5cc0ac041de277baf1c425f9a1a8005c95abfba7",
+                     "size":  394,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/5cc0ac041de277baf1c425f9a1a8005c95abfba7"
+                 },
+                 {
+                     "path":  "js/preview/core/video.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "a36cb878aa2f05165b5272da30d95e1e339aa7fb",
+                     "size":  3648,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/a36cb878aa2f05165b5272da30d95e1e339aa7fb"
+                 },
+                 {
+                     "path":  "js/preview/crop.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "b606cb0e651f3a6cdd399b3965983c311684ae52",
+                     "size":  2461,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/b606cb0e651f3a6cdd399b3965983c311684ae52"
+                 },
+                 {
+                     "path":  "js/preview/draw.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "6b1a4aa06db751c43ea2f9fd8d73ec41117373fe",
+                     "size":  11486,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/6b1a4aa06db751c43ea2f9fd8d73ec41117373fe"
+                 },
+                 {
+                     "path":  "js/preview/graph.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "9c1cd10e2ef29bf3722b4d54e475e60ef24c0acf",
+                     "size":  33,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/9c1cd10e2ef29bf3722b4d54e475e60ef24c0acf"
+                 },
+                 {
+                     "path":  "js/preview/host.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "e00d504827ba49d5abd830de5d7556a236ccffd6",
+                     "size":  53694,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/e00d504827ba49d5abd830de5d7556a236ccffd6"
+                 },
+                 {
+                     "path":  "js/preview/interactions",
+                     "mode":  "040000",
+                     "type":  "tree",
+                     "sha":  "13a51309b896482c8c3e68c86b7d7df5690e7033",
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/trees/13a51309b896482c8c3e68c86b7d7df5690e7033"
+                 },
+                 {
+                     "path":  "js/preview/interactions/append.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "bffc15e4dffa44c5ff02685f1da12dc5359a9576",
+                     "size":  17153,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/bffc15e4dffa44c5ff02685f1da12dc5359a9576"
+                 },
+                 {
+                     "path":  "js/preview/interactions/color-correct.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "466a0213cd02d21049105a3cda7374f27acda81e",
+                     "size":  5069,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/466a0213cd02d21049105a3cda7374f27acda81e"
+                 },
+                 {
+                     "path":  "js/preview/interactions/comp.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "09c13f598e7fd0741bff28710ca64d8577ab5881",
+                     "size":  13027,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/09c13f598e7fd0741bff28710ca64d8577ab5881"
+                 },
+                 {
+                     "path":  "js/preview/interactions/constant.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "bd86ed375f07a2c4d5577bcfa91069ca368a0588",
+                     "size":  2185,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/bd86ed375f07a2c4d5577bcfa91069ca368a0588"
+                 },
+                 {
+                     "path":  "js/preview/interactions/corner-pin.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "03bd09b8bb527ca847c51a630cd5c120b43f969c",
+                     "size":  3645,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/03bd09b8bb527ca847c51a630cd5c120b43f969c"
+                 },
+                 {
+                     "path":  "js/preview/interactions/crop.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "9b27bff1391f8b17c0d3e0f89a256105ca9adfda",
+                     "size":  8492,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/9b27bff1391f8b17c0d3e0f89a256105ca9adfda"
+                 },
+                 {
+                     "path":  "js/preview/interactions/draw.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "33f18fcc5334e9664cccaa4be161d058d19ec98b",
+                     "size":  15445,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/33f18fcc5334e9664cccaa4be161d058d19ec98b"
+                 },
+                 {
+                     "path":  "js/preview/interactions/grain.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "d433bd67f6aff910857cfd2a930e95451816445a",
+                     "size":  1673,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/d433bd67f6aff910857cfd2a930e95451816445a"
+                 },
+                 {
+                     "path":  "js/preview/interactions/pad-out.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "168d604321a0bcbfe81d2e8d0496a6438972b328",
+                     "size":  5838,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/168d604321a0bcbfe81d2e8d0496a6438972b328"
+                 },
+                 {
+                     "path":  "js/preview/interactions/preview.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "23ab49841c5b8a67326f4e6fdcada1697e4be137",
+                     "size":  1272,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/23ab49841c5b8a67326f4e6fdcada1697e4be137"
+                 },
+                 {
+                     "path":  "js/preview/interactions/ramp.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "536a6c70a771af43c025e77ffb23816ddfa7c0d9",
+                     "size":  7208,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/536a6c70a771af43c025e77ffb23816ddfa7c0d9"
+                 },
+                 {
+                     "path":  "js/preview/interactions/text.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "639e5b1b64f7656a6a3e885fa165654c65f721e0",
+                     "size":  6318,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/639e5b1b64f7656a6a3e885fa165654c65f721e0"
+                 },
+                 {
+                     "path":  "js/preview/nodes",
+                     "mode":  "040000",
+                     "type":  "tree",
+                     "sha":  "1ecf8052ca47cc70e263584f2bfaf4dd939cd51a",
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/trees/1ecf8052ca47cc70e263584f2bfaf4dd939cd51a"
+                 },
+                 {
+                     "path":  "js/preview/nodes/append.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "9f5dd274cc9ddd58a16e533b987c6712bd37b280",
+                     "size":  10718,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/9f5dd274cc9ddd58a16e533b987c6712bd37b280"
+                 },
+                 {
+                     "path":  "js/preview/nodes/blur.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "a352d51cff6222ae0dbb0880091181397ac7abf5",
+                     "size":  152,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/a352d51cff6222ae0dbb0880091181397ac7abf5"
+                 },
+                 {
+                     "path":  "js/preview/nodes/camera-shake.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "59d0c8efb6e96b98cdb85a830a926483e79848c3",
+                     "size":  159,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/59d0c8efb6e96b98cdb85a830a926483e79848c3"
+                 },
+                 {
+                     "path":  "js/preview/nodes/channel.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "9a0b02e16353e20e4f8b5da1428d3835de6cb2da",
+                     "size":  155,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/9a0b02e16353e20e4f8b5da1428d3835de6cb2da"
+                 },
+                 {
+                     "path":  "js/preview/nodes/clamp.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "4872c488afdb641e10aed690c98235eba6f86b60",
+                     "size":  153,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/4872c488afdb641e10aed690c98235eba6f86b60"
+                 },
+                 {
+                     "path":  "js/preview/nodes/color-correct.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "3dc9961c5a5ecd05efc36adcab586e2a255ac333",
+                     "size":  12291,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/3dc9961c5a5ecd05efc36adcab586e2a255ac333"
+                 },
+                 {
+                     "path":  "js/preview/nodes/comp.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "d45b8ac859d92624bcfc4f0b008181555571798e",
+                     "size":  17586,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/d45b8ac859d92624bcfc4f0b008181555571798e"
+                 },
+                 {
+                     "path":  "js/preview/nodes/constant.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "c99b0b08cb300dab9672a1c64b36f066301f9d51",
+                     "size":  5909,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/c99b0b08cb300dab9672a1c64b36f066301f9d51"
+                 },
+                 {
+                     "path":  "js/preview/nodes/corner-pin.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "93f1381e112f9ba45946c7f6dfc6f5cc84a21838",
+                     "size":  2979,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/93f1381e112f9ba45946c7f6dfc6f5cc84a21838"
+                 },
+                 {
+                     "path":  "js/preview/nodes/crop.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "d221f8f9823f8f6298b101193eba40f86de81749",
+                     "size":  11179,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/d221f8f9823f8f6298b101193eba40f86de81749"
+                 },
+                 {
+                     "path":  "js/preview/nodes/distort.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "484a86209255bfc1598f379ce14dec1880395726",
+                     "size":  155,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/484a86209255bfc1598f379ce14dec1880395726"
+                 },
+                 {
+                     "path":  "js/preview/nodes/draw-renderer.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "e1f83fbe946f829653534ab5bdd0b96fa472f1c4",
+                     "size":  15683,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/e1f83fbe946f829653534ab5bdd0b96fa472f1c4"
+                 },
+                 {
+                     "path":  "js/preview/nodes/draw.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "2e23187df78c39782aaed6f7cac6c4366793d1c1",
+                     "size":  15322,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/2e23187df78c39782aaed6f7cac6c4366793d1c1"
+                 },
+                 {
+                     "path":  "js/preview/nodes/frame-range.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "3160710d08756eb45314872913f5432053f9a6af",
+                     "size":  34475,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/3160710d08756eb45314872913f5432053f9a6af"
+                 },
+                 {
+                     "path":  "js/preview/nodes/grain.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "3624a390111048efb9b735a995a08ae90d8216f3",
+                     "size":  3368,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/3624a390111048efb9b735a995a08ae90d8216f3"
+                 },
+                 {
+                     "path":  "js/preview/nodes/invert.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "e99021c4ea5b669e080d6265fa3aa4cd9f45f729",
+                     "size":  154,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/e99021c4ea5b669e080d6265fa3aa4cd9f45f729"
+                 },
+                 {
+                     "path":  "js/preview/nodes/keyer.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "906b64894194824045067481eb6c4a859c766b6e",
+                     "size":  13202,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/906b64894194824045067481eb6c4a859c766b6e"
+                 },
+                 {
+                     "path":  "js/preview/nodes/mask-convert.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "5205e46c2bc08156e61345cd98d17af1ce4631cd",
+                     "size":  159,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/5205e46c2bc08156e61345cd98d17af1ce4631cd"
+                 },
+                 {
+                     "path":  "js/preview/nodes/merge.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "47ac257eefb01df2f92adb626e02936a28b42bcc",
+                     "size":  153,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/47ac257eefb01df2f92adb626e02936a28b42bcc"
+                 },
+                 {
+                     "path":  "js/preview/nodes/noise.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "8df4fd02f26832ac67ebb4a68719bf678a073590",
+                     "size":  153,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/8df4fd02f26832ac67ebb4a68719bf678a073590"
+                 },
+                 {
+                     "path":  "js/preview/nodes/pad-out.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "6650bea16bc6cffcfc74c706c6c847350808893c",
+                     "size":  14179,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/6650bea16bc6cffcfc74c706c6c847350808893c"
+                 },
+                 {
+                     "path":  "js/preview/nodes/preview.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "9328eff832476de4e5564c280d7016f81a03916d",
+                     "size":  2496,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/9328eff832476de4e5564c280d7016f81a03916d"
+                 },
+                 {
+                     "path":  "js/preview/nodes/ramp.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "c31ba1fe22064ecbc685b77dc2971f073ab93c28",
+                     "size":  3350,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/c31ba1fe22064ecbc685b77dc2971f073ab93c28"
+                 },
+                 {
+                     "path":  "js/preview/nodes/spherize.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "a50f95c5abd276ac15716259bbee69a6dfe6a591",
+                     "size":  156,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/a50f95c5abd276ac15716259bbee69a6dfe6a591"
+                 },
+                 {
+                     "path":  "js/preview/nodes/text.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "a79f7b00b1e92fb450a60a106b21d49d33e2f194",
+                     "size":  1549,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/a79f7b00b1e92fb450a60a106b21d49d33e2f194"
+                 },
+                 {
+                     "path":  "js/preview/nodes/transform.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "737377e6f24d963b629dd6d718c03e0ae8c358f0",
+                     "size":  346,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/737377e6f24d963b629dd6d718c03e0ae8c358f0"
+                 },
+                 {
+                     "path":  "js/preview/nodestream.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "21f8e9b6ed531336c8270c91214bbca27f62c719",
+                     "size":  6689,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/21f8e9b6ed531336c8270c91214bbca27f62c719"
+                 },
+                 {
+                     "path":  "js/preview/ops.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "64ddb31c467f919d3b41e2925b2b6f798c7ec0c1",
+                     "size":  1163,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/64ddb31c467f919d3b41e2925b2b6f798c7ec0c1"
+                 },
+                 {
+                     "path":  "js/preview/ops",
+                     "mode":  "040000",
+                     "type":  "tree",
+                     "sha":  "fd2f6bea042ad4a06868c48cb364d442f6659d1c",
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/trees/fd2f6bea042ad4a06868c48cb364d442f6659d1c"
+                 },
+                 {
+                     "path":  "js/preview/ops/blend.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "b1591ea9e510d911e86858fbd5bc9fce0803f087",
+                     "size":  16116,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/b1591ea9e510d911e86858fbd5bc9fce0803f087"
+                 },
+                 {
+                     "path":  "js/preview/ops/color.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "b9026e0bf768a4bd1e43b653d84f8ee06f83efcc",
+                     "size":  27781,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/b9026e0bf768a4bd1e43b653d84f8ee06f83efcc"
+                 },
+                 {
+                     "path":  "js/preview/ops/geometry.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "9af0a396e2d1ad3906b9a39b687c6a6c341a4fc2",
+                     "size":  64213,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/9af0a396e2d1ad3906b9a39b687c6a6c341a4fc2"
+                 },
+                 {
+                     "path":  "js/preview/ops/implementation.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "7f6586ed57549f5c006f9957a22d11635377ea4e",
+                     "size":  1170,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/7f6586ed57549f5c006f9957a22d11635377ea4e"
+                 },
+                 {
+                     "path":  "js/preview/ops/masks.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "a4ebd4633566067837b7d149240830bb20fbbfd3",
+                     "size":  21508,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/a4ebd4633566067837b7d149240830bb20fbbfd3"
+                 },
+                 {
+                     "path":  "js/preview/ops/procedural.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "a49c4551e514ccccf4888c075ee5543e6f8a53c7",
+                     "size":  25248,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/a49c4551e514ccccf4888c075ee5543e6f8a53c7"
+                 },
+                 {
+                     "path":  "js/preview/ops/video.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "0bb5ef1e7860e4fd0989123598b3f5c1b4d83e42",
+                     "size":  4783,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/0bb5ef1e7860e4fd0989123598b3f5c1b4d83e42"
+                 },
+                 {
+                     "path":  "js/preview/progress.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "1237c7677e0d05b9b36656d54c9458d730a80121",
+                     "size":  1503,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/1237c7677e0d05b9b36656d54c9458d730a80121"
+                 },
+                 {
+                     "path":  "js/preview/registry.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "c5b386cae782aa6939b7518a1cce3c328124a143",
+                     "size":  802,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/c5b386cae782aa6939b7518a1cce3c328124a143"
+                 },
+                 {
+                     "path":  "js/preview/renderer.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "89f1b13649da4d4858b32ead27e23e0324b58352",
+                     "size":  36,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/89f1b13649da4d4858b32ead27e23e0324b58352"
+                 },
+                 {
+                     "path":  "js/preview/scopes.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "548688083591e719f8b95bde29e4537968fcdcf9",
+                     "size":  6003,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/548688083591e719f8b95bde29e4537968fcdcf9"
+                 },
+                 {
+                     "path":  "js/preview/shared",
+                     "mode":  "040000",
+                     "type":  "tree",
+                     "sha":  "50d35051771a10e0dc2862d046d4667abedea75a",
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/trees/50d35051771a10e0dc2862d046d4667abedea75a"
+                 },
+                 {
+                     "path":  "js/preview/shared/animation.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "adb2b718626dd59b9d21abe6fff275faf3804ad6",
+                     "size":  3361,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/adb2b718626dd59b9d21abe6fff275faf3804ad6"
+                 },
+                 {
+                     "path":  "js/preview/shared/blend-modes.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "3310c7605f0cf85b7a49b3a955bc1215a914228b",
+                     "size":  1686,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/3310c7605f0cf85b7a49b3a955bc1215a914228b"
+                 },
+                 {
+                     "path":  "js/preview/shared/bounds.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "c23ef24019ff8054d6005d7fca8ceba8297870b9",
+                     "size":  21028,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/c23ef24019ff8054d6005d7fca8ceba8297870b9"
+                 },
+                 {
+                     "path":  "js/preview/shared/canvas-pool.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "8b2fae07150e067110973454b418f1f5e6f5eea8",
+                     "size":  1008,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/8b2fae07150e067110973454b418f1f5e6f5eea8"
+                 },
+                 {
+                     "path":  "js/preview/shared/canvas.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "cd399e902dcb7dfa917603f01db7cac76e1ec3f4",
+                     "size":  649,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/cd399e902dcb7dfa917603f01db7cac76e1ec3f4"
+                 },
+                 {
+                     "path":  "js/preview/shared/classes.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "12c06af1c6a62832e7b9172a48985cb4c3f4d775",
+                     "size":  1243,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/12c06af1c6a62832e7b9172a48985cb4c3f4d775"
+                 },
+                 {
+                     "path":  "js/preview/shared/dbl-click-reset.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "3244fbedb07ba2c4c4278de7439bab56f1ea5a56",
+                     "size":  1015,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/3244fbedb07ba2c4c4278de7439bab56f1ea5a56"
+                 },
+                 {
+                     "path":  "js/preview/shared/dom-styles.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "e7871019d763e583758988fa63719a065002163a",
+                     "size":  6461,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/e7871019d763e583758988fa63719a065002163a"
+                 },
+                 {
+                     "path":  "js/preview/shared/eyedropper.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "8cb6518e3c54ef8abacda1b58de8e73e2906db08",
+                     "size":  4620,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/8cb6518e3c54ef8abacda1b58de8e73e2906db08"
+                 },
+                 {
+                     "path":  "js/preview/shared/fps-monitor.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "fd42c2c071d526c6e9038d8395a528a39a7b26f7",
+                     "size":  1157,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/fd42c2c071d526c6e9038d8395a528a39a7b26f7"
+                 },
+                 {
+                     "path":  "js/preview/shared/geometry.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "98e19506adf0b5c99b85c47ae06a71031a89d0c0",
+                     "size":  2096,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/98e19506adf0b5c99b85c47ae06a71031a89d0c0"
+                 },
+                 {
+                     "path":  "js/preview/shared/imageops-metadata.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "2ef096ec7202c4ea652cedef2256b2a80f85558b",
+                     "size":  2463,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/2ef096ec7202c4ea652cedef2256b2a80f85558b"
+                 },
+                 {
+                     "path":  "js/preview/shared/media.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "87c840d4675056e22943e4a14b65a81cd43e7d20",
+                     "size":  34,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/87c840d4675056e22943e4a14b65a81cd43e7d20"
+                 },
+                 {
+                     "path":  "js/preview/shared/navigation.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "77adade5dfe6faa10f90e4a43ee586019199d22c",
+                     "size":  4420,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/77adade5dfe6faa10f90e4a43ee586019199d22c"
+                 },
+                 {
+                     "path":  "js/preview/shared/preview-defaults.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "ed80a37ebf6e57d278c4daec078cbf438fdfed18",
+                     "size":  548,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/ed80a37ebf6e57d278c4daec078cbf438fdfed18"
+                 },
+                 {
+                     "path":  "js/preview/shared/preview-widget.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "fad75682289ef1dc475d4be91c2a6ce5a4771426",
+                     "size":  23833,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/fad75682289ef1dc475d4be91c2a6ce5a4771426"
+                 },
+                 {
+                     "path":  "js/preview/shared/state.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "df4af3477df7a83589c9af3b631510eb35b7d0ad",
+                     "size":  8009,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/df4af3477df7a83589c9af3b631510eb35b7d0ad"
+                 },
+                 {
+                     "path":  "js/preview/shared/ui-persist.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "993aa43210a4a63640c433f98e0dd10ca5ec62a5",
+                     "size":  1168,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/993aa43210a4a63640c433f98e0dd10ca5ec62a5"
+                 },
+                 {
+                     "path":  "js/preview/shared/video.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "ac116ae5ae67dfbd7dca9b0fec1fc6f3354c1247",
+                     "size":  34,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/ac116ae5ae67dfbd7dca9b0fec1fc6f3354c1247"
+                 },
+                 {
+                     "path":  "js/preview/shared/webgl-color.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "d4c5d95d88880dbb52d9305df4cb3ac54f7d1564",
+                     "size":  14005,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/d4c5d95d88880dbb52d9305df4cb3ac54f7d1564"
+                 },
+                 {
+                     "path":  "js/preview/shared/widgets.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "a20234d491208e61ab782316c1776aa89b206112",
+                     "size":  8445,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/a20234d491208e61ab782316c1776aa89b206112"
+                 },
+                 {
+                     "path":  "js/preview/source.js",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "ae4fa78d8b25d2497e02b2c4547fd18b77d5297e",
+                     "size":  10610,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/ae4fa78d8b25d2497e02b2c4547fd18b77d5297e"
+                 },
+                 {
+                     "path":  "js/shared",
+                     "mode":  "040000",
+                     "type":  "tree",
+                     "sha":  "0ca793ffb56e7340ab8764689af0168e87f3a62b",
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/trees/0ca793ffb56e7340ab8764689af0168e87f3a62b"
+                 },
+                 {
+                     "path":  "js/shared/ops_constants.json",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "a9187745d35e48d2bfceb5f91ad67299deb945e0",
+                     "size":  161,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/a9187745d35e48d2bfceb5f91ad67299deb945e0"
+                 },
+                 {
+                     "path":  "nodes",
+                     "mode":  "040000",
+                     "type":  "tree",
+                     "sha":  "89a884c2278579e9e854114c76aab338971d6a3a",
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/trees/89a884c2278579e9e854114c76aab338971d6a3a"
+                 },
+                 {
+                     "path":  "nodes/__init__.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "14452760c8fda40a24e2f821136b309f11d2fb54",
+                     "size":  1558,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/14452760c8fda40a24e2f821136b309f11d2fb54"
+                 },
+                 {
+                     "path":  "nodes/_helpers.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "9bd957921598e031342aef1d51a3954d707d4ca8",
+                     "size":  88226,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/9bd957921598e031342aef1d51a3954d707d4ca8"
+                 },
+                 {
+                     "path":  "nodes/_ops_constants.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "ab59b6d86d5a0fb8eefdaa442c185414fabae488",
+                     "size":  1467,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/ab59b6d86d5a0fb8eefdaa442c185414fabae488"
+                 },
+                 {
+                     "path":  "nodes/_preview.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "a648cfd41ff199b2b4c31026b54e20fecbddee4f",
+                     "size":  985,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/a648cfd41ff199b2b4c31026b54e20fecbddee4f"
+                 },
+                 {
+                     "path":  "nodes/_progress.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "46b63250c114295b48cdde68e854ecd3b253bde9",
+                     "size":  1415,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/46b63250c114295b48cdde68e854ecd3b253bde9"
+                 },
+                 {
+                     "path":  "nodes/append.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "b5597fd1d0aaf2b9f12acd14fa3d2519ac751b63",
+                     "size":  10462,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/b5597fd1d0aaf2b9f12acd14fa3d2519ac751b63"
+                 },
+                 {
+                     "path":  "nodes/blur.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "cd44d09fd7181235c40d0d95e3a822d2c7c4fe8e",
+                     "size":  3852,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/cd44d09fd7181235c40d0d95e3a822d2c7c4fe8e"
+                 },
+                 {
+                     "path":  "nodes/camera_shake.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "d86596c577935589581787e5b8bb59de423ce58e",
+                     "size":  7997,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/d86596c577935589581787e5b8bb59de423ce58e"
+                 },
+                 {
+                     "path":  "nodes/channel.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "ef45c049e6cdead380d0dfa35ade7c1cf4e04512",
+                     "size":  2154,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/ef45c049e6cdead380d0dfa35ade7c1cf4e04512"
+                 },
+                 {
+                     "path":  "nodes/clamp.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "2fbbedc165213547d83f98e9c24f53440c511c57",
+                     "size":  2082,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/2fbbedc165213547d83f98e9c24f53440c511c57"
+                 },
+                 {
+                     "path":  "nodes/color_ajust.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "2b053dfbd96528af048d0988db472e1e90717fb7",
+                     "size":  7538,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/2b053dfbd96528af048d0988db472e1e90717fb7"
+                 },
+                 {
+                     "path":  "nodes/comp.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "b604e0385dfe0075d43257afd678f5747d4f8a09",
+                     "size":  11046,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/b604e0385dfe0075d43257afd678f5747d4f8a09"
+                 },
+                 {
+                     "path":  "nodes/compat",
+                     "mode":  "040000",
+                     "type":  "tree",
+                     "sha":  "1cfa585a02537896f13cca1d699aff47d817a9d0",
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/trees/1cfa585a02537896f13cca1d699aff47d817a9d0"
+                 },
+                 {
+                     "path":  "nodes/compat/__init__.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "8283cf044d9520089ab41fc3efe77d2f4814bf69",
+                     "size":  30,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/8283cf044d9520089ab41fc3efe77d2f4814bf69"
+                 },
+                 {
+                     "path":  "nodes/compat/comfy_v3.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "df8bfa313827475e17858c9ffdbd393c699d8389",
+                     "size":  1923,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/df8bfa313827475e17858c9ffdbd393c699d8389"
+                 },
+                 {
+                     "path":  "nodes/constant.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "bad09dc7e170495b1d7e5f9b2241dd8b4a5695a8",
+                     "size":  4787,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/bad09dc7e170495b1d7e5f9b2241dd8b4a5695a8"
+                 },
+                 {
+                     "path":  "nodes/core",
+                     "mode":  "040000",
+                     "type":  "tree",
+                     "sha":  "e1d4bab005ca8604700787f7c0e089368c0fa842",
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/trees/e1d4bab005ca8604700787f7c0e089368c0fa842"
+                 },
+                 {
+                     "path":  "nodes/core/__init__.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "7bebb904bda59feb1ab6a766c61478154d14db62",
+                     "size":  107,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/7bebb904bda59feb1ab6a766c61478154d14db62"
+                 },
+                 {
+                     "path":  "nodes/core/batch.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "648ba0e0d4f167371f5eb8f8d429651a139809d0",
+                     "size":  3208,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/648ba0e0d4f167371f5eb8f8d429651a139809d0"
+                 },
+                 {
+                     "path":  "nodes/core/media.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "52605236b5e577ed4a8167d81059f742357c469c",
+                     "size":  1389,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/52605236b5e577ed4a8167d81059f742357c469c"
+                 },
+                 {
+                     "path":  "nodes/core/memory.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "cbbebb2d0e94521b6f9535617230716d0a913cd5",
+                     "size":  3319,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/cbbebb2d0e94521b6f9535617230716d0a913cd5"
+                 },
+                 {
+                     "path":  "nodes/corner_pin.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "f59541b2ab385220ef37074b4ce445ff74180643",
+                     "size":  13707,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/f59541b2ab385220ef37074b4ce445ff74180643"
+                 },
+                 {
+                     "path":  "nodes/crop.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "ed5413c14a808a14f64f586f9fbc2ad0ce8493ad",
+                     "size":  6452,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/ed5413c14a808a14f64f586f9fbc2ad0ce8493ad"
+                 },
+                 {
+                     "path":  "nodes/crop_stitch.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "660f6c1f57bcd6e123f3d32440f6c17ba02d9538",
+                     "size":  6716,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/660f6c1f57bcd6e123f3d32440f6c17ba02d9538"
+                 },
+                 {
+                     "path":  "nodes/distort.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "f4c9c0e3ee8a8219fcd1c00fc06c84b1ddf95344",
+                     "size":  12643,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/f4c9c0e3ee8a8219fcd1c00fc06c84b1ddf95344"
+                 },
+                 {
+                     "path":  "nodes/draw.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "3069021142bbc8d665fbb61ea6bfef3a2c8b8b69",
+                     "size":  12715,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/3069021142bbc8d665fbb61ea6bfef3a2c8b8b69"
+                 },
+                 {
+                     "path":  "nodes/frame_range.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "585142774ff715b73c7e2fed6cf676b988139545",
+                     "size":  7042,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/585142774ff715b73c7e2fed6cf676b988139545"
+                 },
+                 {
+                     "path":  "nodes/grain.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "2dd3ff5af0320d59f8ca811c3d5eb7e894d8a771",
+                     "size":  7568,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/2dd3ff5af0320d59f8ca811c3d5eb7e894d8a771"
+                 },
+                 {
+                     "path":  "nodes/invert.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "fadb4a109dee52c953837834365e44973375004c",
+                     "size":  1853,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/fadb4a109dee52c953837834365e44973375004c"
+                 },
+                 {
+                     "path":  "nodes/keyer.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "bfb351f0d2136be77df876d1aff5547644944948",
+                     "size":  7056,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/bfb351f0d2136be77df876d1aff5547644944948"
+                 },
+                 {
+                     "path":  "nodes/mask_convert.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "1e5c13f1e1a2ac7e156348b02805b42ab66567dc",
+                     "size":  6039,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/1e5c13f1e1a2ac7e156348b02805b42ab66567dc"
+                 },
+                 {
+                     "path":  "nodes/merge.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "4af279121149fada3fe90cf5e73df9ca728e330b",
+                     "size":  3180,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/4af279121149fada3fe90cf5e73df9ca728e330b"
+                 },
+                 {
+                     "path":  "nodes/noise.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "fdd00e819be2ccd531da210a65e15f6ad5d5ee69",
+                     "size":  15091,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/fdd00e819be2ccd531da210a65e15f6ad5d5ee69"
+                 },
+                 {
+                     "path":  "nodes/padout.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "97a04defbc5ef236008a5fc25858ae27dc2e126d",
+                     "size":  8143,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/97a04defbc5ef236008a5fc25858ae27dc2e126d"
+                 },
+                 {
+                     "path":  "nodes/preview.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "e0726abd34362223b4d4f9686806f9590077ae1d",
+                     "size":  7208,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/e0726abd34362223b4d4f9686806f9590077ae1d"
+                 },
+                 {
+                     "path":  "nodes/ramp.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "c82a4b1ccbeda1cc0321450ea61d80c6e019c53e",
+                     "size":  4800,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/c82a4b1ccbeda1cc0321450ea61d80c6e019c53e"
+                 },
+                 {
+                     "path":  "nodes/spherize.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "d84245a34693962c774fda54f0fba73a13017eba",
+                     "size":  12286,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/d84245a34693962c774fda54f0fba73a13017eba"
+                 },
+                 {
+                     "path":  "nodes/text.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "c084a1df294c36d1f9f1a69af90820fa9a02c958",
+                     "size":  7430,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/c084a1df294c36d1f9f1a69af90820fa9a02c958"
+                 },
+                 {
+                     "path":  "nodes/transform.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "f589689031a463c19fd40f16c39aa5dd23140798",
+                     "size":  16336,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/f589689031a463c19fd40f16c39aa5dd23140798"
+                 },
+                 {
+                     "path":  "package-lock.json",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "3df3d6b1db3680dbdd8d1363f2cdfb964644197e",
+                     "size":  19255,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/3df3d6b1db3680dbdd8d1363f2cdfb964644197e"
+                 },
+                 {
+                     "path":  "package.json",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "9c6d81f9a94bdf25a9ee3a2d7b4a8abfbc1bc1b3",
+                     "size":  1157,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/9c6d81f9a94bdf25a9ee3a2d7b4a8abfbc1bc1b3"
+                 },
+                 {
+                     "path":  "pyproject.toml",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "01a5cbee25ea6bfc8e619ec5110c053cfd2809d5",
+                     "size":  1174,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/01a5cbee25ea6bfc8e619ec5110c053cfd2809d5"
+                 },
+                 {
+                     "path":  "scripts",
+                     "mode":  "040000",
+                     "type":  "tree",
+                     "sha":  "ea4603a8e8d6491c54d8b1427e4dbb170e12558b",
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/trees/ea4603a8e8d6491c54d8b1427e4dbb170e12558b"
+                 },
+                 {
+                     "path":  "scripts/fix_imports.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "dd0b48aa8c874cc146f4ba1d1c2f7f7eb14bf650",
+                     "size":  2561,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/dd0b48aa8c874cc146f4ba1d1c2f7f7eb14bf650"
+                 },
+                 {
+                     "path":  "scripts/generate-imageops-metadata.mjs",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "cd84824c530904211fe02ffb92ee690aa50f3136",
+                     "size":  1467,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/cd84824c530904211fe02ffb92ee690aa50f3136"
+                 },
+                 {
+                     "path":  "scripts/migrate_v3.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "16a217a191fd5587d5387c33eae56390e57ef335",
+                     "size":  12016,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/16a217a191fd5587d5387c33eae56390e57ef335"
+                 },
+                 {
+                     "path":  "scripts/refactor_frontend.mjs",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "a13634b2ea5b34d796326888c6a788f4f70f4636",
+                     "size":  4061,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/a13634b2ea5b34d796326888c6a788f4f70f4636"
+                 },
+                 {
+                     "path":  "scripts/refactor_frontend.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "272faa877e0e7cb55bbf099afcb3554ee86ec853",
+                     "size":  2867,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/272faa877e0e7cb55bbf099afcb3554ee86ec853"
+                 },
+                 {
+                     "path":  "server.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "d0c57cc3677ded17af83abde0ce44a7cfaa4bd16",
+                     "size":  4749,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/d0c57cc3677ded17af83abde0ce44a7cfaa4bd16"
+                 },
+                 {
+                     "path":  "src",
+                     "mode":  "040000",
+                     "type":  "tree",
+                     "sha":  "89698e0e65a8eb6889d89d2cb33d208d9ce7474e",
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/trees/89698e0e65a8eb6889d89d2cb33d208d9ce7474e"
+                 },
+                 {
+                     "path":  "src/imageops_live_preview.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "cc66a00a312df41aa279ace2c850d8f65ff8d367",
+                     "size":  566,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/cc66a00a312df41aa279ace2c850d8f65ff8d367"
+                 },
+                 {
+                     "path":  "src/preview",
+                     "mode":  "040000",
+                     "type":  "tree",
+                     "sha":  "47cc4a1e280a340747475c76f6fc7b9ba140d846",
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/trees/47cc4a1e280a340747475c76f6fc7b9ba140d846"
+                 },
+                 {
+                     "path":  "src/preview/adapters",
+                     "mode":  "040000",
+                     "type":  "tree",
+                     "sha":  "0f0507d0961c51087e0a27deb347f9b2a6cd93bd",
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/trees/0f0507d0961c51087e0a27deb347f9b2a6cd93bd"
+                 },
+                 {
+                     "path":  "src/preview/adapters/core.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "8a82fbc50353050c7ab2b8bb230c212b89673c01",
+                     "size":  10420,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/8a82fbc50353050c7ab2b8bb230c212b89673c01"
+                 },
+                 {
+                     "path":  "src/preview/adapters/generic.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "a6a51d9c1d23c8f4250ed4efc23627e6caf84b1c",
+                     "size":  13314,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/a6a51d9c1d23c8f4250ed4efc23627e6caf84b1c"
+                 },
+                 {
+                     "path":  "src/preview/adapters/imageops.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "179873c29f7d3a88f1673721e1e73a15a584b102",
+                     "size":  19466,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/179873c29f7d3a88f1673721e1e73a15a584b102"
+                 },
+                 {
+                     "path":  "src/preview/adapters/vhs.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "795bd319c15b9b00716799e71f860b15ee9ef8bd",
+                     "size":  622,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/795bd319c15b9b00716799e71f860b15ee9ef8bd"
+                 },
+                 {
+                     "path":  "src/preview/adapters/was.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "890bce8cc4c51c9c11996a2604597ed04b4548f5",
+                     "size":  2374,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/890bce8cc4c51c9c11996a2604597ed04b4548f5"
+                 },
+                 {
+                     "path":  "src/preview/color.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "91ec4213bf9e064b84106b0f1e3563d1292fdac0",
+                     "size":  4664,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/91ec4213bf9e064b84106b0f1e3563d1292fdac0"
+                 },
+                 {
+                     "path":  "src/preview/comp.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "9fdf8624a973d3d7e2f000a436df3ec0d49ed25e",
+                     "size":  11028,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/9fdf8624a973d3d7e2f000a436df3ec0d49ed25e"
+                 },
+                 {
+                     "path":  "src/preview/config.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "2bfccd08219880215e02b95befd9babc245bcdf0",
+                     "size":  1705,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/2bfccd08219880215e02b95befd9babc245bcdf0"
+                 },
+                 {
+                     "path":  "src/preview/constants.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "9ad53c74fb633b787b6d1d1b828ef4fbf023a3ce",
+                     "size":  1957,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/9ad53c74fb633b787b6d1d1b828ef4fbf023a3ce"
+                 },
+                 {
+                     "path":  "src/preview/core",
+                     "mode":  "040000",
+                     "type":  "tree",
+                     "sha":  "2c0562e8d46c4944f6949e05be5d137e5c8c63b1",
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/trees/2c0562e8d46c4944f6949e05be5d137e5c8c63b1"
+                 },
+                 {
+                     "path":  "src/preview/core/graph.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "4a3492014d9a7c741ac44069da207a7446c98f54",
+                     "size":  11250,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/4a3492014d9a7c741ac44069da207a7446c98f54"
+                 },
+                 {
+                     "path":  "src/preview/core/index.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "ed277e363669be0c7bae12b09302003b4f285b40",
+                     "size":  147,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/ed277e363669be0c7bae12b09302003b4f285b40"
+                 },
+                 {
+                     "path":  "src/preview/core/media.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "0ec1d38502e28d3a0fe24b90ddfece23b5973565",
+                     "size":  3692,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/0ec1d38502e28d3a0fe24b90ddfece23b5973565"
+                 },
+                 {
+                     "path":  "src/preview/core/renderer.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "049d25be3a803314198b1a41867dad286f8088a8",
+                     "size":  15634,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/049d25be3a803314198b1a41867dad286f8088a8"
+                 },
+                 {
+                     "path":  "src/preview/core/scheduler.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "490ff520ba4da9727ca139a4334a88d10e978367",
+                     "size":  612,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/490ff520ba4da9727ca139a4334a88d10e978367"
+                 },
+                 {
+                     "path":  "src/preview/core/video.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "503a51f0110942a85e64b41bea5fe1340939de65",
+                     "size":  4098,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/503a51f0110942a85e64b41bea5fe1340939de65"
+                 },
+                 {
+                     "path":  "src/preview/crop.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "1b2ab5cfdebee8f4e1732dd3d0c07483a572853f",
+                     "size":  2609,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/1b2ab5cfdebee8f4e1732dd3d0c07483a572853f"
+                 },
+                 {
+                     "path":  "src/preview/draw.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "50429c5339e580a27a5d5a2f409f5d2b10772f80",
+                     "size":  13272,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/50429c5339e580a27a5d5a2f409f5d2b10772f80"
+                 },
+                 {
+                     "path":  "src/preview/graph.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "34ab1a0e16ce5a1c1b2b889a0bcd9299da7a71cf",
+                     "size":  115,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/34ab1a0e16ce5a1c1b2b889a0bcd9299da7a71cf"
+                 },
+                 {
+                     "path":  "src/preview/host.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "b6676dbba20879f38bea67462243afe0be674102",
+                     "size":  58695,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/b6676dbba20879f38bea67462243afe0be674102"
+                 },
+                 {
+                     "path":  "src/preview/interactions",
+                     "mode":  "040000",
+                     "type":  "tree",
+                     "sha":  "2f9a47a7999a90d17b585e5fdba34ec4d4865175",
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/trees/2f9a47a7999a90d17b585e5fdba34ec4d4865175"
+                 },
+                 {
+                     "path":  "src/preview/interactions/append.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "424c5f48835077e0d21d7e937d75f0d83a91e9c4",
+                     "size":  18932,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/424c5f48835077e0d21d7e937d75f0d83a91e9c4"
+                 },
+                 {
+                     "path":  "src/preview/interactions/color-correct.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "433f4b70e4c6ef6ef484f0a1bbdc29512cbe9348",
+                     "size":  6349,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/433f4b70e4c6ef6ef484f0a1bbdc29512cbe9348"
+                 },
+                 {
+                     "path":  "src/preview/interactions/comp.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "c1e5a0a286c347476f4ffdf6e1cdcd3d867857b6",
+                     "size":  13710,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/c1e5a0a286c347476f4ffdf6e1cdcd3d867857b6"
+                 },
+                 {
+                     "path":  "src/preview/interactions/constant.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "86138d650bc7a1572f0abe1c402e7f9c9578ff4f",
+                     "size":  2433,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/86138d650bc7a1572f0abe1c402e7f9c9578ff4f"
+                 },
+                 {
+                     "path":  "src/preview/interactions/corner-pin.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "6c04ad21c64b01004262b48893ade0caf8538a3e",
+                     "size":  4042,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/6c04ad21c64b01004262b48893ade0caf8538a3e"
+                 },
+                 {
+                     "path":  "src/preview/interactions/crop.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "ce9aafbe3ba2d1957239b78214220c49675c125c",
+                     "size":  8913,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/ce9aafbe3ba2d1957239b78214220c49675c125c"
+                 },
+                 {
+                     "path":  "src/preview/interactions/draw.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "6e5f40044ee0981aa5e18a5943b1c0a556ab76ba",
+                     "size":  18030,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/6e5f40044ee0981aa5e18a5943b1c0a556ab76ba"
+                 },
+                 {
+                     "path":  "src/preview/interactions/grain.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "105ce0622d959ebe5f6e3882adaa023f445cedd2",
+                     "size":  1892,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/105ce0622d959ebe5f6e3882adaa023f445cedd2"
+                 },
+                 {
+                     "path":  "src/preview/interactions/pad-out.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "8146bfdbb29ec780375476a91de8b53ccea532f0",
+                     "size":  6036,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/8146bfdbb29ec780375476a91de8b53ccea532f0"
+                 },
+                 {
+                     "path":  "src/preview/interactions/preview.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "56305507a2a6b6e60cfbdf58aeb49450e5a8507d",
+                     "size":  1424,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/56305507a2a6b6e60cfbdf58aeb49450e5a8507d"
+                 },
+                 {
+                     "path":  "src/preview/interactions/ramp.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "48762b104f02db65acc0cd0856232badbc20828e",
+                     "size":  7634,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/48762b104f02db65acc0cd0856232badbc20828e"
+                 },
+                 {
+                     "path":  "src/preview/interactions/text.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "d073c1054b099ccb56bad9c47faf1a0d3b674ab7",
+                     "size":  7478,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/d073c1054b099ccb56bad9c47faf1a0d3b674ab7"
+                 },
+                 {
+                     "path":  "src/preview/nodes",
+                     "mode":  "040000",
+                     "type":  "tree",
+                     "sha":  "eea535f8258f6e3abe1a5f29e615610b46c8d5ca",
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/trees/eea535f8258f6e3abe1a5f29e615610b46c8d5ca"
+                 },
+                 {
+                     "path":  "src/preview/nodes/append.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "306ff97879de2bd0b1fe81fbba61b39d371c06f5",
+                     "size":  11619,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/306ff97879de2bd0b1fe81fbba61b39d371c06f5"
+                 },
+                 {
+                     "path":  "src/preview/nodes/blur.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "464f1b09288377b998517fe356633511fbb02a1a",
+                     "size":  202,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/464f1b09288377b998517fe356633511fbb02a1a"
+                 },
+                 {
+                     "path":  "src/preview/nodes/camera-shake.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "23456f4e7fcb3f7eba27446a6748fe91be87e43e",
+                     "size":  209,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/23456f4e7fcb3f7eba27446a6748fe91be87e43e"
+                 },
+                 {
+                     "path":  "src/preview/nodes/channel.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "6bf98c40f9f163766d33d10a1f5300eb37d5fd6e",
+                     "size":  205,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/6bf98c40f9f163766d33d10a1f5300eb37d5fd6e"
+                 },
+                 {
+                     "path":  "src/preview/nodes/clamp.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "2389053f0507a88a5e979c1447fad85e99693568",
+                     "size":  203,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/2389053f0507a88a5e979c1447fad85e99693568"
+                 },
+                 {
+                     "path":  "src/preview/nodes/color-correct.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "ec4d1b9ae0261549480edb36e32c7e5f54fc022d",
+                     "size":  15159,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/ec4d1b9ae0261549480edb36e32c7e5f54fc022d"
+                 },
+                 {
+                     "path":  "src/preview/nodes/comp.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "feccecea60e5918e20790b55c290a4b9844376d5",
+                     "size":  19515,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/feccecea60e5918e20790b55c290a4b9844376d5"
+                 },
+                 {
+                     "path":  "src/preview/nodes/constant.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "6d632da0fa77810a80fc5eb2cc52b2e2bb73c064",
+                     "size":  6388,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/6d632da0fa77810a80fc5eb2cc52b2e2bb73c064"
+                 },
+                 {
+                     "path":  "src/preview/nodes/corner-pin.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "cb1564c3e14daa14f1395875b48aed0433fd826c",
+                     "size":  3408,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/cb1564c3e14daa14f1395875b48aed0433fd826c"
+                 },
+                 {
+                     "path":  "src/preview/nodes/crop.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "c3758ce12a687829afeb4f278f0807625cfc9a38",
+                     "size":  12430,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/c3758ce12a687829afeb4f278f0807625cfc9a38"
+                 },
+                 {
+                     "path":  "src/preview/nodes/distort.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "cd9ebfa418de51b526acf30643e50b33db4ec42b",
+                     "size":  205,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/cd9ebfa418de51b526acf30643e50b33db4ec42b"
+                 },
+                 {
+                     "path":  "src/preview/nodes/draw-renderer.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "095fa568808a83ce80143e22936a9ad3ded9e211",
+                     "size":  18655,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/095fa568808a83ce80143e22936a9ad3ded9e211"
+                 },
+                 {
+                     "path":  "src/preview/nodes/draw.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "37dfc74bc01bf7d702ee7aee1b20d09963ea038a",
+                     "size":  16955,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/37dfc74bc01bf7d702ee7aee1b20d09963ea038a"
+                 },
+                 {
+                     "path":  "src/preview/nodes/frame-range.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "0d25442740ffcdaafc3d4f9449789dc64b504805",
+                     "size":  39550,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/0d25442740ffcdaafc3d4f9449789dc64b504805"
+                 },
+                 {
+                     "path":  "src/preview/nodes/grain.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "bbcadb3aacbf85e6c4c1b41f89abbdcf2046268e",
+                     "size":  3571,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/bbcadb3aacbf85e6c4c1b41f89abbdcf2046268e"
+                 },
+                 {
+                     "path":  "src/preview/nodes/invert.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "b284f60d51433020d8b1ba3dc0520dfbb60eb0bb",
+                     "size":  204,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/b284f60d51433020d8b1ba3dc0520dfbb60eb0bb"
+                 },
+                 {
+                     "path":  "src/preview/nodes/keyer.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "5965dc98bb7cbfbf928999dbe751ea211d9ea904",
+                     "size":  14577,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/5965dc98bb7cbfbf928999dbe751ea211d9ea904"
+                 },
+                 {
+                     "path":  "src/preview/nodes/mask-convert.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "f303c70b4af8e4889481d7bfd6241440eba98b0f",
+                     "size":  209,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/f303c70b4af8e4889481d7bfd6241440eba98b0f"
+                 },
+                 {
+                     "path":  "src/preview/nodes/merge.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "b455379a51496dcc1e4c8b8a433b848b4f9a33aa",
+                     "size":  203,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/b455379a51496dcc1e4c8b8a433b848b4f9a33aa"
+                 },
+                 {
+                     "path":  "src/preview/nodes/noise.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "1c50ff4d8ea7c6391ac7a73f80a545f4e831401b",
+                     "size":  203,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/1c50ff4d8ea7c6391ac7a73f80a545f4e831401b"
+                 },
+                 {
+                     "path":  "src/preview/nodes/pad-out.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "1d7f9d663cfa8317affa6b465b229f3614259725",
+                     "size":  16119,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/1d7f9d663cfa8317affa6b465b229f3614259725"
+                 },
+                 {
+                     "path":  "src/preview/nodes/preview.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "664f8daa95fc35cd099e9d75a569ebb68d736749",
+                     "size":  2669,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/664f8daa95fc35cd099e9d75a569ebb68d736749"
+                 },
+                 {
+                     "path":  "src/preview/nodes/ramp.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "889041a1080e4cb418fba9e3549dbe9a742e5ced",
+                     "size":  3877,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/889041a1080e4cb418fba9e3549dbe9a742e5ced"
+                 },
+                 {
+                     "path":  "src/preview/nodes/spherize.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "8e1b642528a40f883ad48e587c698d954b146ccc",
+                     "size":  206,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/8e1b642528a40f883ad48e587c698d954b146ccc"
+                 },
+                 {
+                     "path":  "src/preview/nodes/text.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "ec63b8520551560ecadc0815bbe35e0c6f05dcc7",
+                     "size":  1676,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/ec63b8520551560ecadc0815bbe35e0c6f05dcc7"
+                 },
+                 {
+                     "path":  "src/preview/nodes/transform.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "3d12b5cd1245f95eb9c9835002353dce25c470d5",
+                     "size":  397,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/3d12b5cd1245f95eb9c9835002353dce25c470d5"
+                 },
+                 {
+                     "path":  "src/preview/nodestream.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "545f2009a5962c5be00a571e7a93251d36fbbcb3",
+                     "size":  7682,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/545f2009a5962c5be00a571e7a93251d36fbbcb3"
+                 },
+                 {
+                     "path":  "src/preview/ops.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "43c7eccc6a2f969e3ed726f76ee466aa947d0131",
+                     "size":  1053,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/43c7eccc6a2f969e3ed726f76ee466aa947d0131"
+                 },
+                 {
+                     "path":  "src/preview/ops",
+                     "mode":  "040000",
+                     "type":  "tree",
+                     "sha":  "7451a6708379e4fb80636c86d1ff0ce035bf3c74",
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/trees/7451a6708379e4fb80636c86d1ff0ce035bf3c74"
+                 },
+                 {
+                     "path":  "src/preview/ops/blend.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "91471b2ed5fa83682463ff6ee536e61c972062e1",
+                     "size":  18772,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/91471b2ed5fa83682463ff6ee536e61c972062e1"
+                 },
+                 {
+                     "path":  "src/preview/ops/color.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "f031d41687aa94d775c6821359d6a120ab196e37",
+                     "size":  30870,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/f031d41687aa94d775c6821359d6a120ab196e37"
+                 },
+                 {
+                     "path":  "src/preview/ops/geometry.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "37c7daa044c07dc65b4ccffc649fed7d9965c936",
+                     "size":  72126,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/37c7daa044c07dc65b4ccffc649fed7d9965c936"
+                 },
+                 {
+                     "path":  "src/preview/ops/implementation.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "1fa69e44001744565842cfb6561b3d56db72883b",
+                     "size":  2782,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/1fa69e44001744565842cfb6561b3d56db72883b"
+                 },
+                 {
+                     "path":  "src/preview/ops/masks.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "43bb9620fe8bc50e91c0cda0822693c1910f0ea7",
+                     "size":  24462,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/43bb9620fe8bc50e91c0cda0822693c1910f0ea7"
+                 },
+                 {
+                     "path":  "src/preview/ops/procedural.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "c759218fc42574bbc3005377a9cc43892f3655b3",
+                     "size":  28694,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/c759218fc42574bbc3005377a9cc43892f3655b3"
+                 },
+                 {
+                     "path":  "src/preview/ops/video.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "57d4be35212e7c33f3c19fed0ff7e426c9716dcc",
+                     "size":  5212,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/57d4be35212e7c33f3c19fed0ff7e426c9716dcc"
+                 },
+                 {
+                     "path":  "src/preview/progress.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "c978dc89040dc3d851a80e71b48d460318ac5432",
+                     "size":  1926,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/c978dc89040dc3d851a80e71b48d460318ac5432"
+                 },
+                 {
+                     "path":  "src/preview/registry.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "feba7b22ca23a1a5a96aa7f1cb28eb396cf52803",
+                     "size":  946,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/feba7b22ca23a1a5a96aa7f1cb28eb396cf52803"
+                 },
+                 {
+                     "path":  "src/preview/renderer.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "2c04bb4fe9ccf1fe2fa66f280784a3b01764e832",
+                     "size":  124,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/2c04bb4fe9ccf1fe2fa66f280784a3b01764e832"
+                 },
+                 {
+                     "path":  "src/preview/scopes.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "bbc4a85c9632c3792368cba60c14b99ba6693957",
+                     "size":  6706,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/bbc4a85c9632c3792368cba60c14b99ba6693957"
+                 },
+                 {
+                     "path":  "src/preview/shared",
+                     "mode":  "040000",
+                     "type":  "tree",
+                     "sha":  "f16b698ab6e34743225627541703085330cc1747",
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/trees/f16b698ab6e34743225627541703085330cc1747"
+                 },
+                 {
+                     "path":  "src/preview/shared/animation.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "e57b0098c8f6959b9faa3d74e08654786aee50a3",
+                     "size":  3822,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/e57b0098c8f6959b9faa3d74e08654786aee50a3"
+                 },
+                 {
+                     "path":  "src/preview/shared/blend-modes.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "a88d54e073ff4a11cbac6caf41f8c869c61bdb8b",
+                     "size":  1794,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/a88d54e073ff4a11cbac6caf41f8c869c61bdb8b"
+                 },
+                 {
+                     "path":  "src/preview/shared/bounds.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "f70e536b4130803d18d09e07b1d68689f98c3ce3",
+                     "size":  23806,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/f70e536b4130803d18d09e07b1d68689f98c3ce3"
+                 },
+                 {
+                     "path":  "src/preview/shared/canvas-pool.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "26f7036d45eba57a926d157fc82a8701b4a58f13",
+                     "size":  2037,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/26f7036d45eba57a926d157fc82a8701b4a58f13"
+                 },
+                 {
+                     "path":  "src/preview/shared/canvas.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "756eed5b21e9afdf49eca5ceec0b474b64c1dd5d",
+                     "size":  778,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/756eed5b21e9afdf49eca5ceec0b474b64c1dd5d"
+                 },
+                 {
+                     "path":  "src/preview/shared/classes.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "184ed32709845e1d2b8b65373abb174ace341eee",
+                     "size":  1196,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/184ed32709845e1d2b8b65373abb174ace341eee"
+                 },
+                 {
+                     "path":  "src/preview/shared/dbl-click-reset.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "d857755b6f6dfba15d847e8aafa601786dd8453a",
+                     "size":  2045,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/d857755b6f6dfba15d847e8aafa601786dd8453a"
+                 },
+                 {
+                     "path":  "src/preview/shared/dom-styles.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "7a972f8998a94fe4a68f236d7043110abe3900b7",
+                     "size":  7980,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/7a972f8998a94fe4a68f236d7043110abe3900b7"
+                 },
+                 {
+                     "path":  "src/preview/shared/eyedropper.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "4e5a2e55f09d06bbbbdda65b59b4c34aff3e9ca5",
+                     "size":  6495,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/4e5a2e55f09d06bbbbdda65b59b4c34aff3e9ca5"
+                 },
+                 {
+                     "path":  "src/preview/shared/fps-monitor.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "19e87c68a5677201f6ea2a2b827773a525c380e0",
+                     "size":  1922,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/19e87c68a5677201f6ea2a2b827773a525c380e0"
+                 },
+                 {
+                     "path":  "src/preview/shared/geometry.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "d05d50390b5bc5b8fc0d0eb4320c41da0a190c3b",
+                     "size":  2906,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/d05d50390b5bc5b8fc0d0eb4320c41da0a190c3b"
+                 },
+                 {
+                     "path":  "src/preview/shared/imageops-metadata.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "2267d75db068479bbd4301fb1ab0dcd5f5af5d56",
+                     "size":  2557,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/2267d75db068479bbd4301fb1ab0dcd5f5af5d56"
+                 },
+                 {
+                     "path":  "src/preview/shared/media.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "86d2a47d0b988f8fc9799671d4bf2cdec18dd995",
+                     "size":  76,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/86d2a47d0b988f8fc9799671d4bf2cdec18dd995"
+                 },
+                 {
+                     "path":  "src/preview/shared/navigation.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "7738915cb6f8c1a5638a29f40e920e0c0abfdcb2",
+                     "size":  5570,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/7738915cb6f8c1a5638a29f40e920e0c0abfdcb2"
+                 },
+                 {
+                     "path":  "src/preview/shared/preview-defaults.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "04165305c794fa5e34faa4f1854733c10ddf607b",
+                     "size":  528,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/04165305c794fa5e34faa4f1854733c10ddf607b"
+                 },
+                 {
+                     "path":  "src/preview/shared/preview-widget.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "64d26626dc94af4000538fce253b84cde5c6e3df",
+                     "size":  28443,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/64d26626dc94af4000538fce253b84cde5c6e3df"
+                 },
+                 {
+                     "path":  "src/preview/shared/state.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "3c798ebda383ae5eab62b64b194eaf456a09ce0b",
+                     "size":  8500,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/3c798ebda383ae5eab62b64b194eaf456a09ce0b"
+                 },
+                 {
+                     "path":  "src/preview/shared/ui-persist.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "45cf8bcc0846d35a5f9398f1fbc6e628d1489d05",
+                     "size":  1881,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/45cf8bcc0846d35a5f9398f1fbc6e628d1489d05"
+                 },
+                 {
+                     "path":  "src/preview/shared/video.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "aff5f54af83a46806065292963da3f77bc2cb6f1",
+                     "size":  76,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/aff5f54af83a46806065292963da3f77bc2cb6f1"
+                 },
+                 {
+                     "path":  "src/preview/shared/webgl-color.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "0928ef1799ed4182e30ce008e63c3dd405d0106a",
+                     "size":  17560,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/0928ef1799ed4182e30ce008e63c3dd405d0106a"
+                 },
+                 {
+                     "path":  "src/preview/shared/widgets.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "ea9107d5f2b918bca5e1af2a160afacad67d8913",
+                     "size":  9901,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/ea9107d5f2b918bca5e1af2a160afacad67d8913"
+                 },
+                 {
+                     "path":  "src/preview/source.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "ea5ec33e0c03268a5b6de28abae5fe8967a0b5e4",
+                     "size":  13953,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/ea5ec33e0c03268a5b6de28abae5fe8967a0b5e4"
+                 },
+                 {
+                     "path":  "src/types.ts",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "83eff765472abf751dc74f3650e31bfbf4bf014f",
+                     "size":  19338,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/83eff765472abf751dc74f3650e31bfbf4bf014f"
+                 },
+                 {
+                     "path":  "tests",
+                     "mode":  "040000",
+                     "type":  "tree",
+                     "sha":  "ddd338509eb99fe7319cd4dadc0c254f9910bc52",
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/trees/ddd338509eb99fe7319cd4dadc0c254f9910bc52"
+                 },
+                 {
+                     "path":  "tests/conftest.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "f1d1545e0b582a8169cff78351a88442df3868d0",
+                     "size":  1885,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/f1d1545e0b582a8169cff78351a88442df3868d0"
+                 },
+                 {
+                     "path":  "tests/frontend",
+                     "mode":  "040000",
+                     "type":  "tree",
+                     "sha":  "31b3ade89191edf897967b8d82aae37d9e99aee4",
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/trees/31b3ade89191edf897967b8d82aae37d9e99aee4"
+                 },
+                 {
+                     "path":  "tests/frontend/graph.test.cjs",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "927220179f8285557800b6f2ea068a67fbafb27d",
+                     "size":  1292,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/927220179f8285557800b6f2ea068a67fbafb27d"
+                 },
+                 {
+                     "path":  "tests/frontend/imageops-registry.test.cjs",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "85b76367c457d2263ed5a178523c49846dbf2314",
+                     "size":  1815,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/85b76367c457d2263ed5a178523c49846dbf2314"
+                 },
+                 {
+                     "path":  "tests/frontend/node-modules.test.cjs",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "548c0c178100d336ca2c8da2ada090f37838d939",
+                     "size":  1262,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/548c0c178100d336ca2c8da2ada090f37838d939"
+                 },
+                 {
+                     "path":  "tests/golden",
+                     "mode":  "040000",
+                     "type":  "tree",
+                     "sha":  "8e9d14b20332a969762b24dc7c0babb469afc0f9",
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/trees/8e9d14b20332a969762b24dc7c0babb469afc0f9"
+                 },
+                 {
+                     "path":  "tests/golden/blend_modes.json",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "e4924d21c90f83ccc3f4e86d26f2bf252be305fb",
+                     "size":  4573,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/e4924d21c90f83ccc3f4e86d26f2bf252be305fb"
+                 },
+                 {
+                     "path":  "tests/integration",
+                     "mode":  "040000",
+                     "type":  "tree",
+                     "sha":  "6b59bce3b5331359d8e4e9c1d7e7d03906cfcdfe",
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/trees/6b59bce3b5331359d8e4e9c1d7e7d03906cfcdfe"
+                 },
+                 {
+                     "path":  "tests/integration/conftest.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "ebbde73c3ded9271a339fd4f744ac18c6da72424",
+                     "size":  1410,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/ebbde73c3ded9271a339fd4f744ac18c6da72424"
+                 },
+                 {
+                     "path":  "tests/integration/test_comfy_registry.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "b41236c667b60348e106bc9067ac69168e52b2d5",
+                     "size":  2380,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/b41236c667b60348e106bc9067ac69168e52b2d5"
+                 },
+                 {
+                     "path":  "tests/integration/test_crop.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "185eadffa4fb588516cbf05b10e56cd499a13744",
+                     "size":  1613,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/185eadffa4fb588516cbf05b10e56cd499a13744"
+                 },
+                 {
+                     "path":  "tests/integration/test_extension_load.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "a773a01ebd39b45e22fa2288c12e549b401b3560",
+                     "size":  1840,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/a773a01ebd39b45e22fa2288c12e549b401b3560"
+                 },
+                 {
+                     "path":  "tests/integration/test_integration.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "a03d271436486da07d66126553264a7ab43229bb",
+                     "size":  1109,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/a03d271436486da07d66126553264a7ab43229bb"
+                 },
+                 {
+                     "path":  "tests/integration/test_media_nodes.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "e769b904ac3499d74f69e10b5c6fb69c60d64f40",
+                     "size":  1730,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/e769b904ac3499d74f69e10b5c6fb69c60d64f40"
+                 },
+                 {
+                     "path":  "tests/integration/test_nodes_contract.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "a10598f62013b390a877a0e988ad0e9987541bf3",
+                     "size":  5029,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/a10598f62013b390a877a0e988ad0e9987541bf3"
+                 },
+                 {
+                     "path":  "tests/integration/test_server_routes.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "a519c60a01bd9376413d32691ae04558ffccd43f",
+                     "size":  2982,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/a519c60a01bd9376413d32691ae04558ffccd43f"
+                 },
+                 {
+                     "path":  "tests/integration/test_spherize.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "510461f583940b2cacac1531d02bffb96bd93fd3",
+                     "size":  2019,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/510461f583940b2cacac1531d02bffb96bd93fd3"
+                 },
+                 {
+                     "path":  "tests/integration/test_transform.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "5d3d0b7a83d134e06f4c543f6272178656d581b0",
+                     "size":  1307,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/5d3d0b7a83d134e06f4c543f6272178656d581b0"
+                 },
+                 {
+                     "path":  "tests/integration/test_v3_output_types.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "ad66c95f88dc642db1b2fea4c50294ca9663a5cd",
+                     "size":  8497,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/ad66c95f88dc642db1b2fea4c50294ca9663a5cd"
+                 },
+                 {
+                     "path":  "tests/integration/test_workflows.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "d8d5b8dd8e883569b0d5b5139f61ddbc81d993f6",
+                     "size":  1827,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/d8d5b8dd8e883569b0d5b5139f61ddbc81d993f6"
+                 },
+                 {
+                     "path":  "tests/pytest.ini",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "5472963021462eb0e21d843492d5140e786bf131",
+                     "size":  117,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/5472963021462eb0e21d843492d5140e786bf131"
+                 },
+                 {
+                     "path":  "tests/unit",
+                     "mode":  "040000",
+                     "type":  "tree",
+                     "sha":  "1eb8bdd72bf53f9be0d751cf1c1a3223bac08a15",
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/trees/1eb8bdd72bf53f9be0d751cf1c1a3223bac08a15"
+                 },
+                 {
+                     "path":  "tests/unit/conftest.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "9a0e0ab8d85fa3fdd44cd46e2a39d3005995d4a8",
+                     "size":  830,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/9a0e0ab8d85fa3fdd44cd46e2a39d3005995d4a8"
+                 },
+                 {
+                     "path":  "tests/unit/test_architecture.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "5f50be297de75ba9e56c33656677e41de43237bc",
+                     "size":  2085,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/5f50be297de75ba9e56c33656677e41de43237bc"
+                 },
+                 {
+                     "path":  "tests/unit/test_batch.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "a38cdaf59855777e48e0011fd0da12acc5ed9589",
+                     "size":  2071,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/a38cdaf59855777e48e0011fd0da12acc5ed9589"
+                 },
+                 {
+                     "path":  "tests/unit/test_blend.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "04843b9ea70142dd3284c03f3c6cc8fef62c9750",
+                     "size":  3232,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/04843b9ea70142dd3284c03f3c6cc8fef62c9750"
+                 },
+                 {
+                     "path":  "tests/unit/test_blend_modes.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "445e6efca99e36d15b1e29f5a47e74302900e9a2",
+                     "size":  1222,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/445e6efca99e36d15b1e29f5a47e74302900e9a2"
+                 },
+                 {
+                     "path":  "tests/unit/test_hdr_support.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "d0133b0f7461903e466e915308e3dbc66a89709e",
+                     "size":  742,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/d0133b0f7461903e466e915308e3dbc66a89709e"
+                 },
+                 {
+                     "path":  "tests/unit/test_media_core.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "0e2b2b74a38b4cab3a65e45dfe5568de2fb5b74b",
+                     "size":  949,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/0e2b2b74a38b4cab3a65e45dfe5568de2fb5b74b"
+                 },
+                 {
+                     "path":  "tests/unit/test_memory.py",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "2a4f96bf97921de8cb41d05a292ea7e705438483",
+                     "size":  2262,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/2a4f96bf97921de8cb41d05a292ea7e705438483"
+                 },
+                 {
+                     "path":  "tsconfig.frontend-tests.json",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "bd641849ef0588ab2d44e7516e607681c198c804",
+                     "size":  103,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/bd641849ef0588ab2d44e7516e607681c198c804"
+                 },
+                 {
+                     "path":  "tsconfig.json",
+                     "mode":  "100644",
+                     "type":  "blob",
+                     "sha":  "ef9a61e91fb3e5f6be2faafd849a9f4e1d57f927",
+                     "size":  330,
+                     "url":  "https://api.github.com/repos/MajoorWaldi/ComfyUI-Majoor-ImageOps/git/blobs/ef9a61e91fb3e5f6be2faafd849a9f4e1d57f927"
+                 }
+             ],
+    "truncated":  false
+}

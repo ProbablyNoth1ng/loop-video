@@ -1,0 +1,15 @@
+{
+  "1": {
+    "class_type": "AmbientLoopRender",
+    "inputs": {
+      "project_path": "/workspace/ambient-loop/examples/rainy-window/project.json",
+      "output_directory": "/workspace/ambient-loop/outputs/loop",
+      "working_mode": "1080p",
+      "output_resolution": "1440p",
+      "duration": 6,
+      "preset": "rainy-window",
+      "seed": 42,
+      "chunk_size": 4
+    }
+  }
+}

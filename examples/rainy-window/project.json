@@ -1,0 +1,22 @@
+{
+  "schema": "ambient-loop/1",
+  "source": "source.png",
+  "guard": "guard.png",
+  "working_mode": "1080p",
+  "output_resolution": "1440p",
+  "duration": 6,
+  "fps": 24,
+  "preset": "rainy-window",
+  "seed": 42,
+  "regions": [
+    {
+      "id": "ambient",
+      "kind": "rain",
+      "mask": "mask.png",
+      "support": "support.png",
+      "depth": 0,
+      "particles": 80,
+      "strength": 0.15
+    }
+  ]
+}

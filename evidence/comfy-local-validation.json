@@ -1,0 +1,29 @@
+{
+  "status": "local_checks_only",
+  "python_tests_passed": 29,
+  "javascript_tests_passed": 8,
+  "encoding": "ffmpeg and ffprobe validated a real silent MP4 and seam preview",
+  "browser_fixture": {
+    "production_editor_extension": true,
+    "simulated_queue": true,
+    "checked": [
+      "manual landmark placement",
+      "landmark dragging",
+      "empty-plan review feedback",
+      "explicit point review",
+      "unreviewed render blocked before queueing",
+      "Prepare contains only LoadImage and editor",
+      "Render excludes Upscale",
+      "Upscale contains only saved candidate selection and finishing"
+    ]
+  },
+  "pending": [
+    "official unchanged cloud GPU baseline",
+    "actual Qwen anime landmark inference",
+    "actual LTX video generation",
+    "actual realesr-animevideov3 weight inference",
+    "deployed ComfyUI browser and subgraph acceptance",
+    "portrait and landscape visual alignment after workflow reopen",
+    "real anime identity, hair motion, background, seam and flicker review"
+  ]
+}

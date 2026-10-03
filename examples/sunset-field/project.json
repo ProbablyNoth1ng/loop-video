@@ -1,0 +1,21 @@
+{
+  "schema": "ambient-loop/1",
+  "source": "source.png",
+  "guard": "guard.png",
+  "working_mode": "1080p",
+  "output_resolution": "1440p",
+  "duration": 6,
+  "fps": 24,
+  "preset": "sunset-field",
+  "seed": 42,
+  "regions": [
+    {
+      "id": "ambient",
+      "kind": "shimmer",
+      "mask": "mask.png",
+      "support": "support.png",
+      "depth": 0,
+      "strength": 0.04
+    }
+  ]
+}
