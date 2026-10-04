@@ -1,0 +1,528 @@
+#!/bin/bash
+set -e  # Exit the script if any statement returns a non-true return value
+
+COMFYUI_DIR="/workspace/runpod-slim/ComfyUI"
+BAKED_COMFYUI_DIR="/opt/comfyui-baked"
+BUNDLE_VERSION_FILE=".runpod-bundle-version"
+VENV_DIR="$COMFYUI_DIR/.venv-cu128"
+OLD_VENV_DIR="$COMFYUI_DIR/.venv"
+DB_FILE="/workspace/runpod-slim/filebrowser.db"
+PIP_CONSTRAINT_FILE="/opt/comfyui-runtime-constraints.txt"
+BAKED_NODES=("ComfyUI-Manager" "ComfyUI-KJNodes" "Civicomfy" "ComfyUI-RunpodDirect")
+
+# ---------------------------------------------------------------------------- #
+#                          Function Definitions                                  #
+# ---------------------------------------------------------------------------- #
+
+# Setup SSH with optional key or random password
+setup_ssh() {
+    mkdir -p ~/.ssh
+    
+    if [ ! -f /etc/ssh/ssh_host_ed25519_key ]; then
+        ssh-keygen -A -q
+    fi
+
+    # If PUBLIC_KEY is provided, use it
+    if [[ $PUBLIC_KEY ]]; then
+        echo "$PUBLIC_KEY" >> ~/.ssh/authorized_keys
+        chmod 700 -R ~/.ssh
+    else
+        # Generate random password if no public key
+        RANDOM_PASS=$(openssl rand -base64 12)
+        echo "root:${RANDOM_PASS}" | chpasswd
+        echo "Generated random SSH password for root: ${RANDOM_PASS}"
+    fi
+
+    # Configure SSH to preserve environment variables
+    echo "PermitUserEnvironment yes" >> /etc/ssh/sshd_config
+
+    # Start SSH service
+    /usr/sbin/sshd
+}
+
+# Export environment variables
+export_env_vars() {
+    echo "Exporting environment variables..."
+    
+    # Create environment files
+    ENV_FILE="/etc/environment"
+    PAM_ENV_FILE="/etc/security/pam_env.conf"
+    SSH_ENV_DIR="/root/.ssh/environment"
+    
+    # Backup original files
+    cp "$ENV_FILE" "${ENV_FILE}.bak" 2>/dev/null || true
+    cp "$PAM_ENV_FILE" "${PAM_ENV_FILE}.bak" 2>/dev/null || true
+    
+    # Clear files
+    : > "$ENV_FILE"
+    : > "$PAM_ENV_FILE"
+    : > /etc/rp_environment
+    mkdir -p /root/.ssh
+    : > "$SSH_ENV_DIR"
+    
+    # Export to multiple locations for maximum compatibility
+    # PIP_EXTRA_INDEX_URL travels with PIP_CONSTRAINT: the constraint pins a
+    # +cuXXX build that only the PyTorch index serves, so one without the other
+    # makes every install in an SSH session unresolvable.
+    printenv | grep -E '^RUNPOD_|^PATH=|^_=|^CUDA|^LD_LIBRARY_PATH|^PYTHONPATH|^PIP_CONSTRAINT=|^PIP_EXTRA_INDEX_URL=' | while read -r line; do
+        # Get variable name and value
+        name=$(echo "$line" | cut -d= -f1)
+        value=$(echo "$line" | cut -d= -f2-)
+        
+        # Add to /etc/environment (system-wide)
+        echo "$name=\"$value\"" >> "$ENV_FILE"
+        
+        # Add to PAM environment
+        echo "$name DEFAULT=\"$value\"" >> "$PAM_ENV_FILE"
+        
+        # Add to SSH environment file
+        echo "$name=\"$value\"" >> "$SSH_ENV_DIR"
+        
+        # Add to current shell
+        echo "export $name=\"$value\"" >> /etc/rp_environment
+    done
+    
+    # Add sourcing to shell startup files
+    echo 'source /etc/rp_environment' >> ~/.bashrc
+    echo 'source /etc/rp_environment' >> /etc/bash.bashrc
+    
+    # Set permissions
+    chmod 644 "$ENV_FILE" "$PAM_ENV_FILE"
+    chmod 600 "$SSH_ENV_DIR"
+}
+
+# Start Jupyter Lab server for remote access
+start_jupyter() {
+    local JUPYTER_TOKEN
+    mkdir -p /workspace
+
+    # JUPYTER_DISABLE_AUTH=true runs with no token, a set JUPYTER_PASSWORD becomes
+    # the token, and anything else leaves Jupyter off. No token is generated here
+    # because the console never sees one minted in the container.
+    if [ "${JUPYTER_DISABLE_AUTH:-}" = "true" ]; then
+        echo "WARNING: JUPYTER_DISABLE_AUTH=true -- starting JupyterLab with NO authentication."
+        echo "WARNING: anyone with this pod's :8888 proxy URL gets a root shell and full access to /workspace."
+        JUPYTER_TOKEN=""
+    elif [ -n "${JUPYTER_PASSWORD:-}" ]; then
+        JUPYTER_TOKEN="$JUPYTER_PASSWORD"
+    else
+        echo "JUPYTER_PASSWORD is not set; skipping JupyterLab. Redeploy with"
+        echo "\"Start Jupyter notebook\" enabled, set JUPYTER_PASSWORD yourself, or set"
+        echo "JUPYTER_DISABLE_AUTH=true to run it with no password (understand the risk)."
+        return 0
+    fi
+
+    echo "Starting Jupyter Lab on port 8888..."
+    nohup jupyter lab \
+        --allow-root \
+        --no-browser \
+        --port=8888 \
+        --ip=0.0.0.0 \
+        --FileContentsManager.delete_to_trash=False \
+        --FileContentsManager.preferred_dir=/workspace \
+        --ServerApp.root_dir=/workspace \
+        --ServerApp.terminado_settings='{"shell_command":["/bin/bash"]}' \
+        --IdentityProvider.token="${JUPYTER_TOKEN}" \
+        --ServerApp.allow_origin=* &> /jupyter.log &
+    echo "Jupyter Lab started"
+}
+
+# Upgrade the image-managed ComfyUI files while leaving user data on the
+# persistent workspace untouched.
+upgrade_comfyui_if_needed() {
+    local baked_manifest="$BAKED_COMFYUI_DIR/$BUNDLE_VERSION_FILE"
+    local installed_manifest="$COMFYUI_DIR/$BUNDLE_VERSION_FILE"
+
+    # A missing workspace is handled by the first-time setup below.
+    if [ ! -d "$COMFYUI_DIR" ]; then
+        return
+    fi
+
+    if [ ! -f "$baked_manifest" ]; then
+        echo "WARNING: Baked ComfyUI bundle manifest is missing; skipping upgrade"
+        return
+    fi
+
+    if [ -f "$installed_manifest" ] && cmp -s "$baked_manifest" "$installed_manifest"; then
+        echo "Using existing ComfyUI installation (bundle is current)"
+        return
+    fi
+
+    echo "============================================="
+    echo "  Upgrading ComfyUI workspace from baked bundle"
+    echo "  Preserving models, user data, and custom nodes"
+    echo "============================================="
+
+    # Sync ComfyUI core and remove files that no longer exist in the new
+    # release. Excluded paths belong to the user or are managed separately.
+    rsync -a --delete \
+        --exclude="/$BUNDLE_VERSION_FILE" \
+        --exclude="/.venv*" \
+        --exclude="/models" \
+        --exclude="/input" \
+        --exclude="/output" \
+        --exclude="/user" \
+        --exclude="/custom_nodes" \
+        --exclude="/extra_model_paths.yaml" \
+        "$BAKED_COMFYUI_DIR/" "$COMFYUI_DIR/"
+
+    mkdir -p "$COMFYUI_DIR/custom_nodes"
+
+    # Update files located directly under custom_nodes without deleting
+    # user-provided files or directories.
+    rsync -a --exclude="*/" \
+        "$BAKED_COMFYUI_DIR/custom_nodes/" "$COMFYUI_DIR/custom_nodes/"
+
+    # Image-managed nodes are pinned with the image and must be upgraded.
+    # Other custom-node directories are user-owned and remain untouched.
+    local node
+    for node in "${BAKED_NODES[@]}"; do
+        if [ -d "$BAKED_COMFYUI_DIR/custom_nodes/$node" ]; then
+            mkdir -p "$COMFYUI_DIR/custom_nodes/$node"
+            rsync -a --delete \
+                "$BAKED_COMFYUI_DIR/custom_nodes/$node/" \
+                "$COMFYUI_DIR/custom_nodes/$node/"
+        fi
+    done
+
+    # Write the manifest only after every sync succeeds. An interrupted
+    # migration is retried on the next container start.
+    cp "$baked_manifest" "${installed_manifest}.tmp"
+    mv "${installed_manifest}.tmp" "$installed_manifest"
+    echo "ComfyUI workspace upgraded successfully"
+}
+
+# The venv has no pip of its own, so a bare `pip` would resolve to
+# /usr/local/bin/pip and install against the base interpreter. Custom-node
+# install scripts do call it that way. Existing venvs keep their real pip.
+create_pip_shim() {
+    if [ -e "$VENV_DIR/bin/pip" ]; then
+        return
+    fi
+    if printf '#!/bin/sh\nexec "%s/bin/python" -m pip "$@"\n' "$VENV_DIR" \
+        > "$VENV_DIR/bin/pip" 2>/dev/null; then
+        chmod +x "$VENV_DIR/bin/pip"
+    else
+        echo "WARNING: could not write $VENV_DIR/bin/pip — is the volume full?"
+    fi
+}
+
+# ComfyUI pins its bundled packages (frontend, workflow templates, comfy-kitchen)
+# to exact versions, and the workspace checkout can move away from the image via
+# Manager or git — then main.py imports a comfy-kitchen that predates it and dies.
+# Deps are resolved normally because the template content lives in the
+# workflow-templates sub-packages; PIP_CONSTRAINT keeps torch where it is.
+sync_comfyui_pinned_packages() {
+    local requirements="$COMFYUI_DIR/requirements.txt"
+    local installed pins spec name have
+    local missing=()
+
+    if [ ! -f "$requirements" ]; then
+        return
+    fi
+
+    # No --local: the packages to compare against live in the image, not the venv.
+    # Names are normalised on both sides because pip and ComfyUI disagree on
+    # hyphens vs underscores (comfy-kitchen / comfy_kitchen).
+    installed=$(python -m pip freeze 2>/dev/null | tr -d '\r' | tr 'A-Z_' 'a-z-')
+    if [ -z "$installed" ]; then
+        echo "WARNING: could not list installed packages; skipping the ComfyUI package check."
+        return
+    fi
+
+    # Only exact pins; every other line in the file is a range we leave alone.
+    # torch and friends are kept aligned by /opt/comfyui-runtime-constraints.txt.
+    pins=$(tr -d '\r' < "$requirements" \
+        | grep -E '^[A-Za-z0-9][A-Za-z0-9._-]*==[^[:space:];#]+$' \
+        | tr 'A-Z_' 'a-z-' \
+        | grep -vE '^(torch|torchvision|torchaudio)==' || true)
+
+    while read -r spec; do
+        if [ -z "$spec" ] || grep -qxF "$spec" <<< "$installed"; then
+            continue
+        fi
+        name=${spec%%==*}
+        have=$(grep -m1 -E "^${name}==" <<< "$installed" | cut -d= -f3)
+        echo "  $name: installed ${have:-nothing}, ComfyUI wants ${spec#*==}"
+        missing+=("$spec")
+    done <<< "$pins"
+
+    if [ "${#missing[@]}" = "0" ]; then
+        return
+    fi
+
+    echo "============================================="
+    echo "  Workspace ComfyUI disagrees with the packages in this image (see above)."
+    echo "  Installing the versions it asks for into $VENV_DIR"
+    echo "============================================="
+    if ! python -m pip install --no-cache-dir "${missing[@]}"; then
+        echo "WARNING: could not install them. If ComfyUI fails to import, redeploy"
+        echo "         on a newer image instead of updating ComfyUI in place."
+    fi
+}
+
+log_cuda_venv_diagnostics() {
+    local expected_build local_packages status
+    expected_build=$(sed -n 's/^torch==.*+\(cu[0-9][0-9]*\).*$/\1/p' \
+        "$PIP_CONSTRAINT_FILE" | head -n 1)
+
+    echo "============================================="
+    echo "  CUDA / venv diagnostics"
+    echo "  active venv: $VENV_DIR"
+    echo "  expected image torch build: ${expected_build:-unknown}"
+
+    # Fail open: a crashed probe must not abort startup (set -e).
+    if ! status=$(VENV_DIR="$VENV_DIR" EXPECTED_TORCH_BUILD="$expected_build" \
+        python - <<'PY'
+import os
+import sys
+
+try:
+    venv = os.path.realpath(os.environ["VENV_DIR"])
+    expected = os.environ.get("EXPECTED_TORCH_BUILD", "")
+    print(f"  python: {sys.executable}")
+
+    try:
+        import torch
+    except Exception as exc:
+        print(f"  torch import: FAILED ({type(exc).__name__}: {exc})")
+        print("TORCH_STATUS=IMPORT_FAILED")
+    else:
+        actual = f"cu{torch.version.cuda.replace('.', '')}" if torch.version.cuda else "cpu"
+        location = os.path.realpath(torch.__file__)
+        local_torch = location.startswith(venv + os.sep)
+        print(f"  torch: {torch.__version__}")
+        print(f"  torch CUDA build: {actual}")
+        print(f"  torch location: {location}")
+        print(f"  torch from active venv: {local_torch}")
+        print(f"  CUDA available: {torch.cuda.is_available()}")
+        print(f"  CUDA device count: {torch.cuda.device_count()}")
+        if expected and actual != expected:
+            print("TORCH_STATUS=CUDA_MISMATCH")
+        elif local_torch:
+            print("TORCH_STATUS=LOCAL_TORCH")
+        else:
+            print("TORCH_STATUS=OK")
+except Exception as exc:
+    print(f"  probe failed: {type(exc).__name__}: {exc}")
+    print("TORCH_STATUS=PROBE_FAILED")
+PY
+    ); then
+        echo "  WARNING: CUDA / venv probe exited unexpectedly; continuing startup."
+    fi
+    echo "$status" | grep -v '^TORCH_STATUS=' || true
+
+    # Allow optional spaces before ==/@ so PEP 508 direct URL lines match
+    # (e.g. "xformers @ https://..."), and include onnxruntime-gpu.
+    local_packages=$(python -m pip freeze --local \
+        | grep -Ei '^(torch|torchvision|torchaudio|xformers|triton|onnxruntime(-gpu)?|sageattention)[[:space:]]*(==|@)' \
+        || true)
+    if [ -n "$local_packages" ]; then
+        echo "  locally installed CUDA-sensitive packages:"
+        echo "    ${local_packages//$'\n'/$'\n'    }"
+    else
+        echo "  locally installed CUDA-sensitive packages: none"
+    fi
+
+    case "$status" in
+        *"TORCH_STATUS=OK"*)
+            echo "  CUDA / venv status: OK — using the image PyTorch stack."
+            ;;
+        *"TORCH_STATUS=LOCAL_TORCH"*)
+            echo "  WARNING: PyTorch is installed inside the persistent venv."
+            echo "  It overrides the image PyTorch stack; verify it matches this image's CUDA build."
+            ;;
+        *"TORCH_STATUS=CUDA_MISMATCH"*)
+            echo "  WARNING: Persistent venv PyTorch does not match this image's CUDA build."
+            echo "  This can prevent CUDA from initializing. No files were changed automatically."
+            ;;
+        *)
+            echo "  WARNING: Could not verify the persistent venv PyTorch stack."
+            ;;
+    esac
+    echo "============================================="
+}
+
+# ---------------------------------------------------------------------------- #
+#                               Main Program                                     #
+# ---------------------------------------------------------------------------- #
+
+# Setup environment
+if [ -f "$PIP_CONSTRAINT_FILE" ]; then
+    export PIP_CONSTRAINT="$PIP_CONSTRAINT_FILE"
+    echo "Using runtime pip constraints from $PIP_CONSTRAINT_FILE"
+fi
+
+setup_ssh
+export_env_vars
+
+# Initialize FileBrowser if not already done
+if [ ! -f "$DB_FILE" ]; then
+    echo "Initializing FileBrowser..."
+    filebrowser config init
+    filebrowser config set --address 0.0.0.0
+    filebrowser config set --port 8080
+    filebrowser config set --root /workspace
+    filebrowser config set --auth.method=json
+    filebrowser users add admin "${FILEBROWSER_PASSWORD:-adminadmin12}" --perm.admin
+else
+    echo "Using existing FileBrowser configuration..."
+fi
+
+# Start FileBrowser
+echo "Starting FileBrowser on port 8080..."
+nohup filebrowser &> /filebrowser.log &
+
+start_jupyter
+
+# Create default comfyui_args.txt if it doesn't exist
+ARGS_FILE="/workspace/runpod-slim/comfyui_args.txt"
+if [ ! -f "$ARGS_FILE" ]; then
+    echo "# Add your custom ComfyUI arguments here (one per line)" > "$ARGS_FILE"
+    echo "Created empty ComfyUI arguments file at $ARGS_FILE"
+fi
+
+upgrade_comfyui_if_needed
+
+# Migrate old CUDA 12.4 venv to cu128
+if [ -d "$OLD_VENV_DIR" ] && [ ! -d "$VENV_DIR" ]; then
+    NODE_COUNT=$(find "$COMFYUI_DIR/custom_nodes" -maxdepth 2 -name "requirements.txt" 2>/dev/null | wc -l)
+    echo "============================================="
+    echo "  CUDA 12.4 -> 12.8 migration"
+    echo "  Reinstalling deps for $NODE_COUNT custom nodes"
+    echo "  This may take several minutes"
+    echo "============================================="
+    # Timestamped, and failure must not abort the boot: with a plain `.bak`
+    # target left over from an earlier migration, `mv` moves the venv *inside*
+    # it, fails under `set -e`, and the pod restarts in a loop.
+    VENV_BACKUP="${OLD_VENV_DIR}.bak.$(date +%Y%m%d%H%M%S)"
+    if mv "$OLD_VENV_DIR" "$VENV_BACKUP"; then
+        BACKED_UP=1
+    else
+        BACKED_UP=0
+        echo "WARNING: could not move $OLD_VENV_DIR aside; continuing with a fresh venv"
+    fi
+    cd "$COMFYUI_DIR"
+    python3.12 -m venv --system-site-packages --without-pip "$VENV_DIR"
+    # The venv is created at runtime, so there is nothing for shellcheck to follow.
+    # shellcheck source=/dev/null
+    source "$VENV_DIR/bin/activate"
+    # Skip nodes baked into the image — their deps are in system site-packages
+    CURRENT=0
+    INSTALLED=0
+    for req in "$COMFYUI_DIR"/custom_nodes/*/requirements.txt; do
+        if [ -f "$req" ]; then
+            NODE_NAME=$(basename "$(dirname "$req")")
+            case " ${BAKED_NODES[*]} " in
+                *" $NODE_NAME "*) continue ;;
+            esac
+            CURRENT=$((CURRENT + 1))
+            echo "[$CURRENT] $NODE_NAME"
+            python -m pip install -r "$req" 2>&1 | grep -E "^(Successfully|ERROR)" || true
+            INSTALLED=$((INSTALLED + 1))
+        fi
+    done
+    echo "Ensuring ComfyUI requirements are present..."
+    python -m pip install -r "$COMFYUI_DIR/requirements.txt" 2>&1 | grep -E "^(Successfully|ERROR)" || true
+    echo "Migration complete — $INSTALLED user nodes processed (${NODE_COUNT} total, baked nodes skipped)"
+    if [ "$BACKED_UP" = "1" ]; then
+        echo "Old venv backed up at $VENV_BACKUP — delete it to free space:"
+        echo "  rm -rf $VENV_BACKUP"
+    fi
+fi
+
+# Setup ComfyUI if needed
+if [ ! -d "$COMFYUI_DIR" ] || [ ! -d "$VENV_DIR" ]; then
+    echo "First time setup: Copying baked ComfyUI to workspace..."
+
+    # Copy baked ComfyUI from image (no git, no network)
+    if [ ! -d "$COMFYUI_DIR" ]; then
+        cp -r /opt/comfyui-baked "$COMFYUI_DIR"
+        echo "ComfyUI copied to workspace"
+    fi
+
+    # Create venv with access to system packages (torch, numpy, etc. pre-installed in image)
+    if [ ! -d "$VENV_DIR" ]; then
+        cd "$COMFYUI_DIR"
+        # --without-pip: pip stays in the image (local disk, bytecode compiled
+        # at build) instead of on the network volume, where importing it can
+        # exceed ComfyUI-Manager's probe timeout. --system-site-packages keeps
+        # it importable, and installs still land in this venv via sys.prefix.
+        python3.12 -m venv --system-site-packages --without-pip "$VENV_DIR"
+        # shellcheck source=/dev/null
+        source "$VENV_DIR/bin/activate"
+
+        echo "Base packages (torch, numpy, etc.) available from system site-packages"
+        echo "ComfyUI ready — all dependencies pre-installed in image"
+    fi
+else
+    # Just activate the existing venv
+    # shellcheck source=/dev/null
+    source "$VENV_DIR/bin/activate"
+    echo "Using existing ComfyUI installation"
+fi
+
+create_pip_shim
+
+# Interactive sessions are started by sshd, not by this script, and the PATH
+# copied into the login files above was captured before the venv existed —
+# `python` was then missing entirely and `pip` resolved to the base interpreter.
+printf 'if [ -f "%s/bin/activate" ]; then . "%s/bin/activate"; fi\n' \
+    "$VENV_DIR" "$VENV_DIR" >> /etc/rp_environment
+
+# Warm up pip before Manager probes it. Log wall time — the Dockerfile raises
+# Manager's timeout to 30s.
+echo "Warming up pip (Manager timeout is 30s)..."
+time python -m pip --version
+
+sync_comfyui_pinned_packages
+
+log_cuda_venv_diagnostics
+
+# Start ComfyUI — keep container alive if it crashes so SSH/Jupyter remain accessible
+cd "$COMFYUI_DIR"
+
+# Array, not a string: argparse needs each flag as its own argv entry.
+COMFY_ARGS=(--listen 0.0.0.0 --port 8188 --enable-cors-header)
+
+# One array element per word, since a line may hold `--foo bar`.
+if [ -s "$ARGS_FILE" ]; then
+    while read -r word; do
+        if [ -n "$word" ]; then
+            COMFY_ARGS+=("$word")
+        fi
+    done < <(grep -v '^[[:space:]]*#' "$ARGS_FILE" | tr -s '[:space:]' '\n')
+fi
+
+echo "Starting ComfyUI with args: ${COMFY_ARGS[*]}"
+python main.py "${COMFY_ARGS[@]}" &
+COMFY_PID=$!
+
+# Distinguish a real ComfyUI crash from the pod being stopped/restarted/
+# terminated (RunPod sends SIGTERM to PID 1, which we forward to ComfyUI —
+# without the flag the crash banner would print on every normal shutdown).
+SHUTTING_DOWN=0
+trap 'SHUTTING_DOWN=1; kill $COMFY_PID 2>/dev/null' SIGTERM SIGINT
+
+COMFY_EXIT=0
+wait $COMFY_PID || COMFY_EXIT=$?
+
+if [ "$SHUTTING_DOWN" = "1" ]; then
+    echo "Pod is shutting down (stop/restart/terminate) — stopping ComfyUI, Jupyter and FileBrowser."
+    # Docker only signals PID 1; stop the nohup'd background services too so
+    # they exit cleanly instead of waiting for SIGKILL.
+    pkill -TERM -f "jupyter-lab" 2>/dev/null || true
+    pkill -TERM -x "filebrowser" 2>/dev/null || true
+    exit 0
+fi
+
+echo "============================================="
+echo "  ComfyUI exited unexpectedly (exit code $COMFY_EXIT)."
+echo "  Check the logs above for the error/traceback."
+echo "  SSH and JupyterLab are still available."
+echo "  To restart after fixing:"
+echo "    cd $COMFYUI_DIR && source .venv-cu128/bin/activate"
+echo "    python main.py ${COMFY_ARGS[*]}"
+echo "============================================="
+
+sleep infinity

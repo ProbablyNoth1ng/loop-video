@@ -1,6 +1,8 @@
 # Automatic RunPod installation
 
 Use `runpod/comfyui:1.3.3-comfyuiv0.30.0-cuda13.0` with an NVIDIA Blackwell GPU.
+The launcher fixture was extracted from image digest
+`sha256:e8505fe1ba1b39cc6a140c2f01fe8d8d47f680cc7af45662ec0d77858fba8355`.
 This installs the current BF16 workflow; its minimum GPU memory is not qualified.
 The installer does not silently substitute quantized models.
 
@@ -48,8 +50,9 @@ The installer preserves the official launcher: SSH, Jupyter, ComfyUI
 initialization and its virtual environment still run. It inserts installation
 immediately before the launch of ComfyUI, with `--cache-none` for the staged
 workflow. If the image launcher changes incompatibly, startup fails explicitly
-instead of launching a partially installed environment. This launcher adapter
-was checked against the public source and local fixtures, not a running Pod.
+instead of launching a partially installed environment. The adapter recognizes
+both the image's `COMFY_ARGS` array launch and the older `FIXED_ARGS` launch.
+The extracted image launcher is covered by local regression tests.
 
 ## Environment variables
 
@@ -91,6 +94,8 @@ Successful installation is not proof of GPU rendering or visual loop quality.
 
 When files still exist, another invocation uses the existing project/LTX revisions,
 installed dependencies and model files; it does not automatically pull upstream code.
+An existing `/workspace/ambient-loop` checkout does not automatically pull a
+published adapter fix on restart. Use a fresh Pod or update that checkout explicitly.
 A new or cleared container disk always gets a complete installation. Fast model checks
 compare recorded sizes, plus the small upscale model's checksum. They do not
 rehash all large weights on every boot. Interrupted HF downloads reuse their
@@ -102,8 +107,7 @@ Checksums, model revisions and `pip freeze` are retained under
 If setup fails, fix the issue shown in the logs and retry. Stopping the Pod clears
 the temporary files; a new boot downloads them again. Account
 access errors require fixing the token or accepting the model's terms. A failed
-installation never writes a completed models marker. No paid Pod deployment or
-cloud inference has been performed by the local checks.
+installation never writes a completed models marker.
 
 ## Manual installation
 

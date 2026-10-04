@@ -7,12 +7,21 @@ import tempfile
 
 
 def patch_start_script(source):
-    anchor = 'python main.py $FIXED_ARGS &'
-    if source.count(anchor) != 1:
+    array_launch = 'python main.py "${COMFY_ARGS[@]}" &'
+    string_launch = 'python main.py $FIXED_ARGS &'
+    lines = source.splitlines(keepends=True)
+    matches = [(index, line.strip()) for index, line in enumerate(lines)
+               if line.strip() in (array_launch, string_launch)]
+    if len(matches) != 1:
         raise RuntimeError('Unsupported official image launcher; expected one ComfyUI launch.')
     hook = ('python "${AMBIENT_INSTALLER:-$PROJECT_ROOT/cloud/install.py}" '
             '--project-root "$PROJECT_ROOT" --comfy-root "$COMFYUI_DIR" || exit $?\n')
-    return source.replace(anchor, hook + anchor.replace('$FIXED_ARGS', '$FIXED_ARGS --cache-none'))
+    index, launch = matches[0]
+    if launch == array_launch:
+        lines[index] = hook + 'COMFY_ARGS+=(--cache-none)\n' + lines[index]
+    else:
+        lines[index] = hook + lines[index].replace('$FIXED_ARGS', '$FIXED_ARGS --cache-none')
+    return ''.join(lines)
 
 
 def main():
