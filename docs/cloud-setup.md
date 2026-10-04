@@ -1,13 +1,21 @@
-# Installation and persistent storage
+# Installation and storage
 
-Perform installation once before creative work. Neither provider has a tested
+Perform installation before creative work. Neither provider has a tested
 GPU minimum yet. Use an authenticated provider gateway for ComfyUI.
 
 ## RunPod
 
-Use a ComfyUI template with persistent storage mounted at `/workspace`. Keep
-the entire ComfyUI install and project on that volume. A common template path
-is `/workspace/runpod-slim/ComfyUI`; use your actual template path.
+For automatic node/dependency/model installation on Pod creation, see
+[RunPod automatic installation](runpod-autoinstall.md). The steps below are
+the older manual path; `cloud/bootstrap.sh` alone does not download models.
+
+Use a ComfyUI template with enough container disk space for the install, models
+and outputs. A Network Volume is optional. Without one, set Volume disk to 0 GB;
+`/workspace` is an ordinary directory on the temporary container disk. A common
+template path is `/workspace/runpod-slim/ComfyUI`; use your actual template path.
+Download outputs before stopping/deleting the Pod; a cleared disk requires
+installing and downloading the models again. The automatic launcher does this
+on each fresh Pod.
 
 ```bash
 export COMFY_ROOT=/workspace/runpod-slim/ComfyUI
@@ -66,8 +74,10 @@ records include the actual upscale weight hash.
 
 ## Retained data
 
-Keep `models/`, `input/`, `output/`, user workflows and the project on persistent
-storage. Each unique candidate directory retains `raw/` (145 generated frames),
+If persistence is desired, keep `models/`, `input/`, `output/`, user workflows
+and the project on retained storage. For container-disk-only RunPod sessions,
+download the needed artifacts before stopping the Pod. Each unique candidate
+directory retains `raw/` (145 generated frames),
 `frames/` (144 playback frames), `record.json`, `loop.mp4` and `seam.mp4`.
 Each finish retains its own enhanced PNGs, record and previews. Frame hashes are
 verified before finishing; do not rename/remove frame files.

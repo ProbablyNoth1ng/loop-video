@@ -8,6 +8,9 @@ The new animation path does not require producing or accepting Workflow A.
 Import [ambient-motion.json](workflows/ambient-motion.json) after
 [cloud installation](docs/cloud-setup.md).
 
+RunPod can install all nodes, dependencies and model weights at first boot:
+see [automatic installation](docs/runpod-autoinstall.md).
+
 1. Load one anime image. Set the motion prompt and requested landmark labels in
    **Prepare and review**. Choose **local Qwen** or **manual** preparation.
 2. Click **Prepare points**. Local Qwen3-VL proposes normalized landmarks and
