@@ -26,6 +26,41 @@ class MotionTests(unittest.TestCase):
             self.assertAlmostEqual((point['y']-y)/(h-1), .5)
             require_review(p, 'abc', size, p['prompt'], 6, 24, .01, 720)
 
+    def test_canvas_and_half_resolution_guide_are_aligned(self):
+        cases = [
+            ((1312, 736), 720, [1344, 768], [30, 24, 1283, 720]),
+            ((736, 1312), 720, [768, 1344], [24, 30, 720, 1283]),
+            ((1600, 900), 720, [1280, 768], [0, 24, 1280, 720]),
+            ((1000, 1000), 720, [768, 768], [24, 24, 720, 720]),
+            ((1280, 704), 704, [1280, 704], [0, 0, 1280, 704]),
+        ]
+        for size, short_side, canvas, content in cases:
+            with self.subTest(size=size, short_side=short_side):
+                transform = canvas_transform(size, short_side)
+                self.assertEqual(transform['canvas'], canvas)
+                self.assertEqual(transform['content'], content)
+                self.assertTrue(all(dimension % 64 == 0 for dimension in canvas))
+                self.assertTrue(all((dimension // 2) % 32 == 0 for dimension in canvas))
+
+    def test_padded_canvas_keeps_normalized_tracks_and_returning_path(self):
+        plan = self.plan((1312, 736))
+        transform = plan['transform']
+        self.assertEqual(plan['landmarks'][0]['x'], .5)
+        self.assertEqual(plan['landmarks'][0]['y'], .5)
+        tracks = canvas_tracks(plan)[0]
+        self.assertEqual(tracks[0], tracks[-1])
+        self.assertAlmostEqual(tracks[0]['x'], transform['content'][0] + (transform['content'][2]-1)/2)
+        self.assertAlmostEqual(tracks[0]['y'], transform['content'][1] + (transform['content'][3]-1)/2)
+        self.assertGreater(tracks[72]['x'], tracks[0]['x'])
+
+    def test_old_reviewed_canvas_requires_new_preparation(self):
+        plan = self.plan((1312, 736))
+        plan['transform'] = {'source': [1312, 736], 'canvas': [1312, 736],
+                             'content': [14, 8, 1283, 720]}
+        plan['review'] = {'state': 'reviewed', 'fingerprint': plan_fingerprint(plan)}
+        with self.assertRaisesRegex(ValueError, 'prepare and review again'):
+            require_review(plan, 'abc', (1312, 736), plan['prompt'], 6, 24, .01, 720)
+
     def test_edits_and_motion_settings_invalidate_review(self):
         p = review_plan(self.plan())
         for key, value in [('prompt', 'new'), ('strength', .02), ('short_side', 800)]:

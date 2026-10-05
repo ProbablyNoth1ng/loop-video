@@ -35,6 +35,14 @@ lock from those results; weight file size alone cannot qualify a GPU.
 
 ## Browser checks
 
+For the Motion Track IC-LoRA guide, confirm a 1312×736 input at the default
+720 short side prepares a 1344×768 reviewed canvas and a 672×384 half-resolution
+guide. After updating the project on RunPod, restart ComfyUI, use **Prepare
+points**, inspect the paths, and click **Accept point review** again. Render and
+confirm node `9002:5012` completes and decoded frames are 1344×768. Record the
+node history and output dimensions here before marking GPU validation complete.
+Previously saved rendered candidates can still be selected for finishing.
+
 Test portrait/landscape sources, corner points/padding edges, point/path editing,
 workflow save/reopen, and trajectory alignment in tracks_preview. Test missing
 vision weights, malformed JSON, missing landmarks and out-of-bounds paths:

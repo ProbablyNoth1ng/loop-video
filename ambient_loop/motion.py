@@ -17,7 +17,7 @@ def canvas_transform(size, short_side=720):
         raise ValueError('Invalid source size or generation short side')
     scale = short_side / min(size)
     content_w, content_h = round(width * scale), round(height * scale)
-    canvas_w, canvas_h = math.ceil(content_w / 32)*32, math.ceil(content_h / 32)*32
+    canvas_w, canvas_h = math.ceil(content_w / 64)*64, math.ceil(content_h / 64)*64
     return {'source': list(size), 'canvas': [canvas_w, canvas_h],
             'content': [(canvas_w-content_w)//2, (canvas_h-content_h)//2,
                         content_w, content_h]}

@@ -42,11 +42,18 @@ candidates after restarting ComfyUI.
 
 Defaults: six seconds, 24 FPS, seed 42, generation short side near 720 pixels,
 original aspect ratio, stationary camera intent. Canvases use recorded edge
-padding to multiples of 32; exports remove that padding. Generation produces
+padding to multiples of 64, keeping the half-resolution Motion Track IC-LoRA
+guide aligned to multiples of 32; exports remove that padding. Generation produces
 145 frames, measures endpoint closure and exports 144 playback frames.
 Returning tracks do not guarantee a seamless loop. Inspect face identity,
 hair motion, background drift and seams; retry poor candidates. No automatic
 ping-pong playback is used.
+
+After updating from a version that used 32-pixel canvas alignment, run
+**Prepare points**, check the landmarks and trajectories, then click **Accept
+point review** before **Render**. Previously reviewed plans with changed canvas
+dimensions are rejected. Saved rendered candidates remain available through
+**Select saved candidate**.
 
 The [unchanged official workflow](workflows/ltx-2.5-motion-track.official.json)
 is retained for qualification. The adapted graph replaces input preparation
@@ -67,5 +74,6 @@ node --test tests/test_queue_control.mjs tests/test_stages.mjs tests/test_motion
 ```
 
 Sources: [LTX Motion Control](https://docs.ltx.io/open-source-model/feature-guides/structural-control/motion-control),
+[Motion Track IC-LoRA model card](https://huggingface.co/Lightricks/LTX-2.3-22b-IC-LoRA-Motion-Track-Control),
 [Qwen3-VL](https://huggingface.co/Qwen/Qwen3-VL-8B-Instruct),
 [Real-ESRGAN anime model](https://github.com/xinntao/Real-ESRGAN/blob/master/docs/anime_video_model.md).
