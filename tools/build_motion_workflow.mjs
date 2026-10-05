@@ -39,6 +39,7 @@ function connect(source,output,target,input,type) {
 }
 connect(2004,0,10000,0,'IMAGE');
 connect(10000,0,5014,2,'IMAGE');
+connect(10000,0,9002,4,'IMAGE');
 connect(10000,6,5014,4,'STRING');
 connect(10000,3,5014,7,'FLOAT');
 connect(10000,4,5014,8,'FLOAT');
@@ -56,8 +57,8 @@ const inputGraph=graph.definitions.subgraphs.find(s=>s.name==='Input Parameters'
 const resizeIds=new Set([4990,5562,5563]);
 inputGraph.nodes=inputGraph.nodes.filter(n=>!resizeIds.has(n.id));
 inputGraph.links=inputGraph.links.filter(l=>!resizeIds.has(l.origin_id)&&!resizeIds.has(l.target_id));
-inputGraph.links.push({id:13802,origin_id:-10,origin_slot:2,target_id:-20,target_slot:1,type:'IMAGE'});
-inputGraph.inputs[2].linkIds=[13802];
+inputGraph.outputs[1].linkIds=[];
+inputGraph.inputs[2].linkIds=[];
 inputGraph.inputs[12].linkIds=[];
 
 // Rebuild sockets so stale official links never survive the adaptation.
@@ -78,7 +79,7 @@ for(const n of graph.nodes) {
     if(n.type==='MarkdownNote') {n.pos=[(noteIndex++%4)*600,1200+Math.floor(noteIndex/4)*400];}
 }
 graph.nodes.find(n=>n.id===5527).widgets_values=[
-    '## Ambient Loop\nLoad one image. Set motion prompt and requested parts in Prepare and review.\n\nUse **Prepare points**, edit labeled points and path handles, play trajectories, then **Accept point review**.\n\nUse **Render** for the official single-stage LTX-2.5 pipeline. Inspect continuous and seam previews. Change seed for another candidate; image, prompt or motion changes require Prepare and renewed review.\n\nRefresh saved candidates, select one and optionally **Upscale**. Save the silent MP4 after reviewing flicker. Raw PNG frames and records remain beside outputs.\n\nUse these three stage buttons rather than the global Run button.'];
+    '## Ambient Loop\nLoad one image. Set motion prompt and requested parts in Prepare and review.\n\nUse **Run** to choose one stage: **Prepare points**, **Render**, or **Upscale**. Each choice queues one stage; the node stage buttons remain available.\n\nUse **Prepare points**, edit labeled points and path handles, play trajectories, then **Accept point review**.\n\nUse **Render** for the official single-stage LTX-2.5 pipeline. Inspect continuous and seam previews. Change seed for another candidate; image, prompt or motion changes require Prepare and renewed review.\n\nRefresh saved candidates, select one and optionally **Upscale**. Save the silent MP4 after reviewing flicker. Raw PNG frames and records remain beside outputs.'];
 graph.groups=[];
 graph.last_node_id=10002;graph.last_link_id=next-1;
 graph.extra={ambient_loop:{schema:1,official_sha256:crypto.createHash('sha256').update(fs.readFileSync(official)).digest('hex'),

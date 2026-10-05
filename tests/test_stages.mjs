@@ -24,3 +24,12 @@ test('Unsafe stage connections fail before queueing',()=>{
   const bad=structuredClone(graph);bad[7].inputs.candidate=['5',0];
   assert.throws(()=>stageGraph(bad,7,'upscale'));
 });
+test('Stage target has the expected output class',()=>{
+  assert.throws(()=>stageGraph(graph,5,'prepare'),/target.*AmbientMotionEditor/i);
+  assert.throws(()=>stageGraph(graph,2,'render'),/target.*AmbientSaveCandidate/i);
+  assert.throws(()=>stageGraph(graph,6,'upscale'),/target.*AmbientUpscale/i);
+});
+test('Dangling upstream references fail before queueing',()=>{
+  const bad=structuredClone(graph);bad[5].inputs.video=['99',0];
+  assert.throws(()=>stageGraph(bad,5,'render'),/missing.*99/i);
+});

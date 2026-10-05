@@ -1,13 +1,18 @@
 export function stageGraph(output, target, stage) {
     const graph = structuredClone(output);
+    const targets = {prepare:'AmbientMotionEditor', render:'AmbientSaveCandidate', upscale:'AmbientUpscale'};
+    if (!targets[stage]) throw new Error(`Unknown stage ${stage}`);
+    if (graph[String(target)]?.class_type !== targets[stage]) {
+        throw new Error(`${stage} target ${target} must be ${targets[stage]}`);
+    }
     const keep = new Set();
     function visit(id) {
         id = String(id);
         if (keep.has(id)) return;
         if (!graph[id]) throw new Error(`Missing workflow node ${id}`);
         keep.add(id);
-        for (const value of Object.values(graph[id].inputs)) {
-            if (Array.isArray(value) && value.length === 2 && graph[String(value[0])]) visit(value[0]);
+        for (const value of Object.values(graph[id].inputs ?? {})) {
+            if (Array.isArray(value) && value.length === 2 && (typeof value[0] === 'string' || typeof value[0] === 'number') && Number.isInteger(Number(value[1]))) visit(value[0]);
         }
     }
     visit(target);

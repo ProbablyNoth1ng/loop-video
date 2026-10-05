@@ -2,7 +2,7 @@
   "id": "9a4f7d20-6c18-4b53-8e91-2d70fa365c84",
   "revision": 0,
   "last_node_id": 10002,
-  "last_link_id": 14010,
+  "last_link_id": 14011,
   "nodes": [
     {
       "id": 5509,
@@ -87,7 +87,7 @@
       "title": "Inputs",
       "properties": {},
       "widgets_values": [
-        "## Ambient Loop\nLoad one image. Set motion prompt and requested parts in Prepare and review.\n\nUse **Prepare points**, edit labeled points and path handles, play trajectories, then **Accept point review**.\n\nUse **Render** for the official single-stage LTX-2.5 pipeline. Inspect continuous and seam previews. Change seed for another candidate; image, prompt or motion changes require Prepare and renewed review.\n\nRefresh saved candidates, select one and optionally **Upscale**. Save the silent MP4 after reviewing flicker. Raw PNG frames and records remain beside outputs.\n\nUse these three stage buttons rather than the global Run button."
+        "## Ambient Loop\nLoad one image. Set motion prompt and requested parts in Prepare and review.\n\nUse **Run** to choose one stage: **Prepare points**, **Render**, or **Upscale**. Each choice queues one stage; the node stage buttons remain available.\n\nUse **Prepare points**, edit labeled points and path handles, play trajectories, then **Accept point review**.\n\nUse **Render** for the official single-stage LTX-2.5 pipeline. Inspect continuous and seam previews. Change seed for another candidate; image, prompt or motion changes require Prepare and renewed review.\n\nRefresh saved candidates, select one and optionally **Upscale**. Save the silent MP4 after reviewing flicker. Raw PNG frames and records remain beside outputs."
       ],
       "color": "#432",
       "bgcolor": "#653"
@@ -210,7 +210,7 @@
           "widget": {
             "name": "noise_seed"
           },
-          "link": 14006
+          "link": 14007
         },
         {
           "label": "guider cfg",
@@ -335,7 +335,7 @@
           "label": "image",
           "name": "image",
           "type": "IMAGE",
-          "link": 13764
+          "link": 14002
         },
         {
           "label": "bypass",
@@ -380,7 +380,7 @@
           "widget": {
             "name": "tracks"
           },
-          "link": 14005
+          "link": 14006
         }
       ],
       "outputs": [
@@ -504,7 +504,7 @@
           "name": "VIDEO",
           "type": "VIDEO",
           "links": [
-            14007
+            14008
           ]
         }
       ],
@@ -571,7 +571,7 @@
           "widget": {
             "name": "value_2"
           },
-          "link": 14002
+          "link": 14003
         },
         {
           "label": "Enhance positive prompt",
@@ -598,14 +598,14 @@
           "widget": {
             "name": "value"
           },
-          "link": 14003
+          "link": 14004
         },
         {
           "label": "duration in seconds",
           "name": "value_5",
           "shape": 7,
           "type": "FLOAT",
-          "link": 14004
+          "link": 14005
         },
         {
           "label": "enhancer_seed",
@@ -654,9 +654,7 @@
           "label": "resized image",
           "name": "resized",
           "type": "IMAGE",
-          "links": [
-            13764
-          ]
+          "links": []
         },
         {
           "label": "effective_positive_prompt",
@@ -929,50 +927,51 @@
           "name": "canvas",
           "type": "IMAGE",
           "links": [
-            14001
+            14001,
+            14002
           ]
         },
         {
           "name": "tracks",
           "type": "STRING",
           "links": [
-            14005
+            14006
           ]
         },
         {
           "name": "motion_plan",
           "type": "MOTION_PLAN",
           "links": [
-            14008
+            14009
           ]
         },
         {
           "name": "fps",
           "type": "FLOAT",
           "links": [
-            14003
+            14004
           ]
         },
         {
           "name": "duration",
           "type": "FLOAT",
           "links": [
-            14004
+            14005
           ]
         },
         {
           "name": "seed",
           "type": "INT",
           "links": [
-            14006,
-            14009
+            14007,
+            14010
           ]
         },
         {
           "name": "prompt",
           "type": "STRING",
           "links": [
-            14002
+            14003
           ]
         }
       ],
@@ -1011,12 +1010,12 @@
         {
           "name": "video",
           "type": "VIDEO",
-          "link": 14007
+          "link": 14008
         },
         {
           "name": "motion_plan",
           "type": "MOTION_PLAN",
-          "link": 14008
+          "link": 14009
         },
         {
           "name": "seed",
@@ -1024,7 +1023,7 @@
           "widget": {
             "name": "seed"
           },
-          "link": 14009
+          "link": 14010
         }
       ],
       "outputs": [
@@ -1061,7 +1060,7 @@
           "name": "RENDER_HANDLE",
           "type": "RENDER_HANDLE",
           "links": [
-            14010
+            14011
           ]
         }
       ],
@@ -1090,7 +1089,7 @@
         {
           "name": "candidate",
           "type": "RENDER_HANDLE",
-          "link": 14010
+          "link": 14011
         }
       ],
       "outputs": [
@@ -1181,14 +1180,6 @@
       9002,
       3,
       "VAE"
-    ],
-    [
-      13764,
-      5014,
-      1,
-      9002,
-      4,
-      "IMAGE"
     ],
     [
       13765,
@@ -1313,13 +1304,21 @@
     [
       14002,
       10000,
+      0,
+      9002,
+      4,
+      "IMAGE"
+    ],
+    [
+      14003,
+      10000,
       6,
       5014,
       4,
       "STRING"
     ],
     [
-      14003,
+      14004,
       10000,
       3,
       5014,
@@ -1327,7 +1326,7 @@
       "FLOAT"
     ],
     [
-      14004,
+      14005,
       10000,
       4,
       5014,
@@ -1335,7 +1334,7 @@
       "FLOAT"
     ],
     [
-      14005,
+      14006,
       10000,
       1,
       9002,
@@ -1343,7 +1342,7 @@
       "STRING"
     ],
     [
-      14006,
+      14007,
       10000,
       5,
       5516,
@@ -1351,7 +1350,7 @@
       "INT"
     ],
     [
-      14007,
+      14008,
       5518,
       0,
       4852,
@@ -1359,7 +1358,7 @@
       "VIDEO"
     ],
     [
-      14008,
+      14009,
       10000,
       2,
       4852,
@@ -1367,7 +1366,7 @@
       "MOTION_PLAN"
     ],
     [
-      14009,
+      14010,
       10000,
       5,
       4852,
@@ -1375,7 +1374,7 @@
       "INT"
     ],
     [
-      14010,
+      14011,
       10001,
       0,
       10002,
@@ -2180,9 +2179,7 @@
             "id": "f08d2d6d-42a8-4dea-a0e4-9859f4a89222",
             "name": "input",
             "type": "IMAGE,MASK",
-            "linkIds": [
-              13802
-            ],
+            "linkIds": [],
             "localized_name": "input",
             "label": "image",
             "pos": [
@@ -2348,9 +2345,7 @@
             "id": "15da5d9f-f888-4ef4-8c25-0250bc179854",
             "name": "resized",
             "type": "IMAGE",
-            "linkIds": [
-              13802
-            ],
+            "linkIds": [],
             "localized_name": "resized",
             "label": "resized image",
             "pos": [
@@ -3871,14 +3866,6 @@
             "target_id": -20,
             "target_slot": 5,
             "type": "*"
-          },
-          {
-            "id": 13802,
-            "origin_id": -10,
-            "origin_slot": 2,
-            "target_id": -20,
-            "target_slot": 1,
-            "type": "IMAGE"
           }
         ],
         "reroutes": [

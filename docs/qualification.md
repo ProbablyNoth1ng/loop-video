@@ -44,7 +44,47 @@ ComfyUI restart. Inspect `/prompt` requests: Prepare contains no generation;
 Render contains no Upscale; Upscale contains no generation.
 
 Verify the current frontend's flattened subgraph API export. The adapted Input
-Parameters passes the already transformed canvas directly to its image output.
+Parameters no longer connects its image input directly to its `resized` output.
+The already transformed editor canvas feeds the top-level Preprocess image input
+without another resize. Capture `graphToPrompt()` output on the deployed frontend
+before claiming this conversion is qualified.
+
+## 2026-10-04 local staged-point implementation evidence
+
+- `node --test tests/test_stages.mjs tests/test_motion_workflow.mjs tests/test_editor_geometry.mjs`: 14 passed, including portrait/landscape image and CSS letterbox coordinate mapping.
+- `python -m unittest tests.test_stages -v`: 4 passed.
+- `python -m unittest discover -s tests -v`: 41 passed.
+- Local browser fixture at `127.0.0.1:8766`: manual Prepare displayed an empty
+  plan and Add point created a numbered row with normalized coordinates. A Qwen
+  sample event displayed four labeled rows; selecting the first row populated
+  its label and path controls. Disabling that point changed its row, and the
+  state survived simulated reopen. A Qwen failure event showed explicit
+  feedback, an empty list, and disabled review. An invalid Prepare event after
+  a reviewed plan cleared the old plan and blocked Render. This fixture
+  simulates queueing and does not run
+  ComfyUI's `graphToPrompt()`.
+- The pod was terminated, so deployed checks were deferred at the user's
+  request. The workflow conversion, `/prompt` payloads, 2752 × 1536 image run,
+  73-frame render, Qwen model inference, save/reopen in ComfyUI, and GPU preview
+  remain unverified. The frontend now logs stage, target ID, selected node
+  IDs/classes and error stack without logging image bytes or prompt text, for
+  that run.
+
+## 2026-10-05 global Run interception evidence
+
+- `node --test tests/test_queue_control.mjs tests/test_stages.mjs
+  tests/test_motion_workflow.mjs tests/test_editor_geometry.mjs`: 23 passed.
+  The checks cover cancellation before conversion, unchanged ordinary and
+  partial queues, one auto-queue notice per graph, isolated-stage guards, and
+  trailing API queue arguments.
+- The local fixture served the updated main Run controls and
+  `queue_control.mjs` over HTTP. It remains a simulated queue fixture and has
+  not qualified dialog focus, keyboard Escape, or the installed ComfyUI
+  frontend's `app.queuePrompt` signature.
+- No installed ComfyUI frontend was present in this checkout or user profile.
+  Deployed verification still needs to confirm main Run and the keyboard queue
+  entry point, the current third-argument form, no `/prompt` request before a
+  stage is chosen, and normal-workflow queueing.
 
 ## Real anime pilot
 

@@ -26,6 +26,20 @@ class StageTests(unittest.TestCase):
         self.assertEqual(plan['landmarks'],[])
         self.assertIn('Missing hair tip',plan['feedback'][0])
         self.assertEqual(plan['review']['state'],'pending')
+        self.assertEqual(result['ui']['motion_plan'][0], plan)
+        self.assertTrue(result['ui']['bg_image'][0])
+
+    def test_manual_prepare_exposes_the_same_plan_in_ui_and_result(self):
+        import numpy as np
+        image = np.zeros((1,100,80,3),dtype=np.float32)
+        with patch('ambient_loop.staged_comfy.image_array',return_value=image[0].astype(np.uint8)), \
+             patch('ambient_loop.staged_comfy.canvas_image',return_value=image):
+            result = AmbientMotionEditor().execute(image,'hair','hair tip',3,24,.01,720,
+                         42,'Qwen3-VL-8B-Instruct','manual','{}','prepare')
+        self.assertEqual(result['ui']['motion_plan'][0], result['result'][2])
+        self.assertEqual(result['result'][2]['frames'],73)
+        self.assertEqual(result['result'][2]['landmarks'],[])
+        self.assertTrue(result['ui']['bg_image'][0])
 
     def test_render_never_analyzes_and_stale_review_fails(self):
         import numpy as np

@@ -28,6 +28,20 @@ test('Preparation uses original image and saved selection has no generation link
 test('Recorded canvas bypasses official resizes',()=>{
   const input=adapted.definitions.subgraphs.find(s=>s.name==='Input Parameters');
   assert.equal(input.nodes.some(n=>n.type==='ResizeImageMaskNode'),false);
-  const link=input.links.find(l=>l.target_id===-20&&l.target_slot===1);
-  assert.equal(link.origin_id,-10);assert.equal(link.origin_slot,2);
+  // The frontend cannot flatten a subgraph input wired straight to its output.
+  assert.equal(input.links.some(l=>l.target_id===-20&&l.target_slot===1),false);
+  const consumer=adapted.nodes.find(n=>n.id===9002);
+  const link=adapted.links.find(l=>l[0]===consumer.inputs[4].link);
+  assert.deepEqual(link.slice(1,5),[10000,0,9002,4]);
+});
+test('Render saver retains Input Parameters and generation ancestors',()=>{
+  const reached=new Set();
+  function visit(id) {
+    if(reached.has(id))return;
+    reached.add(id);
+    for(const link of adapted.links.filter(l=>l[3]===id))visit(link[1]);
+  }
+  visit(4852);
+  for(const id of [2004,10000,5014,9002,5516,5518,4852])assert.ok(reached.has(id),`missing ${id}`);
+  assert.equal(reached.has(10002),false);
 });
