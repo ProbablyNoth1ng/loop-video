@@ -4,7 +4,7 @@ import unittest
 
 from ambient_loop.motion import (new_plan, parse_landmarks, validate_plan,
                                  review_plan, require_review, canvas_transform,
-                                 canvas_tracks, plan_fingerprint)
+                                 canvas_tracks, plan_fingerprint, legacy_plan_fingerprint)
 
 
 class MotionTests(unittest.TestCase):
@@ -61,16 +61,57 @@ class MotionTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'prepare and review again'):
             require_review(plan, 'abc', (1312, 736), plan['prompt'], 6, 24, .01, 720)
 
-    def test_edits_and_motion_settings_invalidate_review(self):
+    def test_reuse_updates_render_context_and_scales_strength_without_changing_points(self):
         p = review_plan(self.plan())
-        for key, value in [('prompt', 'new'), ('strength', .02), ('short_side', 800)]:
-            edited = copy.deepcopy(p)
-            edited[key] = value
-            with self.assertRaisesRegex(ValueError, 'review'):
-                require_review(edited, 'abc', (600, 1000), edited['prompt'], 6, 24,
-                               edited['strength'], edited['short_side'])
+        points = copy.deepcopy(p['landmarks'])
+        require_review(p, 'new image', (1000, 600), 'new prompt', 3, 24, .02, 800)
+        self.assertEqual(p['landmarks'], points)
+        self.assertEqual(p['source_id'], 'new image')
+        self.assertEqual(p['prompt'], 'new prompt')
+        self.assertEqual(p['frames'], 73)
+        self.assertEqual(p['transform'], canvas_transform((1000, 600), 800))
+        track = canvas_tracks(p)[0]
+        self.assertAlmostEqual((track[36]['x']-track[0]['x'])/(p['transform']['content'][2]-1), .02)
+        self.assertEqual(track[0], track[-1])
+        require_review(p, 'third image', (600, 1000), 'third prompt', 6, 24, .005, 720)
+        track = canvas_tracks(p)[0]
+        self.assertAlmostEqual((track[72]['x']-track[0]['x'])/(p['transform']['content'][2]-1), .005)
+        self.assertEqual(p['landmarks'], points)
+
+    def test_point_edits_and_altered_review_are_rejected(self):
+        p = review_plan(self.plan())
         p['landmarks'][0]['path'][1]['x'] += .001
         self.assertNotEqual(p['review']['fingerprint'], plan_fingerprint(p))
+        with self.assertRaisesRegex(ValueError, 'review'):
+            require_review(p, 'abc', (600, 1000), 'new', 6, 24, .01, 720)
+        p = review_plan(self.plan())
+        p['review']['strength_reference'] = .02
+        with self.assertRaisesRegex(ValueError, 'review'):
+            require_review(p, 'abc', (600, 1000), 'new', 6, 24, .01, 720)
+
+    def test_legacy_accepted_plan_is_upgraded_on_reuse(self):
+        p = self.plan()
+        p['review'] = {'state': 'reviewed', 'fingerprint': legacy_plan_fingerprint(p)}
+        reopened = json.loads(json.dumps(p))
+        require_review(reopened, 'new image', (900, 600), 'new prompt', 3, 24, .02, 800)
+        self.assertEqual(reopened['review']['strength_reference'], .01)
+        self.assertEqual(reopened['review']['fingerprint'], plan_fingerprint(reopened))
+        self.assertEqual(reopened['landmarks'], p['landmarks'])
+        self.assertGreater(canvas_tracks(reopened)[0][36]['x'], canvas_tracks(reopened)[0][0]['x'])
+
+    def test_anchor_stays_still_when_strength_changes(self):
+        p = review_plan(new_plan('abc', (600, 1000), 'hair', ['auto'], [
+            {'label': 'eye', 'x': .4, 'y': .3, 'body_part': 'face',
+             'motion_role': 'anchor', 'reason': 'stay still'}]))
+        require_review(p, 'new', (900, 600), 'new', 3, 24, .05, 800)
+        self.assertTrue(all(key == canvas_tracks(p)[0][0] for key in canvas_tracks(p)[0]))
+
+    def test_strength_scaling_keeps_tracks_inside_image_near_edge(self):
+        p = review_plan(new_plan('abc', (600, 1000), 'hair', ['auto'],
+                                 [{'label': 'tip', 'x': .995, 'y': .4}]))
+        require_review(p, 'new', (900, 600), 'new', 6, 24, .1, 720)
+        x, _, width, _ = p['transform']['content']
+        self.assertTrue(all(x <= key['x'] <= x + width - 1 for key in canvas_tracks(p)[0]))
 
     def test_invalid_suggestions_and_paths_are_actionable(self):
         for raw in ['nonsense', '{"landmarks":[]}',

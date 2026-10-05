@@ -95,10 +95,8 @@ class AmbientMotionEditor:
             except json.JSONDecodeError as error:
                 raise ValueError('Invalid saved plan; Prepare and review points') from error
             require_review(plan,identity,source.size,motion_prompt,duration,fps,strength,short_side)
-            if plan['requested'] != requested:
-                raise ValueError('Requested landmarks changed; prepare and review points again')
-            if 'analysis' in plan and plan['analysis'] != analysis:
-                raise ValueError('Analysis settings changed; prepare and review points again')
+            plan['requested'] = requested
+            plan['analysis'] = analysis
         else:
             raise ValueError('Choose Prepare or Render')
         canvas = canvas_image(source,plan['transform'])

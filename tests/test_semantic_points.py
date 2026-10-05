@@ -41,7 +41,7 @@ class SemanticPointTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             parse_landmarks(raw, ['auto'], require_semantics=True)
 
-    def test_analysis_and_semantic_edits_invalidate_review(self):
+    def test_semantic_edits_invalidate_review_but_analysis_context_can_change(self):
         point = dict(label='tip', x=.3, y=.4, motion_role='move', body_part='hair', reason='sway')
         plan = review_plan(new_plan('abc', (600,1000), 'hair', ['auto'], [point],
                                    analysis={'preparation':'local Qwen3.5','model_path':'snapshot'}))
@@ -51,8 +51,7 @@ class SemanticPointTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 require_review(edited, 'abc', (600,1000), 'hair', 6,24,.01,720)
         plan['analysis']['model_path'] = 'other'
-        with self.assertRaisesRegex(ValueError, 'review'):
-            require_review(plan, 'abc', (600,1000), 'hair', 6,24,.01,720)
+        require_review(plan, 'abc', (600,1000), 'hair', 6,24,.01,720)
 
     def test_anchor_cannot_carry_a_moving_path(self):
         from ambient_loop.motion import validate_plan

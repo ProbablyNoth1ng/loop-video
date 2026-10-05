@@ -9,7 +9,7 @@ from ambient_loop.staged_comfy import AmbientMotionEditor, AmbientSavedCandidate
 
 
 class StageTests(unittest.TestCase):
-    def test_new_qwen_choice_keeps_widget_order_and_review_tracks_analysis_settings(self):
+    def test_new_qwen_choice_keeps_widget_order_and_reuses_review_across_analysis_settings(self):
         import numpy as np
         from ambient_loop.motion import review_plan
         image = np.zeros((1,100,80,3),dtype=np.float32)
@@ -25,9 +25,12 @@ class StageTests(unittest.TestCase):
             self.assertEqual(prepared['analysis'], {'preparation':'local Qwen3.5','model_path':'models/Qwen3.5-9B'})
             reviewed = json.dumps(review_plan(prepared))
             for model, mode in [('other','local Qwen3.5'),('models/Qwen3.5-9B','manual')]:
-                with self.assertRaisesRegex(ValueError, 'review'):
-                    AmbientMotionEditor().execute(image,'hair','auto',6,24,.01,720,
-                         42,model,mode,reviewed,'render')
+                rendered = AmbientMotionEditor().execute(image,'new prompt','head',3,24,.02,800,
+                     43,model,mode,reviewed,'render')['result'][2]
+                self.assertEqual(rendered['analysis'], {'preparation':mode,'model_path':model})
+                self.assertEqual(rendered['requested'], ['head'])
+                self.assertEqual(rendered['prompt'], 'new prompt')
+                self.assertEqual(rendered['landmarks'], prepared['landmarks'])
 
     def test_qwen35_partial_feedback_and_load_failure_leave_manual_editor_available(self):
         import numpy as np
@@ -102,6 +105,20 @@ class StageTests(unittest.TestCase):
         self.assertEqual(result['result'][2]['frames'],73)
         self.assertEqual(result['result'][2]['landmarks'],[])
         self.assertTrue(result['ui']['bg_image'][0])
+
+    def test_manual_accepted_points_render_on_new_image(self):
+        import numpy as np
+        from ambient_loop.motion import new_plan, review_plan
+        old = review_plan(new_plan('old', (80, 100), 'old prompt', ['tip'],
+                    [{'label':'tip','x':.25,'y':.4}], 6, 24, .01, 720))
+        image = np.zeros((1,60,90,3), dtype=np.float32)
+        with patch('ambient_loop.staged_comfy.canvas_image', return_value=image):
+            rendered = AmbientMotionEditor().execute(image, 'new prompt', 'head', 3, 24,
+                .02, 800, 99, 'unused', 'manual', json.dumps(old), 'render')['result'][2]
+        self.assertEqual(rendered['landmarks'], old['landmarks'])
+        self.assertEqual(rendered['source_size'], [90,60])
+        self.assertEqual(rendered['analysis']['preparation'], 'manual')
+        self.assertEqual(rendered['review']['state'], 'reviewed')
 
     def test_render_never_analyzes_and_stale_review_fails(self):
         import numpy as np

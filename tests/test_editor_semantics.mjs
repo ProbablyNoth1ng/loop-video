@@ -9,13 +9,13 @@ class Element {
   setAttribute(name,value) {this[name]=value;}
   setPointerCapture() {}
   getBoundingClientRect() {return{left:0,top:0,width:480,height:300};}
-  getContext() {return new Proxy({}, {get:()=>()=>{},set:()=>true});}
+  getContext() {return new Proxy({}, {get:(_,name)=>name==='drawImage'?(image=>{this.drawnImage=image;}):()=>{},set:()=>true});}
 }
 const descendants=root=>[root,...root.children.flatMap(descendants)];
 let instance=0;
 async function fixture() {
   globalThis.document={createElement:tag=>new Element(tag),body:new Element('body')};
-  globalThis.Image=class {naturalWidth=600;naturalHeight=900;set src(value){this.onload?.();}};
+  globalThis.Image=class {naturalWidth=600;naturalHeight=900;set src(value){this.source=value;this.onload?.();}};
   const values={motion_prompt:'Hair sway. Face still.',requested_parts:'auto',duration:6,fps:24,strength:.01,
     short_side:720,seed:42,vision_model:'models/Qwen3-VL-8B-Instruct',preparation:'local Qwen3.5',plan_json:'{}',stage:'render'};
   const node={id:2,type:'AmbientMotionEditor',size:[520,300],properties:{},
@@ -75,12 +75,23 @@ test('dense landmarks select nearest dot, edit roles and retain semantic edits o
   assert.equal(f.plan().review.state,'pending');
 });
 
-test('analysis changes stale accepted review and prevent accepting against obsolete settings',async()=>{
+test('render settings and source image retain accepted points while point edits clear acceptance',async()=>{
   const f=await fixture();await f.button('Accept point review').onclick();
   assert.equal(f.plan().review.state,'reviewed');
+  const original=JSON.stringify(f.plan().landmarks);
   f.widget('vision_model').value='other';f.widget('vision_model').callback?.('other');
-  assert.equal(f.plan().review.state,'pending');
-  await f.button('Accept point review').onclick();
+  f.widget('motion_prompt').value='New prompt';f.widget('motion_prompt').callback?.('New prompt');
+  f.widget('strength').value=.02;f.widget('strength').callback?.(.02);
+  f.app.graph._nodes[0].widgets[0].value='new.png';
+  f.app.graph._nodes[0].widgets[0].callback?.('new.png');
+  assert.match(f.elements().find(el=>el.tag==='canvas').drawnImage.source,/new.png/);
+  assert.equal(f.plan().review.state,'reviewed');
+  assert.equal(JSON.stringify(f.plan().landmarks),original);
+  f.widget('plan_json').value='{}';f.node.onConfigure();
+  assert.equal(f.plan().review.state,'reviewed');
+  assert.equal(JSON.stringify(f.plan().landmarks),original);
   assert.equal(f.requests.length,1);
-  assert.ok(f.elements().some(el=>String(el.textContent??'').includes('Analysis settings changed')));
+  f.elements().find(el=>el['aria-label']==='Select landmark 1: hair 0').onclick();
+  f.control('Body part').value='face';f.control('Body part').oninput();
+  assert.equal(f.plan().review.state,'pending');
 });

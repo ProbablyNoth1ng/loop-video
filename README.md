@@ -31,8 +31,11 @@ see [automatic installation](docs/runpod-autoinstall.md).
    point review** before rendering.
 4. Click **Render** for the official LTX-2.5 single-stage Motion Track pipeline.
    Continuous and forward seam previews play automatically in **Render preview**. Change
-   seed for another candidate. Image, prompt, timing, motion strength, canvas or
-   point or analysis-setting changes invalidate review. After setting changes, Prepare again.
+   seed for another candidate. Accepted points remain available when you change
+   the image, prompt, requested parts, Qwen settings, timing, Strength or canvas.
+   They keep their relative positions on a new image; inspect and adjust them if
+   the composition differs. Editing a point or path requires point review again.
+   **Prepare points** explicitly replaces the saved set with a fresh proposal.
 5. The last completed render is automatically selected in **Select saved candidate**.
    Choose another original render in its dropdown to preview it automatically.
    Optionally click **Upscale** for 1080p/1440p/4K (1440p remains the default).
@@ -46,7 +49,8 @@ Use **Run** to choose exactly one Ambient Loop stage: **Prepare points**,
 Run's batch count. The node stage buttons remain available. Preparing points
 cannot queue generation; Upscale has only the saved-candidate branch upstream.
 Save the workflow after editing: plans live in its serialized editor widget and
-metadata. Render records live in `ComfyUI/output/ambient-loop/`. Saved candidates
+metadata. Reopening retains accepted points, and Render upgrades older accepted
+plans for reuse. Render records live in `ComfyUI/output/ambient-loop/`. Saved candidates
 load automatically after reopening; **Refresh candidates** reloads the list.
 
 Defaults: six seconds, 24 FPS, seed 42, generation short side near 720 pixels,
@@ -60,8 +64,8 @@ ping-pong playback is used.
 
 After updating from a version that used 32-pixel canvas alignment, run
 **Prepare points**, check the landmarks and trajectories, then click **Accept
-point review** before **Render**. Previously reviewed plans with changed canvas
-dimensions are rejected. Saved rendered candidates remain available through
+point review** before **Render**. Plans with obsolete canvas transforms still
+need fresh preparation. Saved rendered candidates remain available through
 **Select saved candidate**.
 
 The [unchanged official workflow](workflows/ltx-2.5-motion-track.official.json)

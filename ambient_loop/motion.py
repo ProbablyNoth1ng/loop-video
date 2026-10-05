@@ -6,6 +6,13 @@ import math
 
 
 def plan_fingerprint(plan):
+    data = {'landmarks': plan['landmarks'],
+            'strength_reference': plan.get('review', {}).get('strength_reference')}
+    return hashlib.sha256(json.dumps(data, sort_keys=True, separators=(',', ':'),
+                                    allow_nan=False).encode()).hexdigest()
+
+
+def legacy_plan_fingerprint(plan):
     data = {k: v for k, v in plan.items() if k not in ('review', 'feedback')}
     return hashlib.sha256(json.dumps(data, sort_keys=True, separators=(',', ':'),
                                     allow_nan=False).encode()).hexdigest()
@@ -114,16 +121,32 @@ def review_plan(plan):
     plan = copy.deepcopy(validate_plan(plan))
     if not any(p['enabled'] for p in plan['landmarks']):
         raise ValueError('Add or enable at least one landmark before review')
-    plan['review'] = {'state': 'reviewed', 'fingerprint': plan_fingerprint(plan)}
+    plan['review'] = {'state': 'reviewed', 'strength_reference': plan['strength']}
+    plan['review']['fingerprint'] = plan_fingerprint(plan)
     return plan
 
 
 def require_review(plan, identity, size, prompt, duration, fps, strength, short_side):
     validate_plan(plan)
-    expected = (identity, list(size), prompt, float(duration), int(fps), float(strength), int(short_side))
-    actual = tuple(plan[k] for k in ('source_id','source_size','prompt','duration','fps','strength','short_side'))
-    if actual != expected or plan.get('review', {}).get('state') != 'reviewed' or plan['review'].get('fingerprint') != plan_fingerprint(plan):
-        raise ValueError('Image, prompt, settings or points changed; renewed point review required')
+    review = plan.get('review', {})
+    reference = review.get('strength_reference')
+    if (review.get('state') != 'reviewed' or
+            (reference is not None and (isinstance(reference, bool) or not isinstance(reference, (int, float))
+                                        or not math.isfinite(reference) or not 0 <= reference <= .1))):
+        raise ValueError('Points changed; renewed point review required')
+    if reference is None:
+        if review.get('fingerprint') != legacy_plan_fingerprint(plan):
+            raise ValueError('Points changed; renewed point review required')
+        review['strength_reference'] = plan['strength']
+        review['fingerprint'] = plan_fingerprint(plan)
+    elif review.get('fingerprint') != plan_fingerprint(plan):
+        raise ValueError('Points changed; renewed point review required')
+    plan.update(source_id=identity, source_size=list(size), prompt=prompt,
+                duration=float(duration), fps=int(fps), strength=float(strength),
+                short_side=int(short_side), frames=frame_count(duration, fps),
+                transform=canvas_transform(size, short_side))
+    validate_plan(plan)
+    return plan
 
 
 def parse_landmarks(raw, requested, feedback=None, require_semantics=False):
@@ -170,6 +193,8 @@ def parse_landmarks(raw, requested, feedback=None, require_semantics=False):
 
 def canvas_tracks(plan):
     validate_plan(plan)
+    reference = plan.get('review', {}).get('strength_reference', plan['strength'])
+    scale = plan['strength'] / reference if reference else 0
     ox, oy, width, height = plan['transform']['content']
     tracks = []
     for point in plan['landmarks']:
@@ -182,7 +207,8 @@ def canvas_tracks(plan):
                 segment += 1
             a, b = path[segment:segment+2]
             u = (t-a['t'])/(b['t']-a['t'])
-            values = {axis: point[axis]+((a[axis]+(b[axis]-a[axis])*u)-point[axis])*point['strength']
+            values = {axis: max(0, min(1, point[axis]+((a[axis]+(b[axis]-a[axis])*u)-point[axis])
+                                       *point['strength']*scale))
                       for axis in ('x','y')}
             track.append({'x': ox+values['x']*(width-1), 'y': oy+values['y']*(height-1)})
         tracks.append(track)

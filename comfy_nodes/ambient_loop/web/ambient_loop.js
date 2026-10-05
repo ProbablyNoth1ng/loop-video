@@ -134,18 +134,6 @@ function checkSettings(node) {
     if(!node)throw new Error('Load the motion editor first.');
     const p=JSON.parse(widget(node,'plan_json').value);
     if(p.schema!=='ambient-motion-plan/1')throw new Error('Prepare a valid motion plan before Render.');
-    for(const [key,name] of [['prompt','motion_prompt'],['duration','duration'],['fps','fps'],['strength','strength'],['short_side','short_side']]) {
-        if(p[key]!==widget(node,name).value)throw new Error('Motion settings changed. Prepare again, edit points and review.');
-    }
-    const requested=widget(node,'requested_parts').value.split(',').map(v=>v.trim()).filter(Boolean);
-    if(JSON.stringify(p.requested)!==JSON.stringify(requested))throw new Error('Requested parts changed. Prepare and review again.');
-    if(p.analysis && (p.analysis.preparation!==widget(node,'preparation').value ||
-        p.analysis.model_path!==widget(node,'vision_model').value)) {
-        throw new Error('Analysis settings changed. Prepare and review again.');
-    }
-    if(widget(find('LoadImage')??{},'image')?.value!==node.properties.ambient_source_image) {
-        throw new Error('Source image changed. Prepare and review points again.');
-    }
     return p;
 }
 
@@ -255,9 +243,16 @@ function editor(node) {
         control.callback=function(){changed?.apply(this,arguments);
             if(name==='preparation')populateModelPath();
             const p=plan();if(!validPlan(p))return;
-            p.review={state:'pending'};widget(node,'plan_json').value=JSON.stringify(p);persist(p);
-            status.textContent='Settings changed. Prepare and review points again.';
-            renderList();app.graph.setDirtyCanvas(true,true);
+            status.textContent='Settings changed. Saved points will be reused at Render.';
+            draw();app.graph.setDirtyCanvas(true,true);
+        };
+    }
+    const imageWidget=widget(find('LoadImage')??{},'image');
+    if(imageWidget) {
+        const changed=imageWidget.callback;
+        imageWidget.callback=function(){changed?.apply(this,arguments);
+            background.src=api.apiURL('/view?'+new URLSearchParams({filename:this.value,type:'input'}));
+            status.textContent='Image changed. Saved points are shown at their relative positions.';
         };
     }
     function selection(p) {
@@ -318,12 +313,15 @@ function editor(node) {
         ctx.drawImage(background,rect.x,rect.y,rect.w,rect.h);
         const p=plan();
         if(!validPlan(p))return;
+        const reference=p.review?.strength_reference??p.strength;
+        const scale=reference?Number(widget(node,'strength').value)/reference:0;
         for(const [index,point] of (p.landmarks??[]).entries()) {
             const project=(x,y)=>[rect.x+x*rect.w,rect.y+y*rect.h];
             ctx.strokeStyle=color(point);ctx.fillStyle=color(point);
             ctx.globalAlpha=1;ctx.beginPath();
             for(const [k,key] of point.path.entries()) {
-                const xy=project(point.x+(key.x-point.x)*point.strength,point.y+(key.y-point.y)*point.strength);
+                const xy=project(Math.max(0,Math.min(1,point.x+(key.x-point.x)*point.strength*scale)),
+                    Math.max(0,Math.min(1,point.y+(key.y-point.y)*point.strength*scale)));
                 if(k===0)ctx.moveTo(...xy);else ctx.lineTo(...xy);
             }
             ctx.stroke();
@@ -404,7 +402,7 @@ function editor(node) {
     button(tools,'Delete',()=>{const p=plan();if(selected<0)return;p.landmarks.splice(selected,1);selected=-1;save(p);selection(p);});
     button(tools,'Play paths',()=>{
         if(timer){clearInterval(timer);timer=null;return;}
-        timer=setInterval(()=>{timeline.value=(Number(timeline.value)+.05/(plan().duration||6))%1;draw();},50);
+        timer=setInterval(()=>{timeline.value=(Number(timeline.value)+.05/(Number(widget(node,'duration').value)||6))%1;draw();},50);
     });
     button(controls,'Prepare points',()=>queue('prepare',node,status));
     reviewButton=button(controls,'Accept point review',async()=>{
