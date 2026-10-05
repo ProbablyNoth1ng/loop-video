@@ -1,0 +1,86 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+
+class Element {
+  constructor(tag) {this.tag=tag;this.style={};this.children=[];this.value='';this.checked=false;}
+  append(child) {this.children.push(child);if(this.tag==='select'&&this.children.length===1)this.value=String(child.value??'');}
+  replaceChildren() {this.children=[];this.value='';}
+  setAttribute(name,value) {this[name]=value;}
+  setPointerCapture() {}
+  getBoundingClientRect() {return{left:0,top:0,width:480,height:300};}
+  getContext() {return new Proxy({}, {get:()=>()=>{},set:()=>true});}
+}
+const descendants=root=>[root,...root.children.flatMap(descendants)];
+let instance=0;
+async function fixture() {
+  globalThis.document={createElement:tag=>new Element(tag),body:new Element('body')};
+  globalThis.Image=class {naturalWidth=600;naturalHeight=900;set src(value){this.onload?.();}};
+  const values={motion_prompt:'Hair sway. Face still.',requested_parts:'auto',duration:6,fps:24,strength:.01,
+    short_side:720,seed:42,vision_model:'models/Qwen3-VL-8B-Instruct',preparation:'local Qwen3.5',plan_json:'{}',stage:'render'};
+  const node={id:2,type:'AmbientMotionEditor',size:[520,300],properties:{},
+    widgets:Object.entries(values).map(([name,value])=>({name,value})),
+    addDOMWidget(name,type,root){this.root=root;return{};},setSize(size){this.size=size;}};
+  const load={id:1,type:'LoadImage',widgets:[{name:'image',value:'source.png'}]};
+  const app={graph:{_nodes:[load,node],extra:{},setDirtyCanvas(){}},registerExtension(extension){this.extension=extension;}};
+  const requests=[];
+  const api={apiURL:path=>path,fetchApi:async(path,options)=>{requests.push(path);return{ok:true,json:async()=>({...JSON.parse(options.body),review:{state:'reviewed'}})};}};
+  globalThis.ambientEditorFixture={app,api};
+  const source=await readFile(new URL('../comfy_nodes/ambient_loop/web/ambient_loop.js',import.meta.url),'utf8');
+  const modified=source.replace(/import \{ app \}[^\n]+\nimport \{ api \}[^\n]+/,'const {app,api}=globalThis.ambientEditorFixture;')
+    .replace(/from '(\.\/[^']+)'/g,(_,path)=>`from '${new URL('../comfy_nodes/ambient_loop/web/'+path,import.meta.url).href}'`);
+  await import('data:text/javascript;base64,'+Buffer.from(modified+`\n// editor fixture ${instance++}`).toString('base64'));
+  app.extension.nodeCreated(node);
+  const widget=name=>node.widgets.find(w=>w.name===name);
+  const plan=()=>JSON.parse(widget('plan_json').value);
+  const points=Array.from({length:24},(_,i)=>({label:`hair ${i}`,x:.2+i*.005,y:.4,
+    body_part:'hair',motion_role:'move',reason:'Requested hair sway',enabled:true,strength:1,
+    path:[{t:0,x:.2+i*.005,y:.4},{t:.5,x:.21+i*.005,y:.4},{t:1,x:.2+i*.005,y:.4}]}));
+  points[23]={...points[23],label:'eye',motion_role:'anchor',body_part:'face',reason:'Face still'};
+  points[23].path=points[23].path.map(k=>({...k,x:points[23].x}));
+  node.onExecuted({motion_plan:[{schema:'ambient-motion-plan/1',source_size:[600,900],transform:{canvas:[768,1088]},
+    frames:145,prompt:values.motion_prompt,requested:['auto'],duration:6,fps:24,strength:.01,short_side:720,
+    analysis:{preparation:'local Qwen3.5',model_path:'models/Qwen3.5-9B'},landmarks:points,review:{state:'pending'}}],bg_image:['fixture']});
+  return{node,app,widget,plan,requests,elements:()=>descendants(node.root),
+    button:text=>descendants(node.root).find(el=>el.tag==='button'&&el.textContent===text),
+    control:title=>descendants(node.root).find(el=>el.title===title)};
+}
+
+test('Qwen preparation populates bundled paths while preserving custom and serialized paths',async()=>{
+  const f=await fixture();assert.equal(f.widget('vision_model').value,'models/Qwen3.5-9B');
+  const mode=f.widget('preparation');mode.value='local Qwen';mode.callback?.(mode.value);
+  assert.equal(f.widget('vision_model').value,'models/Qwen3-VL-8B-Instruct');
+  f.widget('vision_model').value='/custom/snapshot';mode.value='local Qwen3.5';mode.callback?.(mode.value);
+  assert.equal(f.widget('vision_model').value,'/custom/snapshot');
+  f.node.onConfigure();assert.equal(f.widget('vision_model').value,'/custom/snapshot');
+});
+
+test('dense landmarks select nearest dot, edit roles and retain semantic edits on reopen',async()=>{
+  const f=await fixture();
+  const rows=f.elements().filter(el=>String(el['aria-label']??'').startsWith('Select landmark'));
+  assert.equal(rows.length,24);
+  assert.notEqual(rows[0].style.color,rows[23].style.color);
+  const canvas=f.elements().find(el=>el.tag==='canvas');
+  // Image is 200x300 at x=140. Neighbors are one pixel apart; select exact point 18.
+  canvas.onpointerdown({clientX:140+(.2+18*.005)*200,clientY:120,pointerId:1});
+  assert.equal(f.elements().find(el=>el.placeholder==='Point label').value,'hair 18');
+  const role=f.control('Motion role');assert.ok(role);role.value='anchor';role.onchange();
+  assert.equal(f.plan().landmarks[18].motion_role,'anchor');
+  assert.ok(f.plan().landmarks[18].path.every(k=>Math.abs(k.x-.29)<1e-10&&k.y===.4));
+  const body=f.control('Body part');body.value='face';body.oninput();
+  const reason=f.control('Role reason');reason.value='Keep the eyebrow stationary';reason.oninput();
+  const serialized=JSON.stringify(f.plan());f.widget('plan_json').value='{}';f.node.onConfigure();
+  assert.equal(JSON.stringify(f.plan()),serialized);
+  assert.equal(f.plan().landmarks[18].reason,'Keep the eyebrow stationary');
+  assert.equal(f.plan().review.state,'pending');
+});
+
+test('analysis changes stale accepted review and prevent accepting against obsolete settings',async()=>{
+  const f=await fixture();await f.button('Accept point review').onclick();
+  assert.equal(f.plan().review.state,'reviewed');
+  f.widget('vision_model').value='other';f.widget('vision_model').callback?.('other');
+  assert.equal(f.plan().review.state,'pending');
+  await f.button('Accept point review').onclick();
+  assert.equal(f.requests.length,1);
+  assert.ok(f.elements().some(el=>String(el.textContent??'').includes('Analysis settings changed')));
+});

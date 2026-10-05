@@ -980,14 +980,14 @@
       },
       "widgets_values": [
         "Gentle hair sway. Stationary camera.",
-        "hair tip, hair root, head, shoulder",
+        "auto",
         6,
         24,
         0.01,
         720,
         42,
-        "models/Qwen3-VL-8B-Instruct",
-        "local Qwen",
+        "models/Qwen3.5-9B",
+        "local Qwen3.5",
         "{}",
         "render"
       ]

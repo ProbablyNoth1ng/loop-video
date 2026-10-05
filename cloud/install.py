@@ -14,7 +14,8 @@ from urllib.parse import urlparse
 from urllib.request import urlopen
 
 
-QWEN_REPO = 'Qwen/Qwen3-VL-8B-Instruct'
+QWEN_REPO = 'Qwen/Qwen3.5-9B'
+VISION_REPOS = (QWEN_REPO, 'Qwen/Qwen3-VL-8B-Instruct')
 # ComfyUI v0.38.0 includes the LTX-2.5 diffusion video VAE loader.
 COMFY_COMPAT_REVISION = '6b747c0428c343e1417219641db93a4fb7cb69ae'
 UPSCALER = 'upscale_models/realesr-animevideov3.pth'
@@ -90,11 +91,26 @@ def sha256(path):
         return hashlib.file_digest(stream, 'sha256').hexdigest()
 
 
-def resolve_plan(assets):
+def select_vision_repo(selection, ready):
+    if selection is None and ready:
+        selection = ready.get('vision_repo') or next(
+            (r['repo'] for r in ready.get('files', []) if r.get('repo') in VISION_REPOS), None)
+    selection = selection or QWEN_REPO
+    if selection not in VISION_REPOS:
+        raise ValueError('Choose a supported vision model: '+', '.join(VISION_REPOS))
+    return selection
+
+
+def model_signature(assets, vision_repo):
+    return hashlib.sha256(json.dumps({'assets':assets,'vision_repo':vision_repo}, sort_keys=True).encode()).hexdigest()
+
+
+def resolve_plan(assets, vision_repo=QWEN_REPO):
+    vision_repo = select_vision_repo(vision_repo, None)
     from huggingface_hub import HfApi
     api = HfApi()
     repositories = {}
-    for repo, revision in sorted({(a['repo'], a['revision']) for a in assets} | {(QWEN_REPO, 'main')}):
+    for repo, revision in sorted({(a['repo'], a['revision']) for a in assets} | {(vision_repo, 'main')}):
         print('Checking model access: ' + repo, flush=True)
         try:
             info = api.model_info(repo, revision=revision, files_metadata=True)
@@ -111,7 +127,8 @@ def resolve_plan(assets):
             raise RuntimeError('Missing model at source: ' + asset['target'])
         records.append(dict(asset, revision=info.sha, size=sibling.size,
                             sha256=getattr(sibling.lfs, 'sha256', None)))
-    info = repositories[QWEN_REPO, 'main']
+    info = repositories[vision_repo, 'main']
+    folder = vision_repo.split('/')[-1]
     qwen_files = [s for s in info.siblings if s.rfilename.endswith(
         ('.json', '.safetensors', '.txt', '.model', '.jinja'))]
     if not any(s.rfilename == 'config.json' for s in qwen_files) or not any(
@@ -120,28 +137,48 @@ def resolve_plan(assets):
     for sibling in qwen_files:
         if not sibling.size:
             raise RuntimeError('Qwen file size unavailable: ' + sibling.rfilename)
-        records.append(dict(repo=QWEN_REPO, revision=info.sha, filename=sibling.rfilename,
-                            target='Qwen3-VL-8B-Instruct/' + sibling.rfilename,
-                            local_dir='Qwen3-VL-8B-Instruct', size=sibling.size,
+        records.append(dict(repo=vision_repo, revision=info.sha, filename=sibling.rfilename,
+                            target=str(relative_path(folder+'/'+sibling.rfilename)),
+                            local_dir=folder, size=sibling.size,
                             sha256=getattr(sibling.lfs, 'sha256', None)))
     return records
 
 
-def download_models(project, comfy, state):
+def download_models(project, comfy, state, vision_repo=None):
     from huggingface_hub import hf_hub_download
     assets = model_assets(read_json(project / 'workflows/ltx-2.5-motion-track.official.json'))
-    signature = hashlib.sha256(json.dumps(assets, sort_keys=True).encode()).hexdigest()
     root = comfy / 'models'
     root.mkdir(exist_ok=True)
     ready = read_json(state / 'models-ready.json')
+    if ready:
+        # Retain comparison provenance before replacing the active manifest.
+        previous_repo = select_vision_repo(None, ready)
+        legacy_signature = hashlib.sha256(json.dumps(assets, sort_keys=True).encode()).hexdigest()
+        if ready['signature'] == legacy_signature:
+            # The old manifest already pins these exact assets; do not resolve main again.
+            ready = dict(ready, signature=model_signature(assets, previous_repo), vision_repo=previous_repo)
+            write_json(state / 'models-ready.json', ready)
+        write_json(state / ('models-'+previous_repo.split('/')[-1]+'-ready.json'), ready)
+        previous_files = [r for r in ready.get('files', []) if r.get('repo') == previous_repo]
+        if previous_files:
+            write_json(state / ('vision-'+previous_repo.split('/')[-1]+'.json'),
+                       dict(vision_repo=previous_repo, files=previous_files))
+    vision_repo = select_vision_repo(vision_repo, ready)
+    signature = model_signature(assets, vision_repo)
+    cached = read_json(state / ('models-'+vision_repo.split('/')[-1]+'-ready.json'))
+    if cached and cached['signature'] == signature:
+        ready = cached
     if ready and ready['signature'] == signature and files_complete(root, ready['files']):
         upscaler = next(r for r in ready['files'] if r['target'] == UPSCALER)
         if sha256(root / UPSCALER) == upscaler['sha256']:
+            write_json(state / 'models-ready.json', ready)
             print('Models already downloaded; using existing files on this disk.', flush=True)
             return
     plan = read_json(state / 'models-plan.json')
     if not plan or plan['signature'] != signature:
-        plan = dict(signature=signature, files=resolve_plan(assets))
+        records = ([r for r in ready['files'] if r['target'] != UPSCALER]
+                   if ready and ready['signature'] == signature else resolve_plan(assets, vision_repo))
+        plan = dict(signature=signature, vision_repo=vision_repo, files=records)
         write_json(state / 'models-plan.json', plan)
     missing_bytes = sum(r['size'] for r in plan['files']
                         if not files_complete(root, [r]))
@@ -185,7 +222,11 @@ def download_models(project, comfy, state):
                     raise RuntimeError('Real-ESRGAN download/validation failed. Restart to retry.') from None
                 time.sleep(3)
     completed.append(dict(target=UPSCALER, size=upscaler.stat().st_size, sha256=sha256(upscaler)))
-    write_json(state / 'models-ready.json', dict(signature=signature, files=completed))
+    completed_manifest = dict(signature=signature, vision_repo=vision_repo, files=completed)
+    write_json(state / 'models-ready.json', completed_manifest)
+    write_json(state / ('models-'+vision_repo.split('/')[-1]+'-ready.json'), completed_manifest)
+    write_json(state / ('vision-'+vision_repo.split('/')[-1]+'.json'),
+               dict(vision_repo=vision_repo, files=[r for r in completed if r.get('repo') == vision_repo]))
 
 
 def clone_once(repo, destination, revision=None):
@@ -227,7 +268,26 @@ def ensure_comfy_compatibility(comfy):
         raise RuntimeError('ComfyUI update lacks LTX-2.5 diffusion VAE support; previous revision restored.')
 
 
-def install(project, comfy):
+def install_workflows(project, destination, vision_repo):
+    vision_repo = select_vision_repo(vision_repo, None)
+    destination.mkdir(parents=True, exist_ok=True)
+    for name in ('ambient-motion.json', 'ltx-2.5-motion-track.official.json'):
+        target = destination / name
+        if target.exists():
+            continue
+        if name == 'ambient-motion.json':
+            workflow = read_json(project / 'workflows' / name)
+            for node in workflow['nodes']:
+                if node['type'] == 'AmbientMotionEditor':
+                    node['widgets_values'][7:9] = ['models/'+vision_repo.split('/')[-1],
+                        'local Qwen3.5' if vision_repo == QWEN_REPO else 'local Qwen']
+            write_json(target, workflow)
+        else:
+            shutil.copy2(project / 'workflows' / name, target)
+
+
+def install(project, comfy, vision_repo=None):
+    vision_args = ['--vision-model', vision_repo] if vision_repo else []
     if sys.version_info < (3, 12):
         raise RuntimeError('Use Python 3.12+ from the ComfyUI environment.')
     if not (comfy / 'main.py').is_file() or not (project / 'pyproject.toml').is_file():
@@ -237,7 +297,7 @@ def install(project, comfy):
         python = next((p for p in candidates if p.is_file()), None)
         if python is None:
             raise RuntimeError('Wait for the official image to initialize its ComfyUI virtual environment.')
-        os.execv(str(python), [str(python), __file__, '--project-root', str(project), '--comfy-root', str(comfy)])
+        os.execv(str(python), [str(python), __file__, '--project-root', str(project), '--comfy-root', str(comfy), *vision_args])
     state = comfy / '.ambient-loop-install'
     state.mkdir(exist_ok=True)
     ensure_comfy_compatibility(comfy)
@@ -271,13 +331,13 @@ def install(project, comfy):
                         '-r', str(comfy / 'requirements.txt'), '-r', str(ltx / 'requirements.txt'),
                         '-e', str(project) + '[vision]'], check=True)
     subprocess.run([sys.executable, '-c', 'import numpy, PIL, scipy, accelerate, spandrel; '
-                    'from transformers import AutoProcessor, Qwen3VLForConditionalGeneration; '
+                    'from transformers import AutoProcessor, Qwen3VLForConditionalGeneration, Qwen3_5ForConditionalGeneration; '
                     'import ambient_loop.comfy'], cwd=comfy, check=True)
     write_json(state / 'dependencies.json', dict(fingerprint=expected, torch=versions))
     if changed:
         # pip may have replaced packages already imported by torch in this process.
         os.execv(sys.executable, [sys.executable, __file__, '--project-root', str(project),
-                                '--comfy-root', str(comfy)])
+                                '--comfy-root', str(comfy), *vision_args])
     link = comfy / 'custom_nodes/ambient_loop'
     source = project / 'comfy_nodes/ambient_loop'
     if link.is_symlink():
@@ -287,13 +347,9 @@ def install(project, comfy):
         raise RuntimeError('Existing ambient_loop custom node is not this project symlink.')
     else:
         link.symlink_to(source, target_is_directory=True)
-    download_models(project, comfy, state)
-    workflows = comfy / 'user/default/workflows'
-    workflows.mkdir(parents=True, exist_ok=True)
-    for name in ('ambient-motion.json', 'ltx-2.5-motion-track.official.json'):
-        destination = workflows / name
-        if not destination.exists():
-            shutil.copy2(project / 'workflows' / name, destination)
+    download_models(project, comfy, state, vision_repo)
+    install_workflows(project, comfy / 'user/default/workflows',
+                      select_vision_repo(vision_repo, read_json(state / 'models-ready.json')))
     (state / 'packages.txt').write_bytes(subprocess.check_output([sys.executable, '-m', 'pip', 'freeze']))
     print('AMBIENT LOOP INSTALLED. Starting ComfyUI; GPU rendering still needs qualification.', flush=True)
 
@@ -302,10 +358,12 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--comfy-root', default='/workspace/runpod-slim/ComfyUI')
     parser.add_argument('--project-root', default='/workspace/ambient-loop')
+    parser.add_argument('--vision-model', choices=VISION_REPOS, default=os.environ.get('AMBIENT_VISION_MODEL'),
+                        help='Vision snapshot (new installs default to Qwen3.5; existing installs keep their selection)')
     args = parser.parse_args()
     os.environ.setdefault('HF_HOME', '/workspace/.cache/huggingface')
     try:
-        install(Path(args.project_root).resolve(), Path(args.comfy_root).resolve())
+        install(Path(args.project_root).resolve(), Path(args.comfy_root).resolve(), args.vision_model)
     except (RuntimeError, ValueError, OSError, subprocess.CalledProcessError) as error:
         print('AMBIENT LOOP SETUP FAILED: ' + str(error), file=sys.stderr, flush=True)
         return 1

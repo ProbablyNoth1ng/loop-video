@@ -153,12 +153,13 @@ def load_handle(path, root):
 
 
 def finish_candidate(handle, root, resolution, chunk_size=4, enhancer=None):
-    if resolution not in ('1440p','4K') or not 1 <= chunk_size <= 32:
-        raise ValueError('Choose 1440p or 4K and a chunk size from 1 to 32')
+    resolutions = {'1080p':1080, '1440p':1440, '4K':2160}
+    if resolution not in resolutions or not 1 <= chunk_size <= 32:
+        raise ValueError('Choose 1080p, 1440p or 4K and a chunk size from 1 to 32')
     handle = load_handle(Path(handle['record']),root)
     if handle['kind'] != 'candidate':
         raise ValueError('Select an original animation candidate to upscale')
-    target = output_size(handle['dimensions'],1440 if resolution=='1440p' else 2160)
+    target = output_size(handle['dimensions'],resolutions[resolution])
     out = allocate(root,f"finish-{Path(handle['directory']).name}-{resolution}")
     enhancer = enhancer or anime_enhancer()
     try:

@@ -51,14 +51,14 @@ class AmbientMotionEditor:
         return {'required':{
             'image':('IMAGE',),
             'motion_prompt':('STRING',{'default':'Gentle hair sway. Stationary camera.','multiline':True}),
-            'requested_parts':('STRING',{'default':'hair tip, hair root, head, shoulder'}),
+            'requested_parts':('STRING',{'default':'auto'}),
             'duration':('FLOAT',{'default':6.,'min':1.,'max':30.,'step':1/24}),
             'fps':('INT',{'default':24,'min':8,'max':60}),
             'strength':('FLOAT',{'default':.01,'min':0.,'max':.1,'step':.001}),
             'short_side':('INT',{'default':720,'min':256,'max':2160,'step':8}),
             'seed':('INT',{'default':42,'min':0,'max':2**63-1,'control_after_generate':False}),
-            'vision_model':('STRING',{'default':'models/Qwen3-VL-8B-Instruct'}),
-            'preparation':(['local Qwen','manual'],),
+            'vision_model':('STRING',{'default':'models/Qwen3.5-9B'}),
+            'preparation':(['local Qwen','manual','local Qwen3.5'],{'default':'local Qwen3.5'}),
             'plan_json':('STRING',{'default':'{}','multiline':True}),
             'stage':(['render','prepare'],)},
             'hidden':{'extra_pnginfo':'EXTRA_PNGINFO','unique_id':'UNIQUE_ID'}}
@@ -79,15 +79,16 @@ class AmbientMotionEditor:
         source = Image.fromarray(pixels)
         identity = hashlib.sha256(pixels.tobytes()+str(source.size).encode()).hexdigest()
         requested = [v.strip() for v in requested_parts.split(',') if v.strip()]
+        analysis = {'preparation':preparation, 'model_path':vision_model}
         if stage == 'prepare':
             points,feedback = [],[]
-            if preparation == 'local Qwen':
+            if preparation in ('local Qwen','local Qwen3.5'):
                 try:
-                    points = analyze(source,motion_prompt,requested,vision_model)
+                    points = analyze(source,motion_prompt,requested,vision_model,feedback=feedback)
                 except Exception as error:
-                    feedback = [f'Automatic preparation failed: {error}. Add/edit points manually or retry.']
+                    feedback.append(f'Automatic preparation failed: {error}. Add/edit points manually or retry.')
             plan = new_plan(identity,source.size,motion_prompt,requested,points,
-                            duration,fps,strength,short_side,feedback)
+                            duration,fps,strength,short_side,feedback,analysis=analysis)
         elif stage == 'render':
             try:
                 plan = json.loads(plan_json)
@@ -96,6 +97,8 @@ class AmbientMotionEditor:
             require_review(plan,identity,source.size,motion_prompt,duration,fps,strength,short_side)
             if plan['requested'] != requested:
                 raise ValueError('Requested landmarks changed; prepare and review points again')
+            if 'analysis' in plan and plan['analysis'] != analysis:
+                raise ValueError('Analysis settings changed; prepare and review points again')
         else:
             raise ValueError('Choose Prepare or Render')
         canvas = canvas_image(source,plan['transform'])
@@ -152,7 +155,7 @@ class AmbientUpscale:
     @classmethod
     def INPUT_TYPES(cls):
         return {'required':{'candidate':('RENDER_HANDLE',),
-                 'resolution':(['1440p','4K'],),
+                 'resolution':(['1440p','1080p','4K'],{'default':'1440p'}),
                  'chunk_size':('INT',{'default':4,'min':1,'max':32})}}
     RETURN_TYPES = ('RENDER_HANDLE',)
     FUNCTION = 'execute'

@@ -65,6 +65,7 @@ The extracted image launcher is covered by local regression tests.
 | `AMBIENT_REPO` | Optional repository URL; defaults to the URL above |
 | `AMBIENT_REVISION` | Optional Git branch/tag/commit, used on first clone |
 | `LTX_REVISION` | Optional LTX Git branch/tag/commit, used on first clone |
+| `AMBIENT_VISION_MODEL` | `Qwen/Qwen3.5-9B` for new installs, or `Qwen/Qwen3-VL-8B-Instruct`; existing installs retain their choice when unset |
 | `HF_TOKEN` | Hugging Face token with read access to the required models |
 | `JUPYTER_PASSWORD` | Your JupyterLab token/password |
 | `FILEBROWSER_PASSWORD` | Your FileBrowser password if exposing port 8080 |
@@ -85,7 +86,7 @@ in the generated command. Your current public GitHub repository needs no token.
   image's installed versions. Install ffmpeg if missing.
 - Connect the Ambient Loop custom nodes.
 - Download the six exact model files declared by the official Motion Track
-  workflow, a Qwen3-VL-8B-Instruct snapshot including configs/tokenizer/weights,
+  workflow, the selected Qwen snapshot including configs/tokenizer/weights,
   and Real-ESRGAN's `realesr-animevideov3.pth`.
 - Resolve Hugging Face models to immutable commits before downloads, check free
   disk space, file sizes and available source SHA256 hashes, and validate the
@@ -108,6 +109,14 @@ A new or cleared container disk always gets a complete installation. Fast model 
 compare recorded sizes, plus the small upscale model's checksum. They do not
 rehash all large weights on every boot. Interrupted HF downloads reuse their
 local download metadata on retry while those files remain on disk.
+The vision selection participates in download-cache identity. Switching to
+Qwen3.5 retains installed Qwen3-VL files for comparison. Download manifests
+record immutable HF revisions and file checksums; no vision weights download
+during Prepare.
+Legacy manifests migrate with their existing pinned revisions. Per-model ready
+manifests and `vision-*.json` provenance live in `.ambient-loop-install/`, so
+switching back to an installed snapshot reuses its recorded revision. Newly
+copied workflows match the selected analyzer; saved workflows remain unchanged.
 Missing/truncated models trigger recovery.
 Checksums, model revisions and `pip freeze` are retained under
 `ComfyUI/.ambient-loop-install/`. Run one Pod at a time against this installation.

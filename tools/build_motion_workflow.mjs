@@ -17,8 +17,8 @@ const editor=node(10000,'AmbientMotionEditor',[450,0],
     [{name:'image',type:'IMAGE',link:null}],
     ['IMAGE','STRING','MOTION_PLAN','FLOAT','FLOAT','INT','STRING'].map((type,i)=>({
         name:['canvas','tracks','motion_plan','fps','duration','seed','prompt'][i],type,links:[]})),
-    ['Gentle hair sway. Stationary camera.','hair tip, hair root, head, shoulder',6,24,.01,720,
-     42,'models/Qwen3-VL-8B-Instruct','local Qwen','{}','render'],[540,1050]);
+    ['Gentle hair sway. Stationary camera.','auto',6,24,.01,720,
+     42,'models/Qwen3.5-9B','local Qwen3.5','{}','render'],[540,1050]);
 const saver=node(4852,'AmbientSaveCandidate',[2200,0],
     [{name:'video',type:'VIDEO',link:null},{name:'motion_plan',type:'MOTION_PLAN',link:null},
      {name:'seed',type:'INT',widget:{name:'seed'},link:null}],

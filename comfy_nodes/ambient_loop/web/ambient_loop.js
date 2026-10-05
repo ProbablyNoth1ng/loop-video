@@ -139,6 +139,10 @@ function checkSettings(node) {
     }
     const requested=widget(node,'requested_parts').value.split(',').map(v=>v.trim()).filter(Boolean);
     if(JSON.stringify(p.requested)!==JSON.stringify(requested))throw new Error('Requested parts changed. Prepare and review again.');
+    if(p.analysis && (p.analysis.preparation!==widget(node,'preparation').value ||
+        p.analysis.model_path!==widget(node,'vision_model').value)) {
+        throw new Error('Analysis settings changed. Prepare and review again.');
+    }
     if(widget(find('LoadImage')??{},'image')?.value!==node.properties.ambient_source_image) {
         throw new Error('Source image changed. Prepare and review points again.');
     }
@@ -183,11 +187,18 @@ function editor(node) {
     Object.assign(canvas.style,{width:'100%',height:'300px',objectFit:'contain',touchAction:'none',background:'#080a0f'});
     const pointList=element('div',root);
     pointList.setAttribute('aria-label','Landmarks');
+    Object.assign(pointList.style,{maxHeight:'160px',overflowY:'auto'});
+    element('p',root,'Green: moving · blue: anchor · gray: disabled. Point numbers match the list; select a row to see its full label.');
     const tools=element('div',root);
     const label=element('input',tools);label.placeholder='Point label';label.style.width='130px';
     const enabled=element('input',tools);enabled.type='checkbox';enabled.title='Enable selected point';
     element('span',tools,' Enabled · strength ');
     const strength=element('input',tools);strength.type='number';strength.min=0;strength.max=2;strength.step=.1;strength.style.width='55px';
+    const semanticTools=element('div',root);
+    const role=element('select',semanticTools);role.title='Motion role';
+    for(const value of ['move','anchor']){const option=element('option',role,value);option.value=value;}
+    const bodyPart=element('input',semanticTools);bodyPart.title='Body part';bodyPart.placeholder='Body part';bodyPart.style.width='95px';
+    const reason=element('input',semanticTools);reason.title='Role reason';reason.placeholder='Reason for motion or anchor';reason.style.width='240px';
     const pathTools=element('div',root);
     element('span',pathTools,'Path key · ');
     const pathKey=element('select',pathTools);pathKey.title='Trajectory time';
@@ -198,6 +209,13 @@ function editor(node) {
     const hint=element('p',root,'Drag landmarks to move. Select a landmark, then drag its path handles. Add points by clicking the image.');
     const timeline=element('input',root);timeline.type='range';timeline.min=0;timeline.max=1;timeline.step=.005;timeline.value=0;timeline.style.width='100%';
     let background=new Image(),selected=-1,adding=false,drag=null,timer=null,rect=null,reviewButton=null;
+    const pointRole=point=>point.motion_role??(point.path.every(k=>k.x===point.x&&k.y===point.y)?'anchor':'move');
+    const color=point=>!point.enabled?'#aaa':pointRole(point)==='anchor'?'#72c8ff':'#a7ff69';
+    function returningPath(point,moving) {
+        const amplitude=moving?Math.min(plan().strength??.01,1-point.x):0;
+        const path=Array.from({length:17},(_,i)=>({t:i/16,x:point.x+amplitude*(1-Math.cos(2*Math.PI*i/16))/2,y:point.y}));
+        path[16]={t:1,x:point.x,y:point.y};return path;
+    }
     function plan() { try { return JSON.parse(widget(node,'plan_json').value); } catch { return {}; } }
     function validPlan(p) {
         return p?.schema==='ambient-motion-plan/1' && Array.isArray(p.landmarks) &&
@@ -223,9 +241,30 @@ function editor(node) {
         app.graph.extra.ambient_motion_plans??={};
         app.graph.extra.ambient_motion_plans[String(node.id)]=p;
     }
+    const preparation=widget(node,'preparation'),modelPath=widget(node,'vision_model');
+    const bundledPaths=['models/Qwen3-VL-8B-Instruct','models/Qwen3.5-9B'];
+    function populateModelPath() {
+        if(bundledPaths.includes(modelPath.value) && preparation.value!=='manual') {
+            modelPath.value=preparation.value==='local Qwen3.5'?bundledPaths[1]:bundledPaths[0];
+        }
+    }
+    populateModelPath();
+    for(const name of ['preparation','vision_model','requested_parts','motion_prompt','duration','fps','strength','short_side']) {
+        const control=widget(node,name);if(!control)continue;
+        const changed=control.callback;
+        control.callback=function(){changed?.apply(this,arguments);
+            if(name==='preparation')populateModelPath();
+            const p=plan();if(!validPlan(p))return;
+            p.review={state:'pending'};widget(node,'plan_json').value=JSON.stringify(p);persist(p);
+            status.textContent='Settings changed. Prepare and review points again.';
+            renderList();app.graph.setDirtyCanvas(true,true);
+        };
+    }
     function selection(p) {
         const point=p.landmarks?.[selected];
         label.value=point?.label??'';enabled.checked=point?.enabled??false;strength.value=point?.strength??1;
+        role.value=point?pointRole(point):'move';bodyPart.value=point?.body_part??'';reason.value=point?.reason??'';
+        pathX.disabled=pathY.disabled=!!point&&pointRole(point)==='anchor';
         pathKey.replaceChildren();
         for(const [index,key] of (point?.path??[]).entries()) {
             if(index===0||index===point.path.length-1)continue;
@@ -247,13 +286,14 @@ function editor(node) {
             return;
         }
         for(const [index,point] of points.entries()) {
-            const row=button(pointList,`${index+1}. ${point.label} (${point.x.toFixed(3)}, ${point.y.toFixed(3)}) · ${point.enabled?'enabled':'disabled'}`,()=>{
+            const row=button(pointList,`${index+1}. ${point.label} · ${pointRole(point)} (${point.x.toFixed(3)}, ${point.y.toFixed(3)}) · ${point.enabled?'enabled':'disabled'}`,()=>{
                 selected=index;selection(plan());draw();
             });
             row.setAttribute('aria-label',`Select landmark ${index+1}: ${point.label}`);
             Object.assign(row.style,{display:'block',width:'100%',textAlign:'left',padding:'5px',
-                color:point.enabled?'#a7ff69':'#aaa',background:index===selected?'#315119':'#202831',
-                border:index===selected?'2px solid #a7ff69':'1px solid #56606c'});
+                color:color(point),background:index===selected?'#30414e':'#202831',
+                border:index===selected?`2px solid ${color(point)}`:'1px solid #56606c'});
+            row.title=point.reason??'';
         }
     }
     function pathSelection() {
@@ -262,7 +302,7 @@ function editor(node) {
     }
     pathKey.onchange=pathSelection;
     const applyPath=()=>{
-        const p=plan(),key=p.landmarks?.[selected]?.path[Number(pathKey.value)];if(!key)return;
+        const p=plan(),point=p.landmarks?.[selected],key=point?.path[Number(pathKey.value)];if(!key||pointRole(point)==='anchor')return;
         key.x=Number(pathX.value);key.y=Number(pathY.value);save(p);
     };
     button(pathTools,'Apply path key',applyPath);
@@ -280,21 +320,22 @@ function editor(node) {
         if(!validPlan(p))return;
         for(const [index,point] of (p.landmarks??[]).entries()) {
             const project=(x,y)=>[rect.x+x*rect.w,rect.y+y*rect.h];
-            ctx.strokeStyle=point.enabled?'#a7ff69':'#777';ctx.fillStyle=point.enabled?'#a7ff69':'#999';
+            ctx.strokeStyle=color(point);ctx.fillStyle=color(point);
             ctx.globalAlpha=1;ctx.beginPath();
             for(const [k,key] of point.path.entries()) {
                 const xy=project(point.x+(key.x-point.x)*point.strength,point.y+(key.y-point.y)*point.strength);
                 if(k===0)ctx.moveTo(...xy);else ctx.lineTo(...xy);
             }
             ctx.stroke();
-            if(index===selected)for(const key of point.path.slice(1,-1)) {
+            if(index===selected&&pointRole(point)==='move')for(const key of point.path.slice(1,-1)) {
                 const [x,y]=project(key.x,key.y);ctx.strokeRect(x-3,y-3,6,6);
             }
             const [x,y]=project(point.x,point.y);ctx.beginPath();ctx.arc(x,y,index===selected?8:6,0,Math.PI*2);
             ctx.lineWidth=3;ctx.strokeStyle='#101710';ctx.stroke();ctx.fill();
             if(index===selected){ctx.beginPath();ctx.arc(x,y,10,0,Math.PI*2);ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();}
-            ctx.font='bold 13px system-ui';ctx.lineWidth=3;ctx.strokeStyle='#101710';
-            ctx.strokeText(point.label,x+10,y-8);ctx.fillText(point.label,x+10,y-8);
+            ctx.font=`bold ${index===selected?13:11}px system-ui`;ctx.lineWidth=3;ctx.strokeStyle='#101710';
+            const text=index===selected?`${index+1}. ${point.label} · ${pointRole(point)}`:String(index+1);
+            ctx.strokeText(text,x+10,y-8);ctx.fillText(text,x+10,y-8);
             const moving=position(point.path,Number(timeline.value));
             const [mx,my]=project(point.x+(moving.x-point.x)*point.strength,point.y+(moving.y-point.y)*point.strength);
             ctx.beginPath();ctx.arc(mx,my,3,0,Math.PI*2);ctx.fill();
@@ -310,21 +351,22 @@ function editor(node) {
         const p=plan(),where=eventPoint(event);
         if(!where||!validPlan(p))return;
         if(adding) {
-            const path=Array.from({length:17},(_,i)=>({t:i/16,x:where.x+Math.min(.01,1-where.x)*(1-Math.cos(2*Math.PI*i/16))/2,y:where.y}));
-            path[16]={t:1,...where};
-            p.landmarks.push({...where,label:label.value||`point ${p.landmarks.length+1}`,enabled:true,strength:1,path});
+            const moving=role.value!=='anchor';
+            const path=returningPath(where,moving);
+            p.landmarks.push({...where,label:label.value||`point ${p.landmarks.length+1}`,enabled:true,strength:1,path,
+                motion_role:moving?'move':'anchor',body_part:bodyPart.value||'manual',reason:reason.value||'Manual point placement'});
             selected=p.landmarks.length-1;adding=false;selection(p);save(p);return;
         }
         const distance=key=>Math.hypot((key.x-where.x)*rect.w,(key.y-where.y)*rect.h);
         const active=p.landmarks[selected];
-        if(active&&distance(active)<6)drag={index:selected,key:-1};
-        else if(active) {
-            const k=active.path.findIndex((key,i)=>i>0&&i<active.path.length-1&&distance(key)<8);
-            if(k>=0)drag={index:selected,key:k};
-        }
+        const nearest=p.landmarks.map((point,index)=>({index,d:distance(point)})).sort((a,b)=>a.d-b.d)[0];
+        const handle=active&&pointRole(active)==='move'?active.path.map((key,index)=>({index,d:distance(key)}))
+            .filter(item=>item.index>0&&item.index<active.path.length-1).sort((a,b)=>a.d-b.d)[0]:null;
+        drag=null;
+        if(handle?.d<8&&handle.d<(nearest?.d??Infinity))drag={index:selected,key:handle.index};
+        else if(nearest?.d<10){selected=nearest.index;drag={index:selected,key:-1};}
         if(!drag) {
-            selected=p.landmarks.findIndex(point=>distance(point)<10);
-            if(selected>=0)drag={index:selected,key:-1};
+            selected=-1;
         }
         selection(p);draw();canvas.setPointerCapture(event.pointerId);
     };
@@ -347,6 +389,16 @@ function editor(node) {
         const p=plan(),point=p.landmarks?.[selected];if(!point)return;
         point.label=label.value;point.enabled=enabled.checked;point.strength=Number(strength.value);save(p);
     };
+    label.oninput=label.onchange;
+    for(const control of [role,bodyPart,reason])control.onchange=()=>{
+        const p=plan(),point=p.landmarks?.[selected];if(!point)return;
+        const previous=pointRole(point);
+        point.motion_role=role.value;point.body_part=bodyPart.value||point.body_part||'manual';
+        point.reason=reason.value||point.reason||'Manual role selection';
+        if(previous!==role.value)point.path=returningPath(point,role.value==='move');
+        save(p);if(control===role)selection(p);
+    };
+    bodyPart.oninput=bodyPart.onchange;reason.oninput=reason.onchange;
     timeline.oninput=draw;
     button(tools,'Add point',()=>{adding=true;status.textContent='Click the image to add a labeled point.';});
     button(tools,'Delete',()=>{const p=plan();if(selected<0)return;p.landmarks.splice(selected,1);selected=-1;save(p);selection(p);});

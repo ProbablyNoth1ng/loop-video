@@ -11,6 +11,36 @@ from ambient_loop.motion import new_plan, review_plan
 
 
 class CandidateTests(unittest.TestCase):
+    def test_all_resolutions_preserve_orientation_frames_timing_and_original(self):
+        from ambient_loop.staged_comfy import AmbientUpscale
+        options = AmbientUpscale.INPUT_TYPES()['required']['resolution']
+        self.assertIn('1080p', options[0])
+        self.assertEqual(options[1]['default'], '1440p')
+        for source, expected in [((1600,900),[(1920,1080),(2560,1440),(3840,2160)]),
+                                 ((900,1600),[(1080,1920),(1440,2560),(2160,3840)])]:
+            with tempfile.TemporaryDirectory() as tmp, patch('ambient_loop.candidates.encode_previews'):
+                root = Path(tmp)
+                plan = review_plan(new_plan('abc',source,'hair',['tip'],
+                    [dict(label='tip',x=.5,y=.5)],duration=1,fps=8,short_side=288))
+                w,h = plan['transform']['canvas']
+                original = save_candidate(np.zeros((9,h,w,3),dtype=np.uint8),plan,42,root,{'cfg':1})
+                original_record = Path(original['record']).read_bytes()
+                for resolution, size in zip(['1080p','1440p','4K'],expected):
+                    calls = []
+                    def enhance(image, target):
+                        calls.append(target)
+                        return Image.new('RGB', target)
+                    final = finish_candidate(original,root,resolution,3,enhance)
+                    self.assertEqual(final['dimensions'],list(size))
+                    self.assertEqual(calls, [size]*8)
+                    self.assertEqual(final['fps'],8)
+                    self.assertEqual(final['frame_count'],8)
+                    self.assertEqual(final['parent'],original['record'])
+                    self.assertEqual(final['generation_settings'],{'cfg':1})
+                    self.assertEqual(Path(original['record']).read_bytes(),original_record)
+                    self.assertEqual(load_handle(Path(final['record']),root)['frame_count'],8)
+                self.assertEqual(load_handle(Path(original['record']),root)['frame_hashes'],original['frame_hashes'])
+
     def test_real_preview_encoding_preserves_fps_and_count(self):
         import shutil
         if not shutil.which('ffmpeg') or not shutil.which('ffprobe'):

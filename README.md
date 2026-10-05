@@ -11,25 +11,33 @@ Import [ambient-motion.json](workflows/ambient-motion.json) after
 RunPod can install all nodes, dependencies and model weights at first boot:
 see [automatic installation](docs/runpod-autoinstall.md).
 
-1. Load one anime image. Set the motion prompt and requested landmark labels in
-   **Prepare and review**. Choose **local Qwen** or **manual** preparation.
-2. Click **Prepare points**. Local Qwen3-VL proposes normalized landmarks and
+1. Load one anime image. Set the motion prompt and requested parts (`auto` by
+   default, or a comma-separated list) in **Prepare and review**. Choose
+   **local Qwen3.5**, **local Qwen** (Qwen3-VL), or **manual** preparation.
+2. Click **Prepare points**. Local Qwen proposes normalized landmarks and
    unloads before generation. Failed analysis leaves the editor available with
    feedback; add points manually or retry.
-3. Review the numbered landmark list and bright green dots on the source image.
+   Analysis aims for 16–24 useful visible points, adapting to the image; hidden
+   anatomy is omitted. Valid partial suggestions survive with omission feedback.
+3. Review the numbered landmark list and labeled dots on the source image.
+   Green points move; blue points anchor stationary parts; disabled points are gray.
    A row and its dot select the same point; disabled points appear muted. A
    manual or failed-Qwen Prepare shows an empty list with an Add point prompt.
    Move, add, delete or disable landmarks. Select a point and drag path handles;
-   edit its label/strength. Scrub or play trajectories. Roots, head and shoulders
-   start stationary; other points get gentle returning paths. Click **Accept
+   edit its label, body part, role, reason and strength. Scrub or play trajectories.
+   New proposals use semantic roles: only motion requested by the prompt moves.
+   Changing a role resets the path to stationary or gently returning motion.
+   Legacy points retain their existing paths. Click **Accept
    point review** before rendering.
 4. Click **Render** for the official LTX-2.5 single-stage Motion Track pipeline.
    Continuous and forward seam previews play automatically in **Render preview**. Change
    seed for another candidate. Image, prompt, timing, motion strength, canvas or
-   point changes invalidate review. After motion-setting changes, Prepare again.
+   point or analysis-setting changes invalidate review. After setting changes, Prepare again.
 5. The last completed render is automatically selected in **Select saved candidate**.
    Choose another original render in its dropdown to preview it automatically.
-   Optionally click **Upscale** for 1440p/4K. Finishing reads saved PNGs and
+   Optionally click **Upscale** for 1080p/1440p/4K (1440p remains the default).
+   Resolutions use short sides of 1080/1440/2160, preserving orientation and
+   aspect ratio with even dimensions. Finishing reads saved PNGs and
    keeps the same frame count, FPS and timing. Review for flicker and click
    **Save silent MP4**. Lossless frames remain beside the output.
 
@@ -77,4 +85,5 @@ node --test tests/*.mjs
 Sources: [LTX Motion Control](https://docs.ltx.io/open-source-model/feature-guides/structural-control/motion-control),
 [Motion Track IC-LoRA model card](https://huggingface.co/Lightricks/LTX-2.3-22b-IC-LoRA-Motion-Track-Control),
 [Qwen3-VL](https://huggingface.co/Qwen/Qwen3-VL-8B-Instruct),
+[Qwen3.5-9B](https://huggingface.co/Qwen/Qwen3.5-9B),
 [Real-ESRGAN anime model](https://github.com/xinntao/Real-ESRGAN/blob/master/docs/anime_video_model.md).

@@ -40,15 +40,18 @@ def returning_path(x, y, amplitude, samples=17):
 
 
 def new_plan(identity, size, prompt, requested, landmarks, duration=6, fps=24,
-             strength=.01, short_side=720, feedback=None):
+             strength=.01, short_side=720, feedback=None, analysis=None):
     plan = {'schema': 'ambient-motion-plan/1', 'source_id': identity,
             'source_size': list(size), 'prompt': prompt, 'requested': requested,
             'duration': float(duration), 'fps': int(fps), 'strength': float(strength),
             'short_side': int(short_side), 'frames': frame_count(duration, fps),
             'transform': canvas_transform(size, short_side), 'landmarks': [],
             'review': {'state': 'pending'}, 'feedback': feedback or []}
+    if analysis is not None:
+        plan['analysis'] = copy.deepcopy(analysis)
     for point in landmarks:
-        fixed = any(word in point['label'].lower() for word in ('root', 'head', 'shoulder'))
+        fixed = (point['motion_role'] == 'anchor' if 'motion_role' in point else
+                 any(word in point['label'].lower() for word in ('root', 'head', 'shoulder')))
         amplitude = 0 if fixed else min(strength, 1-point['x'])
         plan['landmarks'].append({**point, 'enabled': True, 'strength': 1.,
                                   'path': returning_path(point['x'], point['y'], amplitude)})
@@ -62,6 +65,14 @@ def coordinate(value):
     return value
 
 
+def validate_semantics(point):
+    if point.get('motion_role') not in ('move', 'anchor'):
+        raise ValueError('Motion role must be move or anchor')
+    for field in ('body_part', 'reason'):
+        if not isinstance(point.get(field), str) or not point[field].strip():
+            raise ValueError(f'Every semantic landmark needs a {field}')
+
+
 def validate_plan(plan):
     if not isinstance(plan, dict) or plan.get('schema') != 'ambient-motion-plan/1':
         raise ValueError('Invalid motion plan; Prepare or place points manually')
@@ -72,6 +83,8 @@ def validate_plan(plan):
     if not 0 <= plan['strength'] <= .1 or not isinstance(plan['landmarks'], list):
         raise ValueError('Invalid motion strength or landmark list')
     for point in plan['landmarks']:
+        if any(field in point for field in ('motion_role', 'body_part', 'reason')):
+            validate_semantics(point)
         if not isinstance(point.get('label'), str) or not point['label'].strip():
             raise ValueError('Every landmark needs a label')
         coordinate(point['x']); coordinate(point['y'])
@@ -88,6 +101,9 @@ def validate_plan(plan):
             previous = key['t']
             coordinate(point['x'] + (key['x']-point['x'])*point['strength'])
             coordinate(point['y'] + (key['y']-point['y'])*point['strength'])
+            if point.get('motion_role') == 'anchor' and any(
+                    abs(key[axis]-point[axis]) > 1e-8 for axis in ('x', 'y')):
+                raise ValueError('Anchor paths must stay stationary; change the role to move to edit motion')
         if any(abs(path[0][axis]-point[axis]) > 1e-8 or
                abs(path[-1][axis]-point[axis]) > 1e-8 for axis in ('x','y')):
             raise ValueError('Returning paths must start and end at their landmark')
@@ -110,23 +126,43 @@ def require_review(plan, identity, size, prompt, duration, fps, strength, short_
         raise ValueError('Image, prompt, settings or points changed; renewed point review required')
 
 
-def parse_landmarks(raw, requested):
+def parse_landmarks(raw, requested, feedback=None, require_semantics=False):
+    feedback = feedback if feedback is not None else []
     try:
         text = raw.strip()
         if text.startswith('```'):
             text = text.split('\n',1)[1].rsplit('```',1)[0]
-        points = json.loads(text)['landmarks']
+        response = json.loads(text)
+        points = response['landmarks']
         if not isinstance(points, list) or not points or len(points) > 64:
             raise ValueError('Missing landmarks')
         result = []
-        for p in points:
-            if not isinstance(p['label'], str) or not p['label'].strip():
-                raise ValueError('Missing landmark label')
-            result.append({'label': p['label'], 'x': coordinate(p['x']/1000),
-                           'y': coordinate(p['y']/1000)})
-        missing = [name for name in requested if not any(name.lower() in p['label'].lower() for p in result)]
+        for index, p in enumerate(points):
+            try:
+                if not isinstance(p['label'], str) or not p['label'].strip():
+                    raise ValueError('Missing landmark label')
+                for axis in ('x', 'y'):
+                    coordinate(p[axis] if isinstance(p[axis], bool) else p[axis]/1000)
+                point = {'label': p['label'].strip(), 'x': p['x']/1000, 'y': p['y']/1000}
+                if require_semantics or any(field in p for field in ('motion_role', 'body_part', 'reason')):
+                    validate_semantics(p)
+                    point.update({field:p[field].strip() for field in ('body_part', 'motion_role', 'reason')})
+                if any(point['label'].casefold() == old['label'].casefold() or
+                       (abs(point['x']-old['x']) < 1e-6 and abs(point['y']-old['y']) < 1e-6)
+                       for old in result):
+                    raise ValueError('Duplicate label or location')
+                result.append(point)
+            except (KeyError, TypeError, ValueError) as error:
+                feedback.append(f'Skipped suggestion {index+1}: {error}')
+        if not result:
+            raise ValueError('No valid landmarks; place points manually or retry Prepare')
+        missing = [name for name in requested if name.lower() != 'auto' and not any(
+            name.lower() in p['label'].lower() or name.lower() in p.get('body_part','').lower() for p in result)]
         if missing:
-            raise ValueError('Missing requested landmarks: '+', '.join(missing))
+            feedback.append('Missing requested landmarks: '+', '.join(missing)+'. Add visible points manually if needed.')
+        omissions = response.get('omissions', [])
+        if isinstance(omissions, list):
+            feedback.extend('Omitted: '+note for note in omissions if isinstance(note, str) and note.strip())
         return result
     except (KeyError, TypeError, ZeroDivisionError, json.JSONDecodeError) as error:
         raise ValueError('Invalid vision response; place landmarks manually or retry Prepare') from error

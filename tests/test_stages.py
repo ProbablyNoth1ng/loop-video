@@ -9,6 +9,41 @@ from ambient_loop.staged_comfy import AmbientMotionEditor, AmbientSavedCandidate
 
 
 class StageTests(unittest.TestCase):
+    def test_new_qwen_choice_keeps_widget_order_and_review_tracks_analysis_settings(self):
+        import numpy as np
+        from ambient_loop.motion import review_plan
+        image = np.zeros((1,100,80,3),dtype=np.float32)
+        inputs = AmbientMotionEditor.INPUT_TYPES()['required']
+        self.assertEqual(list(inputs)[8:12], ['vision_model','preparation','plan_json','stage'])
+        self.assertIn('local Qwen3.5', inputs['preparation'][0])
+        self.assertEqual(inputs['requested_parts'][1]['default'], 'auto')
+        points = [dict(label='tip',x=.3,y=.4,body_part='hair',motion_role='move',reason='sway')]
+        with patch('ambient_loop.staged_comfy.canvas_image',return_value=image), \
+             patch('ambient_loop.staged_comfy.analyze',return_value=points):
+            prepared = AmbientMotionEditor().execute(image,'hair','auto',6,24,.01,720,
+                         42,'models/Qwen3.5-9B','local Qwen3.5','{}','prepare')['result'][2]
+            self.assertEqual(prepared['analysis'], {'preparation':'local Qwen3.5','model_path':'models/Qwen3.5-9B'})
+            reviewed = json.dumps(review_plan(prepared))
+            for model, mode in [('other','local Qwen3.5'),('models/Qwen3.5-9B','manual')]:
+                with self.assertRaisesRegex(ValueError, 'review'):
+                    AmbientMotionEditor().execute(image,'hair','auto',6,24,.01,720,
+                         42,model,mode,reviewed,'render')
+
+    def test_qwen35_partial_feedback_and_load_failure_leave_manual_editor_available(self):
+        import numpy as np
+        image = np.zeros((1,100,80,3),dtype=np.float32)
+        def partial(source,prompt,requested,model,feedback=None):
+            feedback.append('Omitted: shoulder hidden')
+            return [dict(label='eye',x=.4,y=.3,body_part='face',motion_role='anchor',reason='stationary face')]
+        with patch('ambient_loop.staged_comfy.canvas_image',return_value=image):
+            for analyzer in [partial, RuntimeError('loading failed')]:
+                with patch('ambient_loop.staged_comfy.analyze',side_effect=analyzer):
+                    plan = AmbientMotionEditor().execute(image,'hair','auto',6,24,.01,720,
+                        42,'models/Qwen3.5-9B','local Qwen3.5','{}','prepare')['result'][2]
+                self.assertEqual(plan['review']['state'],'pending')
+                self.assertTrue(plan['feedback'])
+                self.assertEqual(len(plan['landmarks']), 0 if isinstance(analyzer,Exception) else 1)
+
     def test_saved_candidates_are_complete_and_newest_first_with_portable_paths(self):
         from ambient_loop.candidates import list_candidates
         with tempfile.TemporaryDirectory() as tmp:

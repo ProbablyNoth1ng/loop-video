@@ -102,6 +102,68 @@ Inspect face identity, hair tips, fixed roots/head/shoulders, camera/background
 drift and seams over three continuous cycles. Endpoint mean error is evidence,
 not perceptual acceptance. Retry visibly poor seams; never substitute ping-pong.
 
-Review 1440p and 4K finishes for line preservation and temporal flicker. Verify
+Review 1080p, 1440p and 4K finishes for line preservation and temporal flicker. Verify
 144 playback frames, 24 FPS, six-second silent MP4 and distinct candidate/finish
 names. Retain all 145 raw generated frames and sidecar records.
+
+## 2026-10-05 semantic-point upgrade and artifact investigation
+
+The user confirmed the A40 pod was terminated. This checkout contains older CPU
+demo outputs, but no affected LTX `candidate-*/record.json`, raw PNG sequence or
+track-guide export. The first affected frame and artifact cause cannot be
+identified from the available evidence. No model-accuracy or animation-quality
+improvement is claimed.
+
+Local tests cover role-driven paths, stationary anchors, semantic review
+invalidation, partial JSON responses, coordinates and missing snapshots. Model
+boundary doubles exercise both published snapshot configurations, thinking
+disablement and object release on success, loading failure, generation failure
+and chained exceptions. This proves reference cleanup behavior, not actual GPU
+VRAM recovery. The real browser fixture exercises 20 synthetic semantic points;
+synthetic coordinates do not qualify anime grounding.
+
+Final local verification: `python -m unittest discover -s tests` passed 67 tests;
+all six JavaScript test files passed 32 tests; `git diff --check` passed. Browser
+QA confirmed distinct point colors, anchor controls, role/disabled state after
+reopen, and persisted role-reason text after the oninput fix. Fresh-context code
+review found no remaining Critical or Important issues after the installer and
+chained-exception fixes.
+
+Before accepting Qwen3.5 as an upgrade, run both analyzers on the same source,
+prompt and requested parts. Save proposals, feedback, source hash and the
+installer's per-model `vision-*.json` manifests with immutable revisions and
+checksums. Inspect distinct hair tips, intermediate points, roots and visible
+face/body anchors against the original image. Hidden features must be omitted;
+stationary and unrequested motion must be anchors. Compare placement and prompt
+compliance independently of point count.
+
+On the next GPU deployment, use these controlled comparisons:
+
+1. Retain the affected original candidate and its exact reviewed plan, seed,
+   timing, render settings and source. Compare the source with each `raw/` PNG,
+   corresponding exported `frames/` PNG and the Motion Track guide. Locate the
+   first affected frame by visual inspection, then record its index, file hashes,
+   crops and whether the artifact is already present in the raw decode. Align
+   raw canvas crops using `motion_plan.transform.content`; the final raw endpoint
+   has no playback-frame counterpart.
+2. Copy the original plan and add only visible stationary face anchors. Keep
+   every existing moving path and render setting unchanged; accept a fresh
+   review and render a separate candidate.
+3. Retain those anchors and add intermediate points along visible moving hair
+   strands. Preserve the original moving paths and render settings, accept review
+   again and render another candidate.
+4. Compare hair/eyebrow layer order, face identity, motion and the forward loop
+   seam across the original and both variants. Record observed changes separately
+   from the hypothesis that reconstruction of overlapping hair/eye linework
+   causes the artifact. Positional tracks do not explicitly encode layer order;
+   this hypothesis remains unverified. See [LTX motion-control guidance](https://docs.ltx.io/open-source-model/feature-guides/structural-control/motion-control).
+5. Qualify Prepare → edit/review → Render → 1080p upscale on the GPU. Record
+   stage histories and runtimes, actual VRAM after analysis, raw/exported
+   dimensions and silent video FPS/frame count. Verify finishing consumes only
+   the saved candidate and retains its original PNGs and timing. Repeat landscape
+   and portrait finishing at all three resolutions; keep 1440p as the default.
+
+The renderer remains the official LTX path. Strict masks and source compositing
+are outside this change. [Qwen3.5 model card](https://huggingface.co/Qwen/Qwen3.5-9B)
+and [Transformers 5.2 implementation](https://github.com/huggingface/transformers/blob/v5.2.0/src/transformers/models/qwen3_5/modeling_qwen3_5.py)
+support the loading interface; GPU inference and visual acceptance remain pending.

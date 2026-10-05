@@ -58,11 +58,17 @@ ComfyUI directories. Accept Hugging Face access terms first using your account.
 Keep the same BF16 distilled transformer, Gemma 4 encoder/enhancer, video/audio
 VAEs and Motion Track IC-LoRA files for baseline and adapted validation.
 
-Download a Qwen3-VL-8B-Instruct snapshot into
-`$COMFY_ROOT/models/Qwen3-VL-8B-Instruct`, including configs/tokenizer and weights.
+New automatic installations default to a Qwen3.5-9B snapshot in
+`$COMFY_ROOT/models/Qwen3.5-9B`. Qwen3-VL-8B-Instruct remains supported in
+`$COMFY_ROOT/models/Qwen3-VL-8B-Instruct`; existing installations retain their
+selection. Both require configs, tokenizer and weights, plus
+`transformers>=5.2,<6`. Set `AMBIENT_VISION_MODEL=Qwen/Qwen3-VL-8B-Instruct`
+or pass `cloud/install.py --vision-model Qwen/Qwen3-VL-8B-Instruct` to select it.
 Record its immutable revision and SHA256 files. Set the editor's `vision_model`
-to that absolute path or use the default relative path. The launcher starts in
-the ComfyUI directory. Prepare uses `local_files_only=True`; it never calls a
+to that absolute path or use the populated relative path. Switching preparation
+updates bundled model paths; custom paths and saved widget positions are retained.
+The loader dispatches from the local snapshot's configuration and disables
+Qwen3.5 thinking for structured JSON. Prepare uses `local_files_only=True`; it never calls a
 hosted service or downloads weights during creative work. Missing weights give
 editor feedback and leave manual placement available. Anime landmarks require
 visual validation against the original source image.

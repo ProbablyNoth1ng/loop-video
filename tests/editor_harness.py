@@ -35,6 +35,15 @@ QWEN_PLAN = new_plan('fixture',(600,900),'Gentle hair sway. Stationary camera.',
 FAILED_PLAN = new_plan('fixture',(600,900),'Gentle hair sway. Stationary camera.',
                 ['hair tip','hair root','head','shoulder'],[],6,24,.01,720,
                 ['Automatic preparation failed: missing hair tip. Add/edit points manually or retry.'])
+DENSE_PLAN = new_plan('fixture',(600,900),'Gentle hair sway. Stationary camera.',
+                ['hair tip','hair root','head','shoulder'],[
+                    dict(label=f'hair strand {i+1}',x=.23+i*.027,y=.18+(i%3)*.06,
+                         body_part='hair',motion_role='move',reason='Synthetic hair sway fixture')
+                    for i in range(16)] + [
+                    dict(label=label,x=x,y=y,body_part=part,motion_role='anchor',reason='Stationary fixture part')
+                    for label,x,y,part in [('hair root',.49,.19,'hair'),('head',.5,.32,'head'),
+                                          ('left shoulder',.3,.58,'shoulder'),('right shoulder',.7,.58,'shoulder')]],
+                6,24,.01,720)
 RECORD = {'schema':'ambient-render-handle/1','kind':'candidate','state':'awaiting_visual_review',
           'frame_count':72,'fps':24,'dimensions':[128,72],'feedback':['Local playback fixture.']}
 CANDIDATES = ['candidate-fixture-new/record.json','candidate-fixture-old/record.json']
@@ -44,6 +53,7 @@ HTML = '''<!doctype html><meta charset="utf-8"><title>Ambient Loop editor test f
 <style>body{background:#0d1117;color:white;font:14px system-ui;margin:20px}.panels{display:flex;gap:16px;align-items:start;overflow-x:auto}.panel{flex:0 0 520px}pre{white-space:pre-wrap}input{margin:3px}</style>
 <h1>Ambient Loop · local editor fixture</h1><p>Real extension; simulated queue. No GPU generation.</p>
 <button id="qwen-fixture">Show Qwen points</button><button id="failed-fixture">Show Qwen failure</button>
+<button id="dense-fixture">Show 20 semantic points</button>
 <button id="invalid-fixture">Show invalid Prepare</button><button id="run-fixture">Run</button><button id="run-again-fixture">Run again</button><button id="auto-fixture">Auto queue</button>
 <button id="reopen-fixture">Simulate reopen</button>
 <button id="render-fixture">Simulate completed render</button>
@@ -72,7 +82,7 @@ document.getElementById('candidate-fixture').onchange=async event=>{
 document.getElementById('render-fixture').onclick=async()=>saver.onExecuted({
  preview_paths:['ambient-loop/candidate-fixture-new/loop.mp4','ambient-loop/candidate-fixture-new/seam.mp4'],
  render_handle:[await(await fetch('/ambient-loop/record?candidate=candidate-fixture-new%2Frecord.json')).json()]});
-for(const [id,path] of [['qwen-fixture','/fixture-qwen-plan'],['failed-fixture','/fixture-failed-plan']])
+for(const [id,path] of [['qwen-fixture','/fixture-qwen-plan'],['failed-fixture','/fixture-failed-plan'],['dense-fixture','/fixture-dense-plan']])
  document.getElementById(id).onclick=async()=>editor.onExecuted({motion_plan:[await(await fetch(path)).json()],
  bg_image:[await(await fetch('/fixture-image')).text()]});
 document.getElementById('reopen-fixture').onclick=()=>{editor.widgets.find(w=>w.name==='plan_json').value='{}';editor.onConfigure();};
@@ -112,6 +122,7 @@ class Handler(BaseHTTPRequestHandler):
         elif path=='/scripts/api.js':self.reply(API,'text/javascript')
         elif path=='/fixture-plan':self.reply(PLAN)
         elif path=='/fixture-qwen-plan':self.reply(QWEN_PLAN)
+        elif path=='/fixture-dense-plan':self.reply(DENSE_PLAN)
         elif path=='/fixture-failed-plan':self.reply(FAILED_PLAN)
         elif path=='/fixture-image':self.reply(base64.b64encode(PNG),'text/plain')
         elif path=='/view':
