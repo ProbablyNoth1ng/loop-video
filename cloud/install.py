@@ -15,6 +15,8 @@ from urllib.request import urlopen
 
 
 QWEN_REPO = 'Qwen/Qwen3-VL-8B-Instruct'
+# ComfyUI v0.38.0 includes the LTX-2.5 diffusion video VAE loader.
+COMFY_COMPAT_REVISION = '6b747c0428c343e1417219641db93a4fb7cb69ae'
 UPSCALER = 'upscale_models/realesr-animevideov3.pth'
 UPSCALER_URL = ('https://github.com/xinntao/Real-ESRGAN/releases/download/'
                 'v0.2.5.0/realesr-animevideov3.pth')
@@ -199,6 +201,32 @@ def clone_once(repo, destination, revision=None):
     temporary.rename(destination)
 
 
+def ensure_comfy_compatibility(comfy):
+    def supports_diffusion_vae():
+        source = comfy / 'comfy/sd.py'
+        decoder = comfy / 'comfy/ldm/lightricks/vae/na_diffusion_decoder.py'
+        if not source.is_file() or not decoder.is_file():
+            return False
+        loader = source.read_text(encoding='utf-8')
+        return ('"decoder.conv_in_x_t.weight" in sd' in loader
+                and 'na_diffusion_decoder.CausalDiffusionVAE(' in loader)
+
+    if supports_diffusion_vae():
+        return
+    git = ['git', '-C', str(comfy)]
+    changes = subprocess.check_output(git + ['status', '--porcelain', '--untracked-files=no'])
+    if changes.strip():
+        raise RuntimeError('ComfyUI lacks the LTX-2.5 diffusion VAE loader and has local changes. '
+                           'Save those changes and update ComfyUI before restarting setup.')
+    previous = subprocess.check_output(git + ['rev-parse', 'HEAD'], text=True).strip()
+    print('Updating ComfyUI to v0.38.0 for LTX-2.5 diffusion VAE support.', flush=True)
+    subprocess.run(git + ['fetch', '--depth', '1', 'origin', COMFY_COMPAT_REVISION], check=True)
+    subprocess.run(git + ['checkout', '--detach', 'FETCH_HEAD'], check=True)
+    if not supports_diffusion_vae():
+        subprocess.run(git + ['checkout', '--detach', previous], check=True)
+        raise RuntimeError('ComfyUI update lacks LTX-2.5 diffusion VAE support; previous revision restored.')
+
+
 def install(project, comfy):
     if sys.version_info < (3, 12):
         raise RuntimeError('Use Python 3.12+ from the ComfyUI environment.')
@@ -212,6 +240,7 @@ def install(project, comfy):
         os.execv(str(python), [str(python), __file__, '--project-root', str(project), '--comfy-root', str(comfy)])
     state = comfy / '.ambient-loop-install'
     state.mkdir(exist_ok=True)
+    ensure_comfy_compatibility(comfy)
     for command in ('ffmpeg', 'ffprobe'):
         if not shutil.which(command):
             subprocess.run(['apt-get', 'update'], check=True)
@@ -231,6 +260,7 @@ def install(project, comfy):
         fingerprint.update(path.read_bytes())
     fingerprint.update((str(sys.version_info[:3]) + json.dumps(versions, sort_keys=True)).encode())
     fingerprint.update(str(project).encode())
+    fingerprint.update(subprocess.check_output(['git', '-C', str(comfy), 'rev-parse', 'HEAD']))
     fingerprint.update(subprocess.check_output(['git', '-C', str(ltx), 'rev-parse', 'HEAD']))
     expected = fingerprint.hexdigest()
     installed = read_json(state / 'dependencies.json')

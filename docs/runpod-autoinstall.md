@@ -5,6 +5,10 @@ The launcher fixture was extracted from image digest
 `sha256:e8505fe1ba1b39cc6a140c2f01fe8d8d47f680cc7af45662ec0d77858fba8355`.
 This installs the current BF16 workflow; its minimum GPU memory is not qualified.
 The installer does not silently substitute quantized models.
+The image is the base environment: its ComfyUI 0.30.0 cannot load the workflow's
+LTX-2.5 diffusion video VAE. Before launch, the installer upgrades incompatible,
+clean ComfyUI checkouts to v0.38.0 (commit
+`6b747c0428c343e1417219641db93a4fb7cb69ae`). Existing compatible code is kept.
 
 ## Storage
 
@@ -73,6 +77,9 @@ in the generated command. Your current public GitHub repository needs no token.
 ## What happens on boot
 
 - Clone Ambient Loop and ComfyUI-LTXVideo into `/workspace` on the container disk.
+- Check for the LTX-2.5 diffusion VAE loader in ComfyUI and update incompatible
+  core code to the pinned revision. Local changes block this update explicitly;
+  models, user workflows and custom nodes are preserved.
 - Install project, vision, ComfyUI and LTX requirements using ComfyUI's active
   virtual environment, while constraining Torch/torchvision/torchaudio to the
   image's installed versions. Install ffmpeg if missing.
@@ -93,7 +100,8 @@ ComfyUI's normal server startup. Open `ambient-motion` from saved workflows.
 Successful installation is not proof of GPU rendering or visual loop quality.
 
 When files still exist, another invocation uses the existing project/LTX revisions,
-installed dependencies and model files; it does not automatically pull upstream code.
+installed dependencies and model files. Only incompatible ComfyUI core code is
+updated to the pinned compatibility revision; compatible code is not pulled.
 An existing `/workspace/ambient-loop` checkout does not automatically pull a
 published adapter fix on restart. Use a fresh Pod or update that checkout explicitly.
 A new or cleared container disk always gets a complete installation. Fast model checks
@@ -103,6 +111,26 @@ local download metadata on retry while those files remain on disk.
 Missing/truncated models trigger recovery.
 Checksums, model revisions and `pip freeze` are retained under
 `ComfyUI/.ambient-loop-install/`. Run one Pod at a time against this installation.
+
+## Video VAE loading error
+
+If node `5004:5601` reports mismatched `decoder.conv_in.weight` shapes
+`[2048, 128]` versus `[2048, 128, 3, 3]`, ComfyUI selected its generic Stable
+Diffusion VAE loader for `ltx-2.5-video-vae-bf16.safetensors`. ComfyUI 0.30.0
+lacks the required diffusion decoder branch. This is a core loader compatibility
+problem, not a VRAM allocation failure. The compatible loader recognizes
+`decoder.conv_in_x_t.weight` and constructs `CausalDiffusionVAE`.
+
+Publish the updated `cloud/install.py`, then use a fresh Pod or update the
+existing project checkout explicitly and rerun the installer before restarting
+ComfyUI. A restart with an old project checkout will keep using its old installer.
+Keep the video VAE selected in the workflow; the compatibility fix retains its
+diffusion decoder and does not change the official workflow or model downloads.
+ComfyUI core revisions are included in the dependency fingerprint so an upgrade
+also refreshes requirements under the image's Torch version constraints.
+
+Sources: [ComfyUI 0.30.0 VAE loader](https://github.com/Comfy-Org/ComfyUI/blob/v0.30.0/comfy/sd.py),
+[ComfyUI 0.38.0 VAE loader](https://github.com/Comfy-Org/ComfyUI/blob/6b747c0428c343e1417219641db93a4fb7cb69ae/comfy/sd.py).
 
 If setup fails, fix the issue shown in the logs and retry. Stopping the Pod clears
 the temporary files; a new boot downloads them again. Account

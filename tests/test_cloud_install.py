@@ -5,12 +5,92 @@ import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from cloud import install, runpod_entrypoint
 from tools.build_runpod_command import build_command
 
 
 class CloudInstallTests(unittest.TestCase):
+    def test_incompatible_comfyui_upgrades_and_preserves_models(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            comfy, supported = self.comfy_repository(Path(tmp))
+            model = comfy / 'models/vae/user-model.safetensors'
+            model.parent.mkdir(parents=True)
+            model.write_bytes(b'user model')
+            self.ensure_comfy(comfy)
+            self.assertEqual(self.git(comfy, 'rev-parse', 'HEAD'), supported)
+            self.assertEqual(model.read_bytes(), b'user model')
+
+    def test_compatible_comfyui_is_kept_even_with_local_edits(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            comfy, supported = self.comfy_repository(Path(tmp))
+            self.git(comfy, 'checkout', '--detach', supported)
+            source = comfy / 'comfy/sd.py'
+            content = source.read_text() + '\n# local edit\n'
+            source.write_text(content)
+            self.ensure_comfy(comfy)
+            self.assertEqual(self.git(comfy, 'rev-parse', 'HEAD'), supported)
+            self.assertEqual(source.read_text(), content)
+
+    def test_incompatible_comfyui_local_edits_block_upgrade(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            comfy, _ = self.comfy_repository(Path(tmp))
+            before = self.git(comfy, 'rev-parse', 'HEAD')
+            source = comfy / 'comfy/sd.py'
+            content = source.read_text() + '\n# preserve me\n'
+            source.write_text(content)
+            with self.assertRaisesRegex(RuntimeError, 'local changes'):
+                self.ensure_comfy(comfy)
+            self.assertEqual(source.read_text(), content)
+            self.assertEqual(self.git(comfy, 'rev-parse', 'HEAD'), before)
+
+    def test_upgrade_without_diffusion_vae_support_is_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            comfy, _ = self.comfy_repository(Path(tmp), compatible=False)
+            before = self.git(comfy, 'rev-parse', 'HEAD')
+            with self.assertRaisesRegex(RuntimeError, 'diffusion VAE'):
+                self.ensure_comfy(comfy)
+            self.assertEqual(self.git(comfy, 'rev-parse', 'HEAD'), before)
+
+    def ensure_comfy(self, comfy):
+        with patch.object(install, 'COMFY_COMPAT_REVISION', 'v0.38.0'):
+            install.ensure_comfy_compatibility(comfy)
+
+    @staticmethod
+    def git(root, *args):
+        return subprocess.check_output(['git', '-C', str(root), *args],
+                                       stderr=subprocess.DEVNULL, text=True).strip()
+
+    def comfy_repository(self, root, compatible=True):
+        origin = root / 'origin'
+        origin.mkdir()
+        self.git(origin, 'init', '--quiet')
+        self.git(origin, 'config', 'user.name', 'Test')
+        self.git(origin, 'config', 'user.email', 'test@example.invalid')
+        (origin / 'comfy').mkdir()
+        source = origin / 'comfy/sd.py'
+        source.write_text('elif "decoder.conv_in.weight" in sd:\n    pass\n')
+        self.git(origin, 'add', '.')
+        self.git(origin, 'commit', '--quiet', '-m', 'Legacy VAE loader')
+        self.git(origin, 'branch', 'legacy')
+        if compatible:
+            source.write_text('elif "decoder.conv_in_x_t.weight" in sd:\n'
+                              '    model = na_diffusion_decoder.CausalDiffusionVAE(config=config)\n')
+            decoder = origin / 'comfy/ldm/lightricks/vae/na_diffusion_decoder.py'
+            decoder.parent.mkdir(parents=True)
+            decoder.write_text('class CausalDiffusionVAE: pass\n')
+        else:
+            (origin / 'README.md').write_text('New revision still lacks diffusion VAE support.\n')
+        self.git(origin, 'add', '.')
+        self.git(origin, 'commit', '--quiet', '-m', 'New core revision')
+        supported = self.git(origin, 'rev-parse', 'HEAD')
+        self.git(origin, 'tag', 'v0.38.0')
+        comfy = root / 'ComfyUI'
+        subprocess.run(['git', 'clone', '--quiet', '--branch', 'legacy',
+                        str(origin), str(comfy)], check=True)
+        return comfy, supported
+
     def test_image_launcher_installs_before_original_comfyui_command(self):
         fixture = Path(__file__).parent / 'fixtures/runpod-start-e8505fe1.sh'
         source = fixture.read_text(encoding='utf-8')
