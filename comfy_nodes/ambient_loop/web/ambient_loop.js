@@ -8,7 +8,13 @@ const widget = (node,name) => node.widgets?.find(w => w.name === name);
 const nodes = () => graphNodes(app.rootGraph ?? app.graph);
 const find = type => nodes().find(n => n.comfyClass === type || n.type === type);
 const graphNodes = graph => graph?._nodes ?? graph?.nodes ?? [];
-const viewURL = path => api.apiURL('/view?'+new URLSearchParams({filename:path,type:'output'}));
+const portablePath = path => path.replaceAll('\\','/');
+const viewURL = path => {
+    const normalized=portablePath(path),split=normalized.lastIndexOf('/');
+    return api.apiURL('/view?'+new URLSearchParams({
+        filename:normalized.slice(split+1),subfolder:normalized.slice(0,Math.max(0,split)),type:'output'
+    }));
+};
 
 async function queue(stage, target, status, expectedGraph) {
     try {
@@ -402,11 +408,22 @@ function previews(node,upscale=false) {
         const column=element('div',row);column.style.width='48%';element('p',column,text);
         return element('video',column);
     });
-    for(const video of videos){video.controls=true;video.loop=true;video.muted=true;video.playsInline=true;video.style.width='100%';}
+    for(const video of videos){
+        video.controls=true;video.loop=true;video.muted=true;video.autoplay=true;
+        video.playsInline=true;video.preload='auto';video.style.width='100%';
+        video.onerror=()=>{status.textContent='Video preview failed to load. Check that the saved MP4 is available, then refresh candidates.';};
+    }
     const download=element('a',root,'Save silent MP4');download.style.color='#7ce7dc';download.style.display='none';download.download='';
     function show(paths,record) {
-        videos.forEach((v,i)=>{v.src=viewURL(paths[i]);});download.href=viewURL(paths[0]);download.style.display='block';
+        paths=paths.map(portablePath);
         status.textContent=`${record.frame_count} frames · ${record.fps} FPS · ${record.dimensions.join(' × ')}. ${record.feedback?.join(' ')??''}`;
+        videos.forEach((video,i)=>{
+            video.src=viewURL(paths[i]);video.load();
+            video.play()?.catch(error=>{
+                if(error.name==='NotAllowedError')status.textContent='Automatic playback was blocked by the browser. Use the player controls to play.';
+            });
+        });
+        download.href=viewURL(paths[0]);download.style.display='block';
         // Save only preview metadata, not a render record containing past workflows.
         const summary={frame_count:record.frame_count,fps:record.fps,
                        dimensions:record.dimensions,feedback:record.feedback};
@@ -414,32 +431,73 @@ function previews(node,upscale=false) {
     }
     const executed=node.onExecuted;
     node.onExecuted=function(message){executed?.apply(this,arguments);
-        if(message.preview_paths)show(message.preview_paths,message.render_handle[0]);};
+        if(message.preview_paths) {
+            show(message.preview_paths,message.render_handle[0]);
+            if(!upscale) {
+                const path=portablePath(message.preview_paths[0]);
+                const candidate=path.slice('ambient-loop/'.length,path.lastIndexOf('/'))+'/record.json';
+                for(const selector of nodes().filter(n=>(n.comfyClass??n.type)==='AmbientSavedCandidate')) {
+                    selector.ambientSelectCandidate?.(candidate);
+                }
+            }
+        }};
     const configured=node.onConfigure;
     node.onConfigure=function(){configured?.apply(this,arguments);const saved=node.properties.ambient_preview;if(saved)show(saved.paths,saved.record);};
     node.ambientShowPreview=show;
+    const removed=node.onRemoved;
+    node.onRemoved=function(){videos.forEach(video=>video.pause());removed?.apply(this,arguments);};
 }
 
 function selector(node) {
-    const root=panel(node,110),status=element('p',root,'Select a candidate saved on the persistent output volume.');
-    button(root,'Refresh candidates',async()=>{
+    const root=panel(node,110),status=element('p',root,'The last render is selected for upscale. Choose another saved candidate to preview it.');
+    const choice=widget(node,'candidate');
+    let revision=0,removed=false;
+    function select(candidate) {
+        revision++;
+        candidate=portablePath(candidate);
+        choice.options.values=[candidate,...(choice.options.values??[])
+            .filter(value=>value!==candidate&&value!=='Select a saved candidate')];
+        choice.value=candidate;
+        status.textContent=`Selected ${candidate.split('/')[0]} for upscale.`;
+        app.graph.setDirtyCanvas(true,true);
+    }
+    async function previewSelected() {
+        const current=++revision,candidate=portablePath(choice.value);
+        if(candidate==='Select a saved candidate')return;
         try {
-            const response=await api.fetchApi('/ambient-loop/candidates');const records=await response.json();
-            const w=widget(node,'candidate');w.options.values=records.length?records:['Select a saved candidate'];
-            if(!records.includes(w.value))w.value=records[0]??'Select a saved candidate';
-            status.textContent=`${records.length} saved candidates available.`;
-        }catch(error){status.textContent=error.message;}
-    });
-    button(root,'Preview selected',async()=>{
-        try {
-            const candidate=widget(node,'candidate').value;
             const response=await api.fetchApi('/ambient-loop/record?'+new URLSearchParams({candidate}));
             if(!response.ok)throw new Error(await response.text());const record=await response.json();
+            if(removed||current!==revision)return;
             const directory=candidate.substring(0,candidate.lastIndexOf('/'));
             const target=find('AmbientSaveCandidate');
             target?.ambientShowPreview([`ambient-loop/${directory}/loop.mp4`,`ambient-loop/${directory}/seam.mp4`],record);
-        }catch(error){status.textContent=error.message;}
-    });
+            status.textContent=`Selected ${directory} for upscale.`;
+        }catch(error){if(!removed&&current===revision)status.textContent=error.message;}
+    }
+    async function refresh() {
+        const current=++revision;
+        try {
+            const response=await api.fetchApi('/ambient-loop/candidates');
+            if(!response.ok)throw new Error(await response.text());
+            const records=(await response.json()).map(portablePath);
+            if(removed||current!==revision)return;
+            choice.options.values=records.length?records:['Select a saved candidate'];
+            choice.value=portablePath(choice.value);
+            if(!records.includes(choice.value))choice.value=records[0]??'Select a saved candidate';
+            app.graph.setDirtyCanvas(true,true);
+            status.textContent=records.length?`${records.length} saved candidates available.`:'No completed renders yet. Render a candidate first.';
+            await previewSelected();
+        }catch(error){if(!removed&&current===revision)status.textContent=error.message;}
+    }
+    button(root,'Refresh candidates',refresh);
+    const changed=choice.callback;
+    choice.callback=function(){changed?.apply(this,arguments);return previewSelected();};
+    node.ambientSelectCandidate=select;
+    const configured=node.onConfigure;
+    node.onConfigure=function(){configured?.apply(this,arguments);void refresh();};
+    const onRemoved=node.onRemoved;
+    node.onRemoved=function(){removed=true;revision++;onRemoved?.apply(this,arguments);};
+    void refresh();
 }
 
 app.registerExtension({name:'ambient-loop.staged',

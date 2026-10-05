@@ -82,7 +82,9 @@ directory retains `raw/` (145 generated frames),
 Each finish retains its own enhanced PNGs, record and previews. Frame hashes are
 verified before finishing; do not rename/remove frame files.
 
-After restart, reopen the saved workflow, refresh candidates and select an
-original candidate. Finishing has no dependency on source image/editor/video
+After restart, reopen the saved workflow. Completed candidates load newest first;
+the saved selection is restored, or the newest render is selected. Changing the
+candidate dropdown automatically plays its previews. Each completed render
+becomes the selected candidate for upscale. Finishing has no dependency on source image/editor/video
 models. Initial generation still materializes the official decoded batch;
 RENDER_HANDLE and finishing never retain that full tensor batch.

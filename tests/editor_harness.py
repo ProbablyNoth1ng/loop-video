@@ -5,10 +5,13 @@ Queueing is simulated; this does not qualify a deployed ComfyUI frontend.
 """
 import base64
 import json
+import subprocess
 import sys
+import tempfile
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from io import BytesIO
 from pathlib import Path
+from urllib.parse import parse_qs, urlsplit
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from PIL import Image, ImageDraw
@@ -32,6 +35,10 @@ QWEN_PLAN = new_plan('fixture',(600,900),'Gentle hair sway. Stationary camera.',
 FAILED_PLAN = new_plan('fixture',(600,900),'Gentle hair sway. Stationary camera.',
                 ['hair tip','hair root','head','shoulder'],[],6,24,.01,720,
                 ['Automatic preparation failed: missing hair tip. Add/edit points manually or retry.'])
+RECORD = {'schema':'ambient-render-handle/1','kind':'candidate','state':'awaiting_visual_review',
+          'frame_count':72,'fps':24,'dimensions':[128,72],'feedback':['Local playback fixture.']}
+CANDIDATES = ['candidate-fixture-new/record.json','candidate-fixture-old/record.json']
+VIDEO = b''
 
 HTML = '''<!doctype html><meta charset="utf-8"><title>Ambient Loop editor test fixture</title>
 <style>body{background:#0d1117;color:white;font:14px system-ui;margin:20px}.panels{display:flex;gap:16px;align-items:start;overflow-x:auto}.panel{flex:0 0 520px}pre{white-space:pre-wrap}input{margin:3px}</style>
@@ -39,6 +46,8 @@ HTML = '''<!doctype html><meta charset="utf-8"><title>Ambient Loop editor test f
 <button id="qwen-fixture">Show Qwen points</button><button id="failed-fixture">Show Qwen failure</button>
 <button id="invalid-fixture">Show invalid Prepare</button><button id="run-fixture">Run</button><button id="run-again-fixture">Run again</button><button id="auto-fixture">Auto queue</button>
 <button id="reopen-fixture">Simulate reopen</button>
+<button id="render-fixture">Simulate completed render</button>
+<label>Saved candidate <select id="candidate-fixture"><option value="candidate-fixture-new/record.json">Latest render</option><option value="candidate-fixture-old/record.json">Older render</option></select></label>
 <div class="panels"><section id="editor" class="panel"></section><section id="outputs" class="panel"></section></div>
 <pre id="queue">No stage queued</pre>
 <script type="module">
@@ -56,7 +65,13 @@ const upscale=make(7,'AmbientUpscale',{resolution:'1440p',chunk_size:4},document
 const load=make(1,'LoadImage',{image:'fixture.png'},document.querySelector('#editor'));
 app.graph._nodes=[load,editor,saver,selector,upscale];
 await app.extension.setup();for(const node of app.graph._nodes)app.extension.nodeCreated(node);
-api.executed=message=>editor.onExecuted(message);
+api.executed=(id,message)=>app.graph._nodes.find(node=>node.id===id)?.onExecuted(message);
+document.getElementById('candidate-fixture').onchange=async event=>{
+ const choice=selector.widgets.find(w=>w.name==='candidate');choice.value=event.target.value;await choice.callback(choice.value);
+};
+document.getElementById('render-fixture').onclick=async()=>saver.onExecuted({
+ preview_paths:['ambient-loop/candidate-fixture-new/loop.mp4','ambient-loop/candidate-fixture-new/seam.mp4'],
+ render_handle:[await(await fetch('/ambient-loop/record?candidate=candidate-fixture-new%2Frecord.json')).json()]});
 for(const [id,path] of [['qwen-fixture','/fixture-qwen-plan'],['failed-fixture','/fixture-failed-plan']])
  document.getElementById(id).onclick=async()=>editor.onExecuted({motion_plan:[await(await fetch(path)).json()],
  bg_image:[await(await fetch('/fixture-image')).text()]});
@@ -76,20 +91,22 @@ APP = '''export const app={graph:{_nodes:[],setDirtyCanvas(){}},registerExtensio
  2:{class_type:'AmbientMotionEditor',inputs},3:{class_type:'UNETLoader',inputs:{}},
  4:{class_type:'Sampler',inputs:{model:['3',0],canvas:['2',0]}},
  5:{class_type:'AmbientSaveCandidate',inputs:{video:['4',0],motion_plan:['2',2]}},
- 6:{class_type:'AmbientSavedCandidate',inputs:{candidate:'fixture/record.json'}},
+ 6:{class_type:'AmbientSavedCandidate',inputs:{candidate:this.graph._nodes.find(n=>n.id===6).widgets.find(w=>w.name==='candidate').value}},
  7:{class_type:'AmbientUpscale',inputs:{candidate:['6',0]}}}};}};'''
 
 API = '''export const api={apiURL:path=>path,fetchApi:(path,options)=>fetch(path,options),
  async queuePrompt(number,prompt){document.querySelector('#queue').textContent=JSON.stringify(prompt.output,null,2);
  const data=await(await fetch('/fixture-queue',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(prompt)})).json();
- if(data.ui)this.executed(data.ui);return{prompt_id:'fixture',node_errors:{}};}};globalThis.fixtureApi=api;'''
+ if(data.ui)this.executed(data.node,data.ui);return{prompt_id:'fixture',node_errors:{}};}};globalThis.fixtureApi=api;'''
 
 class Handler(BaseHTTPRequestHandler):
     def reply(self,data,mime='application/json',status=200):
         payload=data if isinstance(data,bytes) else data.encode() if isinstance(data,str) else json.dumps(data).encode()
         self.send_response(status);self.send_header('Content-Type',mime);self.end_headers();self.wfile.write(payload)
     def do_GET(self):
-        path=self.path.split('?')[0]
+        parsed=urlsplit(self.path)
+        path=parsed.path
+        query=parse_qs(parsed.query)
         if path=='/':self.reply(HTML,'text/html')
         elif path=='/scripts/app.js':self.reply(APP,'text/javascript')
         elif path=='/scripts/api.js':self.reply(API,'text/javascript')
@@ -97,8 +114,21 @@ class Handler(BaseHTTPRequestHandler):
         elif path=='/fixture-qwen-plan':self.reply(QWEN_PLAN)
         elif path=='/fixture-failed-plan':self.reply(FAILED_PLAN)
         elif path=='/fixture-image':self.reply(base64.b64encode(PNG),'text/plain')
-        elif path=='/view':self.reply(PNG,'image/png')
-        elif path=='/ambient-loop/candidates':self.reply([])
+        elif path=='/view':
+            # Match ComfyUI's filename/subfolder contract; the old URL must fail.
+            filename=Path(query.get('filename',[''])[0]).name
+            subfolder=query.get('subfolder',[''])[0]
+            if filename=='fixture.png':self.reply(PNG,'image/png')
+            elif (filename in ('loop.mp4','seam.mp4') and query.get('type')==['output']
+                  and subfolder in ('ambient-loop/candidate-fixture-new','ambient-loop/candidate-fixture-old','ambient-loop/finish-fixture')):
+                self.reply(VIDEO,'video/mp4')
+            else:self.reply('Preview file not found','text/plain',404)
+        elif path=='/ambient-loop/candidates':self.reply(CANDIDATES)
+        elif path=='/ambient-loop/record':
+            candidate=query.get('candidate',[''])[0]
+            if candidate in CANDIDATES:
+                self.reply(dict(RECORD,directory='/fixture/'+candidate.rsplit('/',1)[0],record='/fixture/'+candidate))
+            else:self.reply('Record not found','text/plain',404)
         elif path.startswith('/extensions/ambient_loop/'):
             name=path.rsplit('/',1)[-1]
             if name not in ('ambient_loop.js','stages.mjs','geometry.mjs','queue_control.mjs'):self.reply({},status=404);return
@@ -111,9 +141,21 @@ class Handler(BaseHTTPRequestHandler):
             except (ValueError,KeyError,TypeError) as error:self.reply({'error':str(error)},status=400)
         elif self.path=='/fixture-queue':
             editor=next((n for n in data['output'].values() if n['class_type']=='AmbientMotionEditor'),None)
-            self.reply({'ui':{'motion_plan':[PLAN],'bg_image':[base64.b64encode(PNG).decode()]}} if editor and editor['inputs']['stage']=='prepare' else {})
+            if editor and editor['inputs']['stage']=='prepare':
+                self.reply({'node':2,'ui':{'motion_plan':[PLAN],'bg_image':[base64.b64encode(PNG).decode()]}})
+            elif any(n['class_type']=='AmbientSaveCandidate' for n in data['output'].values()):
+                self.reply({'node':5,'ui':{'preview_paths':['ambient-loop/candidate-fixture-new/loop.mp4','ambient-loop/candidate-fixture-new/seam.mp4'],'render_handle':[RECORD]}})
+            elif any(n['class_type']=='AmbientUpscale' for n in data['output'].values()):
+                self.reply({'node':7,'ui':{'preview_paths':['ambient-loop/finish-fixture/loop.mp4','ambient-loop/finish-fixture/seam.mp4'],'render_handle':[dict(RECORD,kind='finish')]}})
+            else:self.reply({})
         else:self.reply({},status=404)
 
 if __name__=='__main__':
+    with tempfile.TemporaryDirectory() as tmp:
+        clip=Path(tmp)/'preview.mp4'
+        subprocess.run(['ffmpeg','-hide_banner','-loglevel','error','-y','-f','lavfi',
+                        '-i','testsrc2=size=128x72:rate=24:duration=3','-an','-c:v','libx264',
+                        '-pix_fmt','yuv420p','-movflags','+faststart',str(clip)],check=True)
+        VIDEO=clip.read_bytes()
     print('Editor fixture at http://127.0.0.1:8766',flush=True)
     HTTPServer(('127.0.0.1',8766),Handler).serve_forever()

@@ -3,6 +3,7 @@ from pathlib import Path
 
 from .motion import review_plan
 from .staged_comfy import output_root
+from .candidates import list_candidates
 
 
 def register_routes():
@@ -18,9 +19,7 @@ def register_routes():
 
     @PromptServer.instance.routes.get('/ambient-loop/candidates')
     async def candidates(request):
-        root = output_root()
-        records = sorted(p.relative_to(root).as_posix() for p in root.glob('candidate-*/record.json'))
-        return web.json_response(records)
+        return web.json_response(list_candidates(output_root()))
 
     @PromptServer.instance.routes.get('/ambient-loop/record')
     async def record(request):

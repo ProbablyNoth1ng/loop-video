@@ -13,6 +13,24 @@ from .motion import validate_plan, plan_fingerprint
 from .project import atomic_json, sha
 
 
+def list_candidates(root):
+    """Completed original renders, newest first, using portable widget values."""
+    root = Path(root)
+    records = []
+    for path in root.glob('candidate-*/record.json'):
+        try:
+            record = json.loads(path.read_text(encoding='utf-8'))
+            if (not isinstance(record,dict) or record.get('schema') != 'ambient-render-handle/1'
+                    or record.get('kind') != 'candidate'
+                    or record.get('state') != 'awaiting_visual_review'
+                    or not all((path.parent/name).is_file() for name in ('loop.mp4','seam.mp4'))):
+                continue
+            records.append((path.stat().st_mtime_ns,path.relative_to(root).as_posix()))
+        except (OSError,ValueError):
+            continue
+    return [name for _,name in sorted(records,reverse=True)]
+
+
 def output_size(size, short_side):
     scale = short_side/min(size)
     return tuple(max(2, round(value*scale/2)*2) for value in size)

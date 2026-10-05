@@ -1,4 +1,5 @@
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -8,6 +9,32 @@ from ambient_loop.staged_comfy import AmbientMotionEditor, AmbientSavedCandidate
 
 
 class StageTests(unittest.TestCase):
+    def test_saved_candidates_are_complete_and_newest_first_with_portable_paths(self):
+        from ambient_loop.candidates import list_candidates
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for name, state, stamp in [('candidate-a-new','awaiting_visual_review',300),
+                                       ('candidate-z-old','awaiting_visual_review',100),
+                                       ('candidate-pending','encoding',400)]:
+                directory = root/name
+                directory.mkdir()
+                path = directory/'record.json'
+                path.write_text(json.dumps({'schema':'ambient-render-handle/1','kind':'candidate','state':state}))
+                (directory/'loop.mp4').write_bytes(b'video')
+                (directory/'seam.mp4').write_bytes(b'video')
+                os.utime(path, ns=(stamp,stamp))
+            corrupt = root/'candidate-corrupt'
+            corrupt.mkdir()
+            (corrupt/'record.json').write_text('{')
+            missing = root/'candidate-missing'
+            missing.mkdir()
+            (missing/'record.json').write_text(json.dumps({'schema':'ambient-render-handle/1',
+                'kind':'candidate','state':'awaiting_visual_review'}))
+            expected = ['candidate-a-new/record.json','candidate-z-old/record.json']
+            self.assertEqual(list_candidates(root),expected)
+            with patch('ambient_loop.staged_comfy.output_root',return_value=root):
+                self.assertEqual(AmbientSavedCandidate.INPUT_TYPES()['required']['candidate'][0],expected)
+
     def test_interfaces_have_no_upstream_generation_for_finishing(self):
         with tempfile.TemporaryDirectory() as tmp, patch('ambient_loop.staged_comfy.output_root',return_value=Path(tmp)):
             inputs = AmbientSavedCandidate.INPUT_TYPES()['required']

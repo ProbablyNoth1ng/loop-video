@@ -24,11 +24,12 @@ see [automatic installation](docs/runpod-autoinstall.md).
    start stationary; other points get gentle returning paths. Click **Accept
    point review** before rendering.
 4. Click **Render** for the official LTX-2.5 single-stage Motion Track pipeline.
-   Review continuous and forward seam playback in **Render preview**. Change
+   Continuous and forward seam previews play automatically in **Render preview**. Change
    seed for another candidate. Image, prompt, timing, motion strength, canvas or
    point changes invalidate review. After motion-setting changes, Prepare again.
-5. Refresh **Select saved candidate**, choose an original candidate and preview
-   it. Optionally click **Upscale** for 1440p/4K. Finishing reads saved PNGs and
+5. The last completed render is automatically selected in **Select saved candidate**.
+   Choose another original render in its dropdown to preview it automatically.
+   Optionally click **Upscale** for 1440p/4K. Finishing reads saved PNGs and
    keeps the same frame count, FPS and timing. Review for flicker and click
    **Save silent MP4**. Lossless frames remain beside the output.
 
@@ -37,8 +38,8 @@ Use **Run** to choose exactly one Ambient Loop stage: **Prepare points**,
 Run's batch count. The node stage buttons remain available. Preparing points
 cannot queue generation; Upscale has only the saved-candidate branch upstream.
 Save the workflow after editing: plans live in its serialized editor widget and
-metadata. Render records live in `ComfyUI/output/ambient-loop/`. Refresh
-candidates after restarting ComfyUI.
+metadata. Render records live in `ComfyUI/output/ambient-loop/`. Saved candidates
+load automatically after reopening; **Refresh candidates** reloads the list.
 
 Defaults: six seconds, 24 FPS, seed 42, generation short side near 720 pixels,
 original aspect ratio, stationary camera intent. Canvases use recorded edge
@@ -70,7 +71,7 @@ claimed. See [qualification](docs/qualification.md).
 
 ```bash
 python -m unittest discover -s tests -v
-node --test tests/test_queue_control.mjs tests/test_stages.mjs tests/test_motion_workflow.mjs tests/test_editor_geometry.mjs
+node --test tests/*.mjs
 ```
 
 Sources: [LTX Motion Control](https://docs.ltx.io/open-source-model/feature-guides/structural-control/motion-control),

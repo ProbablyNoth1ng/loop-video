@@ -10,7 +10,7 @@ from PIL import Image
 
 from .motion import new_plan, require_review, canvas_tracks
 from .vision import analyze
-from .candidates import save_candidate, load_handle, finish_candidate
+from .candidates import save_candidate, load_handle, finish_candidate, list_candidates
 
 
 def output_root():
@@ -136,8 +136,7 @@ class AmbientSaveCandidate:
 class AmbientSavedCandidate:
     @classmethod
     def INPUT_TYPES(cls):
-        root = output_root()
-        records = sorted(str(p.relative_to(root)) for p in root.glob('candidate-*/record.json'))
+        records = list_candidates(output_root())
         return {'required':{'candidate':(records or ['Select a saved candidate'],)}}
     RETURN_TYPES = ('RENDER_HANDLE',)
     FUNCTION = 'execute'
