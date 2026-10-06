@@ -16,7 +16,7 @@ const viewURL = path => {
     }));
 };
 
-async function queue(stage, target, status, expectedGraph) {
+async function queue(stage, target, status, expectedGraph, prepareTarget='character') {
     try {
         if (!target) throw new Error('Load the Ambient Loop motion workflow first.');
         if(expectedGraph && !isCurrentStageSelection(app,expectedGraph,target,stage)) {
@@ -47,6 +47,7 @@ async function queue(stage, target, status, expectedGraph) {
         let selected;
         try { selected = stageGraph(output,target.id,stage); }
         catch (error) { throw new Error(`${stage} stage graph failed at target ${target.id}: ${error.message}`); }
+        if(stage==='prepare')selected[String(target.id)].inputs.prepare_target=prepareTarget;
         console.info('[ambient-loop] selected', {stage,targetId:target.id,nodes:Object.entries(selected).map(([id,node])=>({id,class_type:node.class_type}))});
         workflow.extra ??= {};
         workflow.extra.ambient_motion_plans = Object.fromEntries(nodes()
@@ -94,7 +95,7 @@ function showStageChooser(graph) {
     const actions=element('div',dialog);
     const controls=[];let pending=false;
     const targets=resolveStageTargets(graph);
-    const choose=(stage,label)=>{
+    const choose=(stage,label,prepareTarget='character')=>{
         const state=targets[stage];
         const control=button(actions,label,async()=>{
             if(!state.target)return;
@@ -103,7 +104,7 @@ function showStageChooser(graph) {
             }
             pending=true;
             controls.forEach(item=>item.disabled=true);
-            const accepted=await queue(stage,state.target,status,graph);
+            const accepted=await queue(stage,state.target,status,graph,prepareTarget);
             if(accepted)closeStageChooser();else {
                 pending=false;
                 controls.forEach(item=>item.disabled=item.dataset.stage ? !targets[item.dataset.stage]?.target : false);
@@ -113,7 +114,8 @@ function showStageChooser(graph) {
         if(!state.target) { control.disabled=true;control.title=state.reason; }
         controls.push(control);
     };
-    choose('prepare','Prepare points');choose('render','Render');choose('upscale','Upscale');
+    choose('prepare','Prepare character points');choose('prepare','Prepare background points','background');
+    choose('render','Render');choose('upscale','Upscale');
     const cancel=button(actions,'Cancel',closeStageChooser);controls.push(cancel);
     const reasons=Object.values(targets).map(state=>state.reason).filter(Boolean);
     if(reasons.length)status.textContent=reasons.join(' ');
@@ -134,6 +136,25 @@ function checkSettings(node) {
     if(!node)throw new Error('Load the motion editor first.');
     const p=JSON.parse(widget(node,'plan_json').value);
     if(p.schema!=='ambient-motion-plan/1')throw new Error('Prepare a valid motion plan before Render.');
+    const value=name=>widget(node,name)?.value;
+    const requested=String(value('requested_parts')).split(',').map(s=>s.trim()).filter(Boolean);
+    if(p.prompt!==value('motion_prompt')||JSON.stringify(p.requested)!==JSON.stringify(requested))
+        throw new Error('Prepare character points for the changed prompt or requested parts.');
+    if(p.analysis?.prepared_prompt!==undefined &&
+       (p.analysis.prepared_preparation!==value('preparation')||p.analysis.prepared_model_path!==value('vision_model')))
+        throw new Error('Prepare character points for changed preparation settings.');
+    if((p.background?.enabled??false)!==(value('animate_background')??false))
+        throw new Error('Review the changed background animation setting.');
+    if(p.background?.enabled){
+        if(!String(value('background_prompt')??'').trim())throw new Error('Enter background motion first.');
+        if(p.background.prompt!==value('background_prompt')||p.background.preparation!==value('background_preparation')||
+           p.background.prepared_prompt!==p.background.prompt||p.background.prepared_preparation!==p.background.preparation||
+           (p.background.preparation==='model'&&p.background.prepared_model_path!==undefined&&
+            p.background.prepared_model_path!==value('vision_model')))
+            throw new Error('Prepare background points for changed settings.');
+        if(!p.landmarks.some(point=>point.group==='background'&&point.enabled&&point.motion_role==='move'))
+            throw new Error('Enable at least one moving background point.');
+    }
     return p;
 }
 
@@ -167,12 +188,31 @@ function hide(node,name) {
 }
 
 function editor(node) {
-    hide(node,'plan_json');hide(node,'stage');
+    hide(node,'plan_json');hide(node,'stage');hide(node,'prepare_target');
     const root = panel(node,540);
     const controls=element('div',root);
+    const backgroundControls=element('div',root);
+    const bgToggle=widget(node,'animate_background'),bgPrompt=widget(node,'background_prompt'),
+        bgPreparation=widget(node,'background_preparation');
+    const toggle=element('input',backgroundControls);toggle.type='checkbox';toggle.checked=!!bgToggle?.value;
+    element('span',backgroundControls,' Animate background');
+    const bgFields=element('div',backgroundControls);
+    const promptField=element('textarea',bgFields);promptField.placeholder='Example: Gently sway the visible leaves; keep the tree trunk still.';
+    promptField.value=bgPrompt?.value??'';promptField.rows=3;promptField.style.width='100%';
+    const mode=element('select',bgFields);mode.title='Background preparation';
+    for(const choice of ['model','manual']){const option=element('option',mode,choice);option.value=choice;}
+    mode.value=bgPreparation?.value??'model';
+    function showBackground(){
+        bgFields.style.display=toggle.checked?'block':'none';
+        groupControl.style.display=toggle.checked?'block':'none';
+    }
+    hide(node,'background_prompt');hide(node,'background_preparation');hide(node,'animate_background');
     const status=element('p',root,'Load an image, then Prepare points. Choose manual preparation to skip Qwen.');
     const canvas=element('canvas',root);canvas.width=480;canvas.height=300;
     Object.assign(canvas.style,{width:'100%',height:'300px',objectFit:'contain',touchAction:'none',background:'#080a0f'});
+    const groupControl=element('select',root);groupControl.title='Active point group';
+    for(const choice of ['character','background']){const option=element('option',groupControl,choice);option.value=choice;}
+    showBackground();
     const pointList=element('div',root);
     pointList.setAttribute('aria-label','Landmarks');
     Object.assign(pointList.style,{maxHeight:'160px',overflowY:'auto'});
@@ -185,7 +225,7 @@ function editor(node) {
     const semanticTools=element('div',root);
     const role=element('select',semanticTools);role.title='Motion role';
     for(const value of ['move','anchor']){const option=element('option',role,value);option.value=value;}
-    const bodyPart=element('input',semanticTools);bodyPart.title='Body part';bodyPart.placeholder='Body part';bodyPart.style.width='95px';
+    const bodyPart=element('input',semanticTools);bodyPart.title='Part / object';bodyPart.placeholder='Part / object';bodyPart.style.width='95px';
     const reason=element('input',semanticTools);reason.title='Role reason';reason.placeholder='Reason for motion or anchor';reason.style.width='240px';
     const pathTools=element('div',root);
     element('span',pathTools,'Path key · ');
@@ -199,6 +239,8 @@ function editor(node) {
     let background=new Image(),selected=-1,adding=false,drag=null,timer=null,rect=null,reviewButton=null;
     const pointRole=point=>point.motion_role??(point.path.every(k=>k.x===point.x&&k.y===point.y)?'anchor':'move');
     const color=point=>!point.enabled?'#aaa':pointRole(point)==='anchor'?'#72c8ff':'#a7ff69';
+    const group=point=>point.group??'character';
+    const visible=point=>group(point)==='character'||toggle.checked;
     function returningPath(point,moving) {
         const amplitude=moving?Math.min(plan().strength??.01,1-point.x):0;
         const path=Array.from({length:17},(_,i)=>({t:i/16,x:point.x+amplitude*(1-Math.cos(2*Math.PI*i/16))/2,y:point.y}));
@@ -224,6 +266,17 @@ function editor(node) {
         status.textContent='Points changed. Review trajectories and click Accept point review.';
         app.graph.setDirtyCanvas(true,true);pathSelection();draw();renderList();
     }
+    function saveBackground() {
+        bgToggle.value=toggle.checked;bgPrompt.value=promptField.value;bgPreparation.value=mode.value;
+        showBackground();
+        const p=plan();if(!validPlan(p))return;
+        p.background={...(p.background??{}),enabled:toggle.checked,prompt:promptField.value,preparation:mode.value};
+        if(!toggle.checked&&groupControl.value==='background')groupControl.value='character';
+        if(selected>=0&&!visible(p.landmarks[selected]))selected=-1;
+        save(p);selection(p);
+    }
+    toggle.onchange=saveBackground;promptField.oninput=saveBackground;mode.onchange=saveBackground;
+    groupControl.onchange=()=>{selected=-1;selection(plan());draw();};
     function persist(p) {
         app.graph.extra??={};
         app.graph.extra.ambient_motion_plans??={};
@@ -243,7 +296,18 @@ function editor(node) {
         control.callback=function(){changed?.apply(this,arguments);
             if(name==='preparation')populateModelPath();
             const p=plan();if(!validPlan(p))return;
-            status.textContent='Settings changed. Saved points will be reused at Render.';
+            if(['motion_prompt','requested_parts','preparation','vision_model'].includes(name)){
+                p.review={state:'pending'};widget(node,'plan_json').value=JSON.stringify(p);persist(p);
+            }else if(['duration','fps','short_side'].includes(name)){
+                p.duration=Number(widget(node,'duration').value);p.fps=Number(widget(node,'fps').value);
+                p.short_side=Number(widget(node,'short_side').value);
+                const [w,h]=p.source_size,s=p.short_side/Math.min(w,h),cw=Math.round(w*s),ch=Math.round(h*s);
+                const W=Math.ceil(cw/64)*64,H=Math.ceil(ch/64)*64;
+                p.transform={source:[w,h],canvas:[W,H],content:[Math.floor((W-cw)/2),Math.floor((H-ch)/2),cw,ch]};
+                p.frames=Math.round(p.duration*p.fps)+1;p.review={state:'pending'};
+                widget(node,'plan_json').value=JSON.stringify(p);persist(p);
+            }
+            status.textContent='Settings changed. Prepare affected points or renew review before rendering.';
             draw();app.graph.setDirtyCanvas(true,true);
         };
     }
@@ -252,7 +316,10 @@ function editor(node) {
         const changed=imageWidget.callback;
         imageWidget.callback=function(){changed?.apply(this,arguments);
             background.src=api.apiURL('/view?'+new URLSearchParams({filename:this.value,type:'input'}));
-            status.textContent='Image changed. Saved points are shown at their relative positions.';
+            widget(node,'plan_json').value='{}';
+            delete app.graph.extra?.ambient_motion_plans?.[String(node.id)];
+            selected=-1;selection({});
+            status.textContent='Image changed. Prepare character and background points again.';
         };
     }
     function selection(p) {
@@ -271,7 +338,8 @@ function editor(node) {
     function renderList() {
         pointList.replaceChildren();
         const current=plan(),points=current.landmarks;
-        if(reviewButton)reviewButton.disabled=!validPlan(current)||!points.some(point=>point.enabled);
+        if(reviewButton)reviewButton.disabled=!validPlan(current)||!points.some(point=>point.enabled)||
+            (!!current.background?.enabled&&!points.some(point=>group(point)==='background'&&point.enabled&&pointRole(point)==='move'));
         if(!validPlan(current)) {
             element('p',pointList,'No valid motion plan. Run Prepare points.');
             return;
@@ -280,8 +348,12 @@ function editor(node) {
             element('p',pointList,'No landmarks yet. Click Add point, then click the image. Review requires at least one enabled point.');
             return;
         }
-        for(const [index,point] of points.entries()) {
-            const row=button(pointList,`${index+1}. ${point.label} · ${pointRole(point)} (${point.x.toFixed(3)}, ${point.y.toFixed(3)}) · ${point.enabled?'enabled':'disabled'}`,()=>{
+        for(const name of ['character','background']) {
+          const section=element('div',pointList);section.setAttribute('aria-label',`${name} points`);
+          if(name==='background'&&!toggle.checked)section.style.display='none';
+          element('strong',section,name==='character'?'Character':'Background');
+          for(const [index,point] of points.entries().filter(([,point])=>group(point)===name)) {
+            const row=button(section,`${index+1}. ${point.label} · ${pointRole(point)} (${point.x.toFixed(3)}, ${point.y.toFixed(3)}) · ${point.enabled?'enabled':'disabled'}`,()=>{
                 selected=index;selection(plan());draw();
             });
             row.setAttribute('aria-label',`Select landmark ${index+1}: ${point.label}`);
@@ -289,6 +361,7 @@ function editor(node) {
                 color:color(point),background:index===selected?'#30414e':'#202831',
                 border:index===selected?`2px solid ${color(point)}`:'1px solid #56606c'});
             row.title=point.reason??'';
+          }
         }
     }
     function pathSelection() {
@@ -316,6 +389,7 @@ function editor(node) {
         const reference=p.review?.strength_reference??p.strength;
         const scale=reference?Number(widget(node,'strength').value)/reference:0;
         for(const [index,point] of (p.landmarks??[]).entries()) {
+            if(!visible(point))continue;
             const project=(x,y)=>[rect.x+x*rect.w,rect.y+y*rect.h];
             ctx.strokeStyle=color(point);ctx.fillStyle=color(point);
             ctx.globalAlpha=1;ctx.beginPath();
@@ -328,7 +402,9 @@ function editor(node) {
             if(index===selected&&pointRole(point)==='move')for(const key of point.path.slice(1,-1)) {
                 const [x,y]=project(key.x,key.y);ctx.strokeRect(x-3,y-3,6,6);
             }
-            const [x,y]=project(point.x,point.y);ctx.beginPath();ctx.arc(x,y,index===selected?8:6,0,Math.PI*2);
+            const [x,y]=project(point.x,point.y);ctx.beginPath();
+            if(group(point)==='background')ctx.rect(x-(index===selected?8:6),y-(index===selected?8:6),index===selected?16:12,index===selected?16:12);
+            else ctx.arc(x,y,index===selected?8:6,0,Math.PI*2);
             ctx.lineWidth=3;ctx.strokeStyle='#101710';ctx.stroke();ctx.fill();
             if(index===selected){ctx.beginPath();ctx.arc(x,y,10,0,Math.PI*2);ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();}
             ctx.font=`bold ${index===selected?13:11}px system-ui`;ctx.lineWidth=3;ctx.strokeStyle='#101710';
@@ -351,13 +427,13 @@ function editor(node) {
         if(adding) {
             const moving=role.value!=='anchor';
             const path=returningPath(where,moving);
-            p.landmarks.push({...where,label:label.value||`point ${p.landmarks.length+1}`,enabled:true,strength:1,path,
+            p.landmarks.push({...where,group:groupControl.value,label:label.value||`point ${p.landmarks.length+1}`,enabled:true,strength:1,path,
                 motion_role:moving?'move':'anchor',body_part:bodyPart.value||'manual',reason:reason.value||'Manual point placement'});
             selected=p.landmarks.length-1;adding=false;selection(p);save(p);return;
         }
         const distance=key=>Math.hypot((key.x-where.x)*rect.w,(key.y-where.y)*rect.h);
         const active=p.landmarks[selected];
-        const nearest=p.landmarks.map((point,index)=>({index,d:distance(point)})).sort((a,b)=>a.d-b.d)[0];
+        const nearest=p.landmarks.map((point,index)=>({index,d:visible(point)?distance(point):Infinity})).sort((a,b)=>a.d-b.d)[0];
         const handle=active&&pointRole(active)==='move'?active.path.map((key,index)=>({index,d:distance(key)}))
             .filter(item=>item.index>0&&item.index<active.path.length-1).sort((a,b)=>a.d-b.d)[0]:null;
         drag=null;
@@ -404,7 +480,8 @@ function editor(node) {
         if(timer){clearInterval(timer);timer=null;return;}
         timer=setInterval(()=>{timeline.value=(Number(timeline.value)+.05/(Number(widget(node,'duration').value)||6))%1;draw();},50);
     });
-    button(controls,'Prepare points',()=>queue('prepare',node,status));
+    button(controls,'Prepare points',()=>queue('prepare',node,status,undefined,'character'));
+    button(bgFields,'Prepare background points',()=>queue('prepare',node,status,undefined,'background'));
     reviewButton=button(controls,'Accept point review',async()=>{
         try {
             const p=checkSettings(node);

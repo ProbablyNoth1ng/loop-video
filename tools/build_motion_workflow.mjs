@@ -18,7 +18,7 @@ const editor=node(10000,'AmbientMotionEditor',[450,0],
     ['IMAGE','STRING','MOTION_PLAN','FLOAT','FLOAT','INT','STRING'].map((type,i)=>({
         name:['canvas','tracks','motion_plan','fps','duration','seed','prompt'][i],type,links:[]})),
     ['Gentle hair sway. Stationary camera.','auto',6,24,.01,720,
-     42,'models/Qwen3.5-9B','local Qwen3.5','{}','render'],[540,1050]);
+     42,'models/Qwen3.5-9B','local Qwen3.5','{}','render',false,'','model','character'],[540,1050]);
 const saver=node(4852,'AmbientSaveCandidate',[2200,0],
     [{name:'video',type:'VIDEO',link:null},{name:'motion_plan',type:'MOTION_PLAN',link:null},
      {name:'seed',type:'INT',widget:{name:'seed'},link:null}],
@@ -79,7 +79,7 @@ for(const n of graph.nodes) {
     if(n.type==='MarkdownNote') {n.pos=[(noteIndex++%4)*600,1200+Math.floor(noteIndex/4)*400];}
 }
 graph.nodes.find(n=>n.id===5527).widgets_values=[
-    '## Ambient Loop\nLoad one image. Set motion prompt and requested parts in Prepare and review.\n\nUse **Run** to choose one stage: **Prepare points**, **Render**, or **Upscale**. Each choice queues one stage; the node stage buttons remain available.\n\nUse **Prepare points**, edit labeled points and path handles, play trajectories, then **Accept point review**.\n\nUse **Render** for the official single-stage LTX-2.5 pipeline. Inspect continuous and seam previews. Change seed for another candidate; image, prompt or motion changes require Prepare and renewed review.\n\nRefresh saved candidates, select one and optionally **Upscale**. Save the silent MP4 after reviewing flicker. Raw PNG frames and records remain beside outputs.'];
+    '## Ambient Loop\nLoad one image. Set character motion prompt and requested parts. Prepare character points, edit paths, then review.\n\nTo move selected scenery, enable Animate background, describe Background motion, choose Model or Manual, and Prepare background points. Character and Background points share one image; select an active group before placing new points. Circles mark character points and squares mark background points.\n\nUse Run to choose Prepare character points, Prepare background points, Render, or Upscale. Each choice queues one stage. Accept point review before Render.\n\nRender uses the official LTX-2.5 pipeline with a stationary camera. Background points are retained but excluded when Animate background is off. Small generation drift may remain. Inspect continuous and seam previews.'];
 graph.groups=[];
 graph.last_node_id=10002;graph.last_link_id=next-1;
 graph.extra={ambient_loop:{schema:1,official_sha256:crypto.createHash('sha256').update(fs.readFileSync(official)).digest('hex'),

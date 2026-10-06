@@ -87,7 +87,7 @@
       "title": "Inputs",
       "properties": {},
       "widgets_values": [
-        "## Ambient Loop\nLoad one image. Set motion prompt and requested parts in Prepare and review.\n\nUse **Run** to choose one stage: **Prepare points**, **Render**, or **Upscale**. Each choice queues one stage; the node stage buttons remain available.\n\nUse **Prepare points**, edit labeled points and path handles, play trajectories, then **Accept point review**.\n\nUse **Render** for the official single-stage LTX-2.5 pipeline. Inspect continuous and seam previews. Change seed for another candidate; image, prompt or motion changes require Prepare and renewed review.\n\nRefresh saved candidates, select one and optionally **Upscale**. Save the silent MP4 after reviewing flicker. Raw PNG frames and records remain beside outputs."
+        "## Ambient Loop\nLoad one image. Set character motion prompt and requested parts. Prepare character points, edit paths, then review.\n\nTo move selected scenery, enable Animate background, describe Background motion, choose Model or Manual, and Prepare background points. Character and Background points share one image; select an active group before placing new points. Circles mark character points and squares mark background points.\n\nUse Run to choose Prepare character points, Prepare background points, Render, or Upscale. Each choice queues one stage. Accept point review before Render.\n\nRender uses the official LTX-2.5 pipeline with a stationary camera. Background points are retained but excluded when Animate background is off. Small generation drift may remain. Inspect continuous and seam previews."
       ],
       "color": "#432",
       "bgcolor": "#653"
@@ -989,7 +989,11 @@
         "models/Qwen3.5-9B",
         "local Qwen3.5",
         "{}",
-        "render"
+        "render",
+        false,
+        "",
+        "model",
+        "character"
       ]
     },
     {

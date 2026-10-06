@@ -4,6 +4,7 @@ Run python tests/editor_harness.py then open http://127.0.0.1:8766.
 Queueing is simulated; this does not qualify a deployed ComfyUI frontend.
 """
 import base64
+import copy
 import json
 import subprocess
 import sys
@@ -44,6 +45,12 @@ DENSE_PLAN = new_plan('fixture',(600,900),'Gentle hair sway. Stationary camera.'
                     for label,x,y,part in [('hair root',.49,.19,'hair'),('head',.5,.32,'head'),
                                           ('left shoulder',.3,.58,'shoulder'),('right shoulder',.7,.58,'shoulder')]],
                 6,24,.01,720)
+BACKGROUND_PLAN = copy.deepcopy(DENSE_PLAN)
+BACKGROUND_PLAN['background'] = {'enabled':True,'prompt':'Gently sway the visible leaves',
+    'preparation':'manual','prepared_prompt':'Gently sway the visible leaves','prepared_preparation':'manual'}
+BACKGROUND_PLAN['landmarks'].append({**new_plan('fixture',(600,900),'leaves',['auto'],[
+    dict(label='leaf tip',x=.75,y=.3,body_part='foliage',motion_role='move',reason='Requested leaf sway')
+])['landmarks'][0],'group':'background'})
 RECORD = {'schema':'ambient-render-handle/1','kind':'candidate','state':'awaiting_visual_review',
           'frame_count':72,'fps':24,'dimensions':[128,72],'feedback':['Local playback fixture.']}
 CANDIDATES = ['candidate-fixture-new/record.json','candidate-fixture-old/record.json']
@@ -53,7 +60,7 @@ HTML = '''<!doctype html><meta charset="utf-8"><title>Ambient Loop editor test f
 <style>body{background:#0d1117;color:white;font:14px system-ui;margin:20px}.panels{display:flex;gap:16px;align-items:start;overflow-x:auto}.panel{flex:0 0 520px}pre{white-space:pre-wrap}input{margin:3px}</style>
 <h1>Ambient Loop · local editor fixture</h1><p>Real extension; simulated queue. No GPU generation.</p>
 <button id="qwen-fixture">Show Qwen points</button><button id="failed-fixture">Show Qwen failure</button>
-<button id="dense-fixture">Show 20 semantic points</button>
+<button id="dense-fixture">Show 20 semantic points</button><button id="background-fixture">Show background points</button>
 <button id="invalid-fixture">Show invalid Prepare</button><button id="run-fixture">Run</button><button id="run-again-fixture">Run again</button><button id="auto-fixture">Auto queue</button>
 <button id="reopen-fixture">Simulate reopen</button>
 <button id="render-fixture">Simulate completed render</button>
@@ -68,7 +75,8 @@ const make=(id,type,values,parent)=>({id,type,comfyClass:type,size:[520,300],pro
  addDOMWidget(name,type,root){parent.append(root);return{};},setSize(size){this.size=size;}});
 const editor=make(2,'AmbientMotionEditor',{motion_prompt:'Gentle hair sway. Stationary camera.',
  requested_parts:'hair tip, hair root, head, shoulder',duration:6,fps:24,strength:.01,short_side:720,seed:42,
- vision_model:'models/Qwen3-VL-8B-Instruct',preparation:'manual',plan_json:'{}',stage:'render'},document.querySelector('#editor'));
+ vision_model:'models/Qwen3-VL-8B-Instruct',preparation:'manual',plan_json:'{}',stage:'render',
+ animate_background:false,background_prompt:'',background_preparation:'model',prepare_target:'character'},document.querySelector('#editor'));
 const saver=make(5,'AmbientSaveCandidate',{},document.querySelector('#outputs'));
 const selector=make(6,'AmbientSavedCandidate',{candidate:'Select a saved candidate'},document.querySelector('#outputs'));
 const upscale=make(7,'AmbientUpscale',{resolution:'1440p',chunk_size:4},document.querySelector('#outputs'));
@@ -82,7 +90,7 @@ document.getElementById('candidate-fixture').onchange=async event=>{
 document.getElementById('render-fixture').onclick=async()=>saver.onExecuted({
  preview_paths:['ambient-loop/candidate-fixture-new/loop.mp4','ambient-loop/candidate-fixture-new/seam.mp4'],
  render_handle:[await(await fetch('/ambient-loop/record?candidate=candidate-fixture-new%2Frecord.json')).json()]});
-for(const [id,path] of [['qwen-fixture','/fixture-qwen-plan'],['failed-fixture','/fixture-failed-plan'],['dense-fixture','/fixture-dense-plan']])
+for(const [id,path] of [['qwen-fixture','/fixture-qwen-plan'],['failed-fixture','/fixture-failed-plan'],['dense-fixture','/fixture-dense-plan'],['background-fixture','/fixture-background-plan']])
  document.getElementById(id).onclick=async()=>editor.onExecuted({motion_plan:[await(await fetch(path)).json()],
  bg_image:[await(await fetch('/fixture-image')).text()]});
 document.getElementById('reopen-fixture').onclick=()=>{editor.widgets.find(w=>w.name==='plan_json').value='{}';editor.onConfigure();};
@@ -123,6 +131,7 @@ class Handler(BaseHTTPRequestHandler):
         elif path=='/fixture-plan':self.reply(PLAN)
         elif path=='/fixture-qwen-plan':self.reply(QWEN_PLAN)
         elif path=='/fixture-dense-plan':self.reply(DENSE_PLAN)
+        elif path=='/fixture-background-plan':self.reply(BACKGROUND_PLAN)
         elif path=='/fixture-failed-plan':self.reply(FAILED_PLAN)
         elif path=='/fixture-image':self.reply(base64.b64encode(PNG),'text/plain')
         elif path=='/view':
@@ -153,7 +162,9 @@ class Handler(BaseHTTPRequestHandler):
         elif self.path=='/fixture-queue':
             editor=next((n for n in data['output'].values() if n['class_type']=='AmbientMotionEditor'),None)
             if editor and editor['inputs']['stage']=='prepare':
-                self.reply({'node':2,'ui':{'motion_plan':[PLAN],'bg_image':[base64.b64encode(PNG).decode()]}})
+                target=editor['inputs'].get('prepare_target','character')
+                self.reply({'node':2,'ui':{'motion_plan':[BACKGROUND_PLAN if target=='background' else PLAN],
+                    'bg_image':[base64.b64encode(PNG).decode()]}})
             elif any(n['class_type']=='AmbientSaveCandidate' for n in data['output'].values()):
                 self.reply({'node':5,'ui':{'preview_paths':['ambient-loop/candidate-fixture-new/loop.mp4','ambient-loop/candidate-fixture-new/seam.mp4'],'render_handle':[RECORD]}})
             elif any(n['class_type']=='AmbientUpscale' for n in data['output'].values()):

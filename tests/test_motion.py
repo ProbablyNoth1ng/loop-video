@@ -8,6 +8,37 @@ from ambient_loop.motion import (new_plan, parse_landmarks, validate_plan,
 
 
 class MotionTests(unittest.TestCase):
+    def test_background_review_tracks_and_legacy_fingerprint(self):
+        legacy = review_plan(self.plan())
+        fingerprint = legacy['review']['fingerprint']
+        require_review(legacy, 'abc', (600, 1000), legacy['prompt'], 6, 24, .01, 720)
+        self.assertEqual(fingerprint, legacy['review']['fingerprint'])
+        self.assertNotIn('background', legacy)
+        plan = self.plan()
+        background = new_plan('abc', (600, 1000), 'leaves', ['auto'], [
+            {'label':'leaf','x':.2,'y':.3,'motion_role':'move','body_part':'foliage','reason':'sway'}])['landmarks'][0]
+        background['group'] = 'background'
+        plan['landmarks'].append(background)
+        plan['background'] = {'enabled':True,'prompt':'Leaves sway','preparation':'model',
+                              'prepared_prompt':'Leaves sway','prepared_preparation':'model'}
+        reviewed = review_plan(plan)
+        self.assertEqual(len(canvas_tracks(reviewed)), 2)
+        reviewed['background']['enabled'] = False
+        self.assertEqual(len(canvas_tracks(reviewed)), 1)
+        with self.assertRaisesRegex(ValueError, 'review'):
+            require_review(reviewed, 'abc', (600,1000), reviewed['prompt'], 6,24,.01,720)
+
+    def test_background_requires_moving_point_and_current_prompt(self):
+        plan = self.plan()
+        plan['background'] = {'enabled':True,'prompt':'Leaves sway','preparation':'model',
+                              'prepared_prompt':'Leaves sway','prepared_preparation':'model'}
+        with self.assertRaisesRegex(ValueError, 'moving background'):
+            review_plan(plan)
+        plan['landmarks'].append({**plan['landmarks'][0], 'group':'background'})
+        plan['background']['prompt'] = 'Clouds drift'
+        with self.assertRaisesRegex(ValueError, 'Prepare background'):
+            review_plan(plan)
+
     def plan(self, size=(600, 1000)):
         return new_plan('abc', size, 'gentle hair motion', ['hair tip'],
                         [{'label': 'hair tip', 'x': .5, 'y': .5}], 6, 24, .01, 720)
@@ -61,19 +92,19 @@ class MotionTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'prepare and review again'):
             require_review(plan, 'abc', (1312, 736), plan['prompt'], 6, 24, .01, 720)
 
-    def test_reuse_updates_render_context_and_scales_strength_without_changing_points(self):
+    def test_reuse_updates_timing_and_scales_strength_without_changing_points(self):
         p = review_plan(self.plan())
         points = copy.deepcopy(p['landmarks'])
-        require_review(p, 'new image', (1000, 600), 'new prompt', 3, 24, .02, 800)
+        require_review(p, 'abc', (600, 1000), p['prompt'], 3, 24, .02, 800)
         self.assertEqual(p['landmarks'], points)
-        self.assertEqual(p['source_id'], 'new image')
-        self.assertEqual(p['prompt'], 'new prompt')
+        self.assertEqual(p['source_id'], 'abc')
+        self.assertEqual(p['prompt'], 'gentle hair motion')
         self.assertEqual(p['frames'], 73)
-        self.assertEqual(p['transform'], canvas_transform((1000, 600), 800))
+        self.assertEqual(p['transform'], canvas_transform((600, 1000), 800))
         track = canvas_tracks(p)[0]
         self.assertAlmostEqual((track[36]['x']-track[0]['x'])/(p['transform']['content'][2]-1), .02)
         self.assertEqual(track[0], track[-1])
-        require_review(p, 'third image', (600, 1000), 'third prompt', 6, 24, .005, 720)
+        require_review(p, 'abc', (600, 1000), p['prompt'], 6, 24, .005, 720)
         track = canvas_tracks(p)[0]
         self.assertAlmostEqual((track[72]['x']-track[0]['x'])/(p['transform']['content'][2]-1), .005)
         self.assertEqual(p['landmarks'], points)
@@ -83,17 +114,17 @@ class MotionTests(unittest.TestCase):
         p['landmarks'][0]['path'][1]['x'] += .001
         self.assertNotEqual(p['review']['fingerprint'], plan_fingerprint(p))
         with self.assertRaisesRegex(ValueError, 'review'):
-            require_review(p, 'abc', (600, 1000), 'new', 6, 24, .01, 720)
+            require_review(p, 'abc', (600, 1000), p['prompt'], 6, 24, .01, 720)
         p = review_plan(self.plan())
         p['review']['strength_reference'] = .02
         with self.assertRaisesRegex(ValueError, 'review'):
-            require_review(p, 'abc', (600, 1000), 'new', 6, 24, .01, 720)
+            require_review(p, 'abc', (600, 1000), p['prompt'], 6, 24, .01, 720)
 
     def test_legacy_accepted_plan_is_upgraded_on_reuse(self):
         p = self.plan()
         p['review'] = {'state': 'reviewed', 'fingerprint': legacy_plan_fingerprint(p)}
         reopened = json.loads(json.dumps(p))
-        require_review(reopened, 'new image', (900, 600), 'new prompt', 3, 24, .02, 800)
+        require_review(reopened, 'abc', (600, 1000), reopened['prompt'], 3, 24, .02, 800)
         self.assertEqual(reopened['review']['strength_reference'], .01)
         self.assertEqual(reopened['review']['fingerprint'], plan_fingerprint(reopened))
         self.assertEqual(reopened['landmarks'], p['landmarks'])
@@ -103,13 +134,13 @@ class MotionTests(unittest.TestCase):
         p = review_plan(new_plan('abc', (600, 1000), 'hair', ['auto'], [
             {'label': 'eye', 'x': .4, 'y': .3, 'body_part': 'face',
              'motion_role': 'anchor', 'reason': 'stay still'}]))
-        require_review(p, 'new', (900, 600), 'new', 3, 24, .05, 800)
+        require_review(p, 'abc', (600, 1000), p['prompt'], 3, 24, .05, 800)
         self.assertTrue(all(key == canvas_tracks(p)[0][0] for key in canvas_tracks(p)[0]))
 
     def test_strength_scaling_keeps_tracks_inside_image_near_edge(self):
         p = review_plan(new_plan('abc', (600, 1000), 'hair', ['auto'],
                                  [{'label': 'tip', 'x': .995, 'y': .4}]))
-        require_review(p, 'new', (900, 600), 'new', 6, 24, .1, 720)
+        require_review(p, 'abc', (600, 1000), p['prompt'], 6, 24, .1, 720)
         x, _, width, _ = p['transform']['content']
         self.assertTrue(all(x <= key['x'] <= x + width - 1 for key in canvas_tracks(p)[0]))
 

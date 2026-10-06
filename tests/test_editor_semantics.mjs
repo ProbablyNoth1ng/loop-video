@@ -17,7 +17,8 @@ async function fixture() {
   globalThis.document={createElement:tag=>new Element(tag),body:new Element('body')};
   globalThis.Image=class {naturalWidth=600;naturalHeight=900;set src(value){this.source=value;this.onload?.();}};
   const values={motion_prompt:'Hair sway. Face still.',requested_parts:'auto',duration:6,fps:24,strength:.01,
-    short_side:720,seed:42,vision_model:'models/Qwen3-VL-8B-Instruct',preparation:'local Qwen3.5',plan_json:'{}',stage:'render'};
+    short_side:720,seed:42,vision_model:'models/Qwen3-VL-8B-Instruct',preparation:'local Qwen3.5',plan_json:'{}',stage:'render',
+    animate_background:false,background_prompt:'',background_preparation:'model',prepare_target:'character'};
   const node={id:2,type:'AmbientMotionEditor',size:[520,300],properties:{},
     widgets:Object.entries(values).map(([name,value])=>({name,value})),
     addDOMWidget(name,type,root){this.root=root;return{};},setSize(size){this.size=size;}};
@@ -67,7 +68,7 @@ test('dense landmarks select nearest dot, edit roles and retain semantic edits o
   const role=f.control('Motion role');assert.ok(role);role.value='anchor';role.onchange();
   assert.equal(f.plan().landmarks[18].motion_role,'anchor');
   assert.ok(f.plan().landmarks[18].path.every(k=>Math.abs(k.x-.29)<1e-10&&k.y===.4));
-  const body=f.control('Body part');body.value='face';body.oninput();
+  const body=f.control('Part / object');body.value='face';body.oninput();
   const reason=f.control('Role reason');reason.value='Keep the eyebrow stationary';reason.oninput();
   const serialized=JSON.stringify(f.plan());f.widget('plan_json').value='{}';f.node.onConfigure();
   assert.equal(JSON.stringify(f.plan()),serialized);
@@ -75,23 +76,46 @@ test('dense landmarks select nearest dot, edit roles and retain semantic edits o
   assert.equal(f.plan().review.state,'pending');
 });
 
-test('render settings and source image retain accepted points while point edits clear acceptance',async()=>{
+test('source image clears points and prompt changes invalidate review',async()=>{
   const f=await fixture();await f.button('Accept point review').onclick();
   assert.equal(f.plan().review.state,'reviewed');
   const original=JSON.stringify(f.plan().landmarks);
   f.widget('vision_model').value='other';f.widget('vision_model').callback?.('other');
   f.widget('motion_prompt').value='New prompt';f.widget('motion_prompt').callback?.('New prompt');
+  assert.equal(f.plan().review.state,'pending');
   f.widget('strength').value=.02;f.widget('strength').callback?.(.02);
   f.app.graph._nodes[0].widgets[0].value='new.png';
   f.app.graph._nodes[0].widgets[0].callback?.('new.png');
   assert.match(f.elements().find(el=>el.tag==='canvas').drawnImage.source,/new.png/);
-  assert.equal(f.plan().review.state,'reviewed');
-  assert.equal(JSON.stringify(f.plan().landmarks),original);
+  assert.deepEqual(f.plan(),{});
   f.widget('plan_json').value='{}';f.node.onConfigure();
-  assert.equal(f.plan().review.state,'reviewed');
-  assert.equal(JSON.stringify(f.plan().landmarks),original);
+  assert.deepEqual(f.plan(),{});
   assert.equal(f.requests.length,1);
-  f.elements().find(el=>el['aria-label']==='Select landmark 1: hair 0').onclick();
-  f.control('Body part').value='face';f.control('Body part').oninput();
-  assert.equal(f.plan().review.state,'pending');
+});
+
+test('background placement uses its group and toggle preserves points',async()=>{
+  const f=await fixture();
+  const toggle=f.elements().find(el=>el.tag==='input'&&el.type==='checkbox'&&el!==f.control('Enable selected point'));
+  toggle.checked=true;toggle.onchange();
+  const groups=f.control('Active point group');groups.value='background';groups.onchange();
+  f.button('Add point').onclick();
+  const canvas=f.elements().find(el=>el.tag==='canvas');
+  canvas.onpointerdown({clientX:240,clientY:150,pointerId:1});
+  assert.equal(f.plan().landmarks.at(-1).group,'background');
+  const added=f.plan().landmarks.length-1;
+  canvas.onpointerdown({clientX:240,clientY:150,pointerId:2});
+  canvas.onpointermove({clientX:250,clientY:155,pointerId:2});canvas.onpointerup();
+  assert.equal(f.plan().landmarks[added].group,'background');
+  assert.ok(f.plan().landmarks[added].x>.5);
+  const saved=JSON.stringify(f.plan());f.widget('plan_json').value='{}';f.node.onConfigure();
+  assert.equal(JSON.stringify(f.plan()),saved);
+  assert.ok(f.elements().some(el=>el['aria-label']==='background points'));
+  f.button('Delete').onclick();
+  assert.equal(f.plan().landmarks.length,24);
+  assert.equal(f.plan().landmarks.filter(p=>p.group==='background').length,0);
+  f.button('Add point').onclick();canvas.onpointerdown({clientX:240,clientY:150,pointerId:3});
+  toggle.checked=false;toggle.onchange();
+  assert.equal(f.plan().landmarks.length,25);
+  assert.equal(f.plan().landmarks.at(-1).group,'background');
+  assert.equal(f.plan().background.enabled,false);
 });

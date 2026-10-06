@@ -9,7 +9,105 @@ from ambient_loop.staged_comfy import AmbientMotionEditor, AmbientSavedCandidate
 
 
 class StageTests(unittest.TestCase):
-    def test_new_qwen_choice_keeps_widget_order_and_reuses_review_across_analysis_settings(self):
+    def test_background_model_replaces_only_background_and_render_combines_guidance(self):
+        import hashlib
+        import numpy as np
+        from ambient_loop.motion import new_plan, review_plan
+        image = np.zeros((1,100,80,3),dtype=np.float32)
+        identity = hashlib.sha256(image[0].astype(np.uint8).tobytes()+str((80,100)).encode()).hexdigest()
+        old = new_plan(identity,(80,100),'hair',['auto'],[{'label':'tip','x':.3,'y':.4}])
+        old['analysis'] = {'preparation':'manual','model_path':'model','prepared_prompt':'hair',
+                           'prepared_requested':['auto'],'prepared_preparation':'manual','prepared_model_path':'model'}
+        old['landmarks'][0]['path'][1]['x'] = .304
+        old['background'] = {'enabled':True,'prompt':'Old leaves','preparation':'model',
+            'prepared_prompt':'Old leaves','prepared_preparation':'model'}
+        old['landmarks'].append({**old['landmarks'][0],'label':'old leaf','group':'background'})
+        suggestion = [dict(label='leaf',x=.6,y=.3,body_part='foliage',motion_role='move',reason='sway')]
+        with patch('ambient_loop.staged_comfy.canvas_image',return_value=image), \
+             patch('ambient_loop.staged_comfy.analyze',return_value=suggestion) as analyze:
+            prepared = AmbientMotionEditor().execute(image,'hair','auto',6,24,.01,720,
+                42,'model','manual',json.dumps(old),'prepare',animate_background=True,
+                background_prompt='Leaves sway',background_preparation='model',prepare_target='background')['result'][2]
+        self.assertEqual(analyze.call_args.kwargs['target'],'background')
+        self.assertEqual(prepared['landmarks'][0],old['landmarks'][0])
+        self.assertEqual([p['label'] for p in prepared['landmarks']],['tip','leaf'])
+        self.assertEqual(prepared['analysis'],old['analysis'])
+        reviewed = review_plan(prepared)
+        with patch('ambient_loop.staged_comfy.canvas_image',return_value=image):
+            result = AmbientMotionEditor().execute(image,'hair','auto',6,24,.01,720,
+                42,'model','manual',json.dumps(reviewed),'render',animate_background=True,
+                background_prompt='Leaves sway',background_preparation='model')
+        self.assertEqual(len(json.loads(result['result'][1])),2)
+        self.assertIn('Background motion: Leaves sway',result['result'][6])
+        self.assertIn('Stationary camera',result['result'][6])
+        reviewed['background']['enabled'] = False
+        reviewed = review_plan(reviewed)
+        with patch('ambient_loop.staged_comfy.canvas_image',return_value=image):
+            off = AmbientMotionEditor().execute(image,'hair','auto',6,24,.01,720,
+                42,'model','manual',json.dumps(reviewed),'render',animate_background=False,
+                background_prompt='Leaves sway',background_preparation='model')
+        self.assertEqual(len(json.loads(off['result'][1])),1)
+        self.assertEqual(len(off['result'][2]['landmarks']),2)
+        self.assertIn('stationary background',off['result'][6])
+
+    def test_failed_background_model_preserves_existing_points_and_stale_preparation(self):
+        import hashlib
+        import numpy as np
+        from ambient_loop.motion import new_plan
+        image = np.zeros((1,100,80,3),dtype=np.float32)
+        identity = hashlib.sha256(image[0].astype(np.uint8).tobytes()+str((80,100)).encode()).hexdigest()
+        old = new_plan(identity,(80,100),'hair',['auto'],[{'label':'tip','x':.3,'y':.4}])
+        old['landmarks'].append({**old['landmarks'][0],'label':'leaf','group':'background'})
+        old['background'] = {'enabled':True,'prompt':'Old leaves','preparation':'model',
+            'prepared_prompt':'Old leaves','prepared_preparation':'model'}
+        with patch('ambient_loop.staged_comfy.canvas_image',return_value=image), \
+             patch('ambient_loop.staged_comfy.analyze',side_effect=RuntimeError('GPU failed')):
+            plan = AmbientMotionEditor().execute(image,'hair','auto',6,24,.01,720,
+                42,'model','manual',json.dumps(old),'prepare',animate_background=True,
+                background_prompt='New leaves',background_preparation='model',prepare_target='background')['result'][2]
+        self.assertEqual(plan['landmarks'],old['landmarks'])
+        self.assertEqual(plan['background']['prepared_prompt'],'Old leaves')
+        self.assertIn('GPU failed',plan['feedback'][0])
+        with self.assertRaisesRegex(ValueError, 'Prepare background'):
+            from ambient_loop.motion import review_plan
+            review_plan(plan)
+
+    def test_background_prepare_does_not_refresh_changed_character_prompt(self):
+        import hashlib
+        import numpy as np
+        from ambient_loop.motion import new_plan, review_plan
+        image = np.zeros((1,100,80,3),dtype=np.float32)
+        identity = hashlib.sha256(image[0].astype(np.uint8).tobytes()+str((80,100)).encode()).hexdigest()
+        old = new_plan(identity,(80,100),'old hair',['auto'],[{'label':'tip','x':.3,'y':.4}])
+        old['analysis'] = {'preparation':'manual','model_path':'model','prepared_prompt':'old hair',
+            'prepared_requested':['auto'],'prepared_preparation':'manual','prepared_model_path':'model'}
+        with patch('ambient_loop.staged_comfy.canvas_image',return_value=image):
+            plan = AmbientMotionEditor().execute(image,'new hair','auto',6,24,.01,720,
+                42,'model','manual',json.dumps(old),'prepare',animate_background=True,
+                background_prompt='Leaves sway',background_preparation='manual',prepare_target='background')['result'][2]
+        self.assertEqual(plan['analysis'],old['analysis'])
+        with self.assertRaisesRegex(ValueError, 'Prepare character'):
+            review_plan(plan)
+
+    def test_background_manual_prepare_preserves_character_without_model(self):
+        import numpy as np
+        from ambient_loop.motion import new_plan
+        image = np.zeros((1,100,80,3),dtype=np.float32)
+        import hashlib
+        identity = hashlib.sha256(image[0].astype(np.uint8).tobytes()+str((80,100)).encode()).hexdigest()
+        old = new_plan(identity,(80,100),'hair',['auto'],[{'label':'tip','x':.3,'y':.4}])
+        old['landmarks'][0]['path'][1]['x'] = .305
+        with patch('ambient_loop.staged_comfy.canvas_image',return_value=image), \
+             patch('ambient_loop.staged_comfy.analyze') as analyze:
+            result = AmbientMotionEditor().execute(image,'hair','auto',6,24,.01,720,
+                42,'model','manual',json.dumps(old),'prepare',animate_background=True,
+                background_prompt='Leaves sway',background_preparation='manual',prepare_target='background')
+        analyze.assert_not_called()
+        plan = result['result'][2]
+        self.assertEqual(plan['landmarks'][0],old['landmarks'][0])
+        self.assertEqual(plan['background']['prepared_prompt'],'Leaves sway')
+
+    def test_new_qwen_choice_keeps_widget_order_and_blocks_stale_analysis_settings(self):
         import numpy as np
         from ambient_loop.motion import review_plan
         image = np.zeros((1,100,80,3),dtype=np.float32)
@@ -22,15 +120,12 @@ class StageTests(unittest.TestCase):
              patch('ambient_loop.staged_comfy.analyze',return_value=points):
             prepared = AmbientMotionEditor().execute(image,'hair','auto',6,24,.01,720,
                          42,'models/Qwen3.5-9B','local Qwen3.5','{}','prepare')['result'][2]
-            self.assertEqual(prepared['analysis'], {'preparation':'local Qwen3.5','model_path':'models/Qwen3.5-9B'})
+            self.assertEqual(prepared['analysis']['prepared_prompt'], 'hair')
             reviewed = json.dumps(review_plan(prepared))
             for model, mode in [('other','local Qwen3.5'),('models/Qwen3.5-9B','manual')]:
-                rendered = AmbientMotionEditor().execute(image,'new prompt','head',3,24,.02,800,
-                     43,model,mode,reviewed,'render')['result'][2]
-                self.assertEqual(rendered['analysis'], {'preparation':mode,'model_path':model})
-                self.assertEqual(rendered['requested'], ['head'])
-                self.assertEqual(rendered['prompt'], 'new prompt')
-                self.assertEqual(rendered['landmarks'], prepared['landmarks'])
+                with self.assertRaisesRegex(ValueError, 'prepare'):
+                    AmbientMotionEditor().execute(image,'hair','auto',6,24,.01,720,
+                         43,model,mode,reviewed,'render')
 
     def test_qwen35_partial_feedback_and_load_failure_leave_manual_editor_available(self):
         import numpy as np
@@ -106,19 +201,16 @@ class StageTests(unittest.TestCase):
         self.assertEqual(result['result'][2]['landmarks'],[])
         self.assertTrue(result['ui']['bg_image'][0])
 
-    def test_manual_accepted_points_render_on_new_image(self):
+    def test_manual_accepted_points_reject_new_image(self):
         import numpy as np
         from ambient_loop.motion import new_plan, review_plan
         old = review_plan(new_plan('old', (80, 100), 'old prompt', ['tip'],
                     [{'label':'tip','x':.25,'y':.4}], 6, 24, .01, 720))
         image = np.zeros((1,60,90,3), dtype=np.float32)
         with patch('ambient_loop.staged_comfy.canvas_image', return_value=image):
-            rendered = AmbientMotionEditor().execute(image, 'new prompt', 'head', 3, 24,
-                .02, 800, 99, 'unused', 'manual', json.dumps(old), 'render')['result'][2]
-        self.assertEqual(rendered['landmarks'], old['landmarks'])
-        self.assertEqual(rendered['source_size'], [90,60])
-        self.assertEqual(rendered['analysis']['preparation'], 'manual')
-        self.assertEqual(rendered['review']['state'], 'reviewed')
+            with self.assertRaisesRegex(ValueError, 'Source image changed'):
+                AmbientMotionEditor().execute(image, 'new prompt', 'head', 3, 24,
+                    .02, 800, 99, 'unused', 'manual', json.dumps(old), 'render')
 
     def test_render_never_analyzes_and_stale_review_fails(self):
         import numpy as np

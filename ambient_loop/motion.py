@@ -8,6 +8,10 @@ import math
 def plan_fingerprint(plan):
     data = {'landmarks': plan['landmarks'],
             'strength_reference': plan.get('review', {}).get('strength_reference')}
+    if 'background' in plan:
+        data['background'] = plan['background']
+    if 'prepared_prompt' in plan.get('analysis', {}):
+        data['analysis'] = plan['analysis']
     return hashlib.sha256(json.dumps(data, sort_keys=True, separators=(',', ':'),
                                     allow_nan=False).encode()).hexdigest()
 
@@ -89,7 +93,15 @@ def validate_plan(plan):
         raise ValueError('Recorded image transform changed; prepare and review again')
     if not 0 <= plan['strength'] <= .1 or not isinstance(plan['landmarks'], list):
         raise ValueError('Invalid motion strength or landmark list')
+    background = plan.get('background')
+    if background is not None and (not isinstance(background, dict) or
+            not isinstance(background.get('enabled'), bool) or
+            not isinstance(background.get('prompt'), str) or
+            background.get('preparation') not in ('model', 'manual')):
+        raise ValueError('Invalid background settings')
     for point in plan['landmarks']:
+        if point.get('group', 'character') not in ('character', 'background'):
+            raise ValueError('Invalid landmark group')
         if any(field in point for field in ('motion_role', 'body_part', 'reason')):
             validate_semantics(point)
         if not isinstance(point.get('label'), str) or not point['label'].strip():
@@ -121,13 +133,60 @@ def review_plan(plan):
     plan = copy.deepcopy(validate_plan(plan))
     if not any(p['enabled'] for p in plan['landmarks']):
         raise ValueError('Add or enable at least one landmark before review')
+    check_preparation(plan)
     plan['review'] = {'state': 'reviewed', 'strength_reference': plan['strength']}
     plan['review']['fingerprint'] = plan_fingerprint(plan)
     return plan
 
 
-def require_review(plan, identity, size, prompt, duration, fps, strength, short_side):
+def check_preparation(plan):
+    analysis = plan.get('analysis', {})
+    if 'prepared_prompt' in analysis and (analysis['prepared_prompt'] != plan['prompt'] or
+            analysis.get('prepared_requested') != plan['requested'] or
+            analysis.get('prepared_preparation') != analysis.get('preparation') or
+            analysis.get('prepared_model_path') != analysis.get('model_path')):
+        raise ValueError('Prepare character points for changed prompt or preparation settings')
+    background = plan.get('background', {})
+    if background.get('enabled'):
+        if not background.get('prompt', '').strip():
+            raise ValueError('Enter background motion before review')
+        if (background.get('prepared_prompt') != background['prompt'] or
+                background.get('prepared_preparation') != background.get('preparation') or
+                (background.get('preparation') == 'model' and
+                 'prepared_model_path' in background and
+                 background['prepared_model_path'] != background.get('model_path'))):
+            raise ValueError('Prepare background points for changed prompt or preparation settings')
+        if not any(p['enabled'] and p.get('group') == 'background' and
+                   (p.get('motion_role') == 'move' or
+                    (p.get('motion_role') is None and any(
+                        abs(key[axis]-p[axis]) > 1e-8
+                        for key in p['path'] for axis in ('x','y'))))
+                   for p in plan['landmarks']):
+            raise ValueError('Enable at least one moving background point before review')
+
+
+def require_review(plan, identity, size, prompt, duration, fps, strength, short_side,
+                   requested=None, analysis=None, background=None):
     validate_plan(plan)
+    if plan['source_id'] != identity or plan['source_size'] != list(size):
+        raise ValueError('Source image changed; prepare points again')
+    if plan['prompt'] != prompt or (requested is not None and plan['requested'] != requested):
+        raise ValueError('Character prompt changed; prepare points again')
+    if analysis is not None and 'prepared_prompt' in plan.get('analysis', {}) and (
+            plan['analysis'].get('preparation') != analysis.get('preparation') or
+            plan['analysis'].get('model_path') != analysis.get('model_path')):
+        raise ValueError('Character preparation settings changed; prepare points again')
+    if background is not None and plan.get('background', {}).get('enabled', False) != background.get('enabled', False):
+        raise ValueError('Background settings changed; review points again')
+    if background is not None and background.get('enabled') and (
+            plan.get('background', {}).get('prompt') != background.get('prompt') or
+            plan.get('background', {}).get('preparation') != background.get('preparation')):
+        raise ValueError('Background settings changed; prepare background points again')
+    if background is not None and background.get('enabled') and background.get('preparation') == 'model' and (
+            plan.get('background', {}).get('prepared_model_path') is not None and
+            plan['background']['prepared_model_path'] != (analysis or {}).get('model_path')):
+        raise ValueError('Background model changed; prepare background points again')
+    check_preparation(plan)
     review = plan.get('review', {})
     reference = review.get('strength_reference')
     if (review.get('state') != 'reviewed' or
@@ -198,7 +257,8 @@ def canvas_tracks(plan):
     ox, oy, width, height = plan['transform']['content']
     tracks = []
     for point in plan['landmarks']:
-        if not point['enabled']:
+        if not point['enabled'] or (point.get('group') == 'background' and
+                                    not plan.get('background', {}).get('enabled', False)):
             continue
         path, segment, track = point['path'], 0, []
         for index in range(plan['frames']):

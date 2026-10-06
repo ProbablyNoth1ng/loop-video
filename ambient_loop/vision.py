@@ -21,7 +21,7 @@ def snapshot_path(model_path):
         return path
 
 
-def analyze(image, prompt, requested, model_path, feedback=None):
+def analyze(image, prompt, requested, model_path, feedback=None, target='character'):
     path = snapshot_path(model_path)
     try:
         config = json.loads((path/'config.json').read_text(encoding='utf-8'))
@@ -59,6 +59,16 @@ def analyze(image, prompt, requested, model_path, feedback=None):
                        '"omissions":["Right shoulder is hidden"]}.'
                        ' Coordinates MUST be integers in [0,1000], relative to the full image.'
                        ' Never duplicate locations or invent obscured parts.')
+        if target == 'background':
+            instruction = ('Identify visible environmental objects in the image for this background motion: '+prompt+
+                '. Propose distinct moving control points only for requested visible objects, plus stationary anchors'
+                ' on attached structures and nearby areas that should remain still. Keep the camera stationary.'
+                ' Set motion_role to move only for requested motion and anchor for stationary objects.'
+                ' Use body_part for the object name and reason to explain its role.'
+                ' Return ONLY JSON {"landmarks":[{"label":"left leaf tip","x":500,"y":500,'
+                '"body_part":"foliage","motion_role":"move","reason":"Requested leaf sway"}],'
+                '"omissions":[]}. Coordinates MUST be integers in [0,1000] relative to the full image.'
+                ' Never duplicate locations or invent obscured objects.')
         template_options = {'enable_thinking':False} if config['model_type'] == 'qwen3_5' else {}
         inputs = processor.apply_chat_template([{'role':'user','content':[
             {'type':'image','image':image}, {'type':'text','text':instruction}]}],

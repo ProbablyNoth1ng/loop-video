@@ -1,6 +1,6 @@
 # Ambient Loop · ComfyUI anime loops
 
-Load image → enter motion prompt → **Prepare points** → review/edit → **Render**
+Load image → enter character motion → **Prepare points** → review/edit → **Render**
 → preview → optionally **Upscale** → save. Creative work stays inside ComfyUI.
 The existing CLI remains compatible: see [legacy CLI](docs/legacy-cli.md).
 The new animation path does not require producing or accepting Workflow A.
@@ -14,29 +14,38 @@ see [automatic installation](docs/runpod-autoinstall.md).
 1. Load one anime image. Set the motion prompt and requested parts (`auto` by
    default, or a comma-separated list) in **Prepare and review**. Choose
    **local Qwen3.5**, **local Qwen** (Qwen3-VL), or **manual** preparation.
-2. Click **Prepare points**. Local Qwen proposes normalized landmarks and
+2. Click **Prepare points**. Local Qwen proposes normalized character landmarks and
    unloads before generation. Failed analysis leaves the editor available with
    feedback; add points manually or retry.
    Analysis aims for 16–24 useful visible points, adapting to the image; hidden
    anatomy is omitted. Valid partial suggestions survive with omission feedback.
-3. Review the numbered landmark list and labeled dots on the source image.
+3. Optionally enable **Animate background**. Enter a **Background motion** instruction
+   for selected visible objects, choose **Model** (default) or **Manual**, then click
+   **Prepare background points**. The instruction starts empty and is required
+   before background preparation or review. Model uses the same Qwen snapshot;
+   Manual keeps editable points without loading it. Each preparation updates only
+   its group. Failed model analysis preserves existing points and reports feedback.
+4. Review the separate Character and Background lists on the shared source image.
+   Character points are circles; background points are squares.
    Green points move; blue points anchor stationary parts; disabled points are gray.
    A row and its dot select the same point; disabled points appear muted. A
    manual or failed-Qwen Prepare shows an empty list with an Add point prompt.
    Move, add, delete or disable landmarks. Select a point and drag path handles;
-   edit its label, body part, role, reason and strength. Scrub or play trajectories.
+   edit its label, Part / object, role, reason and strength. Select the active group
+   before placing new points. Scrub or play trajectories.
    New proposals use semantic roles: only motion requested by the prompt moves.
    Changing a role resets the path to stationary or gently returning motion.
-   Legacy points retain their existing paths. Click **Accept
-   point review** before rendering.
-4. Click **Render** for the official LTX-2.5 single-stage Motion Track pipeline.
+   Legacy points retain their existing paths. Enabled background animation needs at
+   least one enabled moving background point. Click **Accept point review** before rendering.
+5. Click **Render** for the official LTX-2.5 single-stage Motion Track pipeline.
    Continuous and forward seam previews play automatically in **Render preview**. Change
-   seed for another candidate. Accepted points remain available when you change
-   the image, prompt, requested parts, Qwen settings, timing, Strength or canvas.
-   They keep their relative positions on a new image; inspect and adjust them if
-   the composition differs. Editing a point or path requires point review again.
-   **Prepare points** explicitly replaces the saved set with a fresh proposal.
-5. The last completed render is automatically selected in **Select saved candidate**.
+   seed for another candidate. Changing the source image clears both groups.
+   Changing motion instructions or preparation settings requires preparing the
+   affected group again. Timing and canvas changes preserve normalized paths but
+   require renewed review. Turning Animate background off hides its overlay and
+   excludes its tracks while retaining saved points. Stationary anchors guide
+   unselected areas, though generation may drift.
+6. The last completed render is automatically selected in **Select saved candidate**.
    Choose another original render in its dropdown to preview it automatically.
    Optionally click **Upscale** for 1080p/1440p/4K (1440p remains the default).
    Resolutions use short sides of 1080/1440/2160, preserving orientation and
@@ -44,13 +53,13 @@ see [automatic installation](docs/runpod-autoinstall.md).
    keeps the same frame count, FPS and timing. Review for flicker and click
    **Save silent MP4**. Lossless frames remain beside the output.
 
-Use **Run** to choose exactly one Ambient Loop stage: **Prepare points**,
-**Render**, or **Upscale**. The chooser submits one stage and does not apply
+Use **Run** to choose exactly one Ambient Loop stage: **Prepare character points**,
+**Prepare background points**, **Render**, or **Upscale**. The chooser submits one stage and does not apply
 Run's batch count. The node stage buttons remain available. Preparing points
 cannot queue generation; Upscale has only the saved-candidate branch upstream.
 Save the workflow after editing: plans live in its serialized editor widget and
-metadata. Reopening retains accepted points, and Render upgrades older accepted
-plans for reuse. Render records live in `ComfyUI/output/ambient-loop/`. Saved candidates
+metadata. Reopening retains accepted points, including legacy character-only plans.
+Render records live in `ComfyUI/output/ambient-loop/`. Saved candidates
 load automatically after reopening; **Refresh candidates** reloads the list.
 
 Defaults: six seconds, 24 FPS, seed 42, generation short side near 720 pixels,

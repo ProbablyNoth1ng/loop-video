@@ -4,6 +4,17 @@ Status: **pending**. No provider instance was available. Local CPU tests do not
 prove LTX inference, Qwen anime landmark accuracy, Spandrel weight compatibility
 or ComfyUI browser behavior on a provider.
 
+## 2026-10-06 background animation implementation
+
+The local Python and Node suites cover grouped validation, independent manual and
+model preparation, failure preservation, stale preparation settings, track
+exclusion, prompt guidance, widget order, and Prepare-stage isolation. The local
+browser harness showed the two lists, background controls, successful review,
+separate Run preparation choices, and toggle-off hiding. Its queue is simulated.
+The prior RunPod pod was terminated and this workspace has no configured live
+ComfyUI endpoint. Deployed `graphToPrompt()` conversion and a representative
+foliage render remain pending, including camera stability and seam inspection.
+
 ## Official generation baseline
 
 Import `workflows/ltx-2.5-motion-track.official.json` unchanged. Install its exact
