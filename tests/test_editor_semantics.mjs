@@ -93,11 +93,10 @@ test('source image clears points and prompt changes invalidate review',async()=>
   assert.equal(f.requests.length,1);
 });
 
-test('background placement uses its group and toggle preserves points',async()=>{
+test('background placement uses its group and prompt clearing preserves points',async()=>{
   const f=await fixture();
-  const toggle=f.elements().find(el=>el.tag==='input'&&el.type==='checkbox'&&el!==f.control('Enable selected point'));
-  toggle.checked=true;toggle.onchange();
-  const groups=f.control('Active point group');groups.value='background';groups.onchange();
+  const prompt=f.widget('background_prompt');prompt.value='Leaves sway';prompt.callback?.(prompt.value);
+  const groups=f.control('New point group');groups.value='background';groups.onchange();
   f.button('Add point').onclick();
   const canvas=f.elements().find(el=>el.tag==='canvas');
   canvas.onpointerdown({clientX:240,clientY:150,pointerId:1});
@@ -114,8 +113,35 @@ test('background placement uses its group and toggle preserves points',async()=>
   assert.equal(f.plan().landmarks.length,24);
   assert.equal(f.plan().landmarks.filter(p=>p.group==='background').length,0);
   f.button('Add point').onclick();canvas.onpointerdown({clientX:240,clientY:150,pointerId:3});
-  toggle.checked=false;toggle.onchange();
+  prompt.value='   ';prompt.callback?.(prompt.value);
   assert.equal(f.plan().landmarks.length,25);
   assert.equal(f.plan().landmarks.at(-1).group,'background');
   assert.equal(f.plan().background.enabled,false);
+});
+
+test('visible points filters markers, lists, and selection without changing groups',async()=>{
+  const f=await fixture();
+  const p=f.plan();
+  p.landmarks.push({...p.landmarks[0],label:'leaf',group:'background',x:.75,y:.3});
+  f.widget('plan_json').value=JSON.stringify(p);f.node.onConfigure();
+  const visible=f.control('Visible points');assert.ok(visible);
+  visible.value='background';visible.onchange();
+  assert.equal(f.elements().filter(el=>String(el['aria-label']??'').startsWith('Select landmark')).length,1);
+  const canvas=f.elements().find(el=>el.tag==='canvas');
+  canvas.onpointerdown({clientX:180,clientY:120,pointerId:1});
+  assert.equal(f.elements().find(el=>el.placeholder==='Point label').value,'');
+  visible.value='all';visible.onchange();
+  assert.equal(f.plan().landmarks.at(-1).group,'background');
+});
+
+test('legacy background checkbox state migrates from Background motion and invalidates review',async()=>{
+  const f=await fixture();
+  const p=f.plan();p.review={state:'reviewed'};p.background={enabled:false,prompt:'',preparation:'manual'};
+  f.widget('plan_json').value=JSON.stringify(p);
+  f.widget('background_prompt').value='Leaves sway';
+  f.widget('background_preparation').value='manual';
+  f.node.onConfigure();
+  assert.equal(f.plan().background.enabled,true);
+  assert.equal(f.plan().review.state,'pending');
+  assert.match(f.elements().find(el=>el.tag==='p').textContent,/migrated/i);
 });

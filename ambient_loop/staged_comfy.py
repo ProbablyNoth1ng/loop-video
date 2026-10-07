@@ -66,7 +66,7 @@ class AmbientMotionEditor:
                 'background_prompt':('STRING',{'default':'','multiline':True,
                     'placeholder':'Example: Gently sway the visible leaves; keep the tree trunk still.'}),
                 'background_preparation':(['model','manual'],{'default':'model'}),
-                'prepare_target':(['character','background'],{'default':'character'})},
+                'prepare_target':(['character','background','both'],{'default':'character'})},
             'hidden':{'extra_pnginfo':'EXTRA_PNGINFO','unique_id':'UNIQUE_ID'}}
 
     RETURN_TYPES = ('IMAGE','STRING','MOTION_PLAN','FLOAT','FLOAT','INT','STRING')
@@ -88,12 +88,14 @@ class AmbientMotionEditor:
         identity = hashlib.sha256(pixels.tobytes()+str(source.size).encode()).hexdigest()
         requested = [v.strip() for v in requested_parts.split(',') if v.strip()]
         analysis = {'preparation':preparation, 'model_path':vision_model}
-        background = {'enabled':bool(animate_background),'prompt':background_prompt,
+        # `animate_background` remains an optional legacy slot so old workflows
+        # deserialize in the same order. Text is now the sole animation switch.
+        background = {'enabled':bool(background_prompt.strip()),'prompt':background_prompt,
                       'preparation':background_preparation,'model_path':vision_model}
         if stage == 'prepare':
-            if prepare_target not in ('character','background'):
-                raise ValueError('Choose character or background preparation')
-            if prepare_target == 'background' and not background_prompt.strip():
+            if prepare_target not in ('character','background','both'):
+                raise ValueError('Choose character, background, or combined preparation')
+            if prepare_target in ('background','both') and not background_prompt.strip():
                 raise ValueError('Enter background motion before preparing background points')
             try:
                 old = validate_plan(json.loads(plan_json))
@@ -101,52 +103,50 @@ class AmbientMotionEditor:
                     old = None
             except (ValueError, KeyError, TypeError, json.JSONDecodeError):
                 old = None
-            points,feedback = [],[]
-            failed = False
-            mode = preparation if prepare_target == 'character' else background_preparation
-            current_prompt = motion_prompt if prepare_target == 'character' else background_prompt
-            if mode in ('local Qwen','local Qwen3.5','model'):
-                try:
-                    if prepare_target == 'background':
-                        points = analyze(source,current_prompt,['auto'],vision_model,feedback=feedback,target='background')
+            targets = ('character','background') if prepare_target == 'both' else (prepare_target,)
+            for target in targets:
+                points,feedback = [],[]
+                failed = False
+                mode = preparation if target == 'character' else background_preparation
+                current_prompt = motion_prompt if target == 'character' else background_prompt
+                if mode in ('local Qwen','local Qwen3.5','model'):
+                    try:
+                        if target == 'background':
+                            points = analyze(source,current_prompt,['auto'],vision_model,feedback=feedback,target='background')
+                        else:
+                            points = analyze(source,current_prompt,requested,vision_model,feedback=feedback)
+                    except Exception as error:
+                        failed = True
+                        feedback.append(f'{target.capitalize()} automatic preparation failed: {error}. Add/edit points manually or retry.')
+                plan = new_plan(identity,source.size,motion_prompt,requested,[],
+                                duration,fps,strength,short_side,feedback,analysis=analysis)
+                if old:
+                    plan['landmarks'] = [p for p in old['landmarks'] if p.get('group','character') != target]
+                    if target == 'background':
+                        plan['analysis'] = old.get('analysis', analysis)
+                        background.update({k:v for k,v in old.get('background', {}).items() if k.startswith('prepared_')})
                     else:
-                        points = analyze(source,current_prompt,requested,vision_model,feedback=feedback)
-                except Exception as error:
-                    failed = True
-                    feedback.append(f'Automatic preparation failed: {error}. Add/edit points manually or retry.')
-            plan = new_plan(identity,source.size,motion_prompt,requested,[],
-                            duration,fps,strength,short_side,feedback,analysis=analysis)
-            if old:
-                plan['landmarks'] = [p for p in old['landmarks']
-                    if p.get('group','character') != prepare_target]
-                if prepare_target == 'background':
-                    plan['analysis'] = old.get('analysis', analysis)
-                    background.update({k:v for k,v in old.get('background', {}).items()
-                                       if k.startswith('prepared_')})
-                else:
-                    background = old.get('background', background) | background
-            if prepare_target == 'character':
-                if failed and old:
-                    plan['analysis'] = old.get('analysis', analysis)
+                        background = old.get('background', background) | background
+                if target == 'character':
+                    if failed and old:
+                        plan['analysis'] = old.get('analysis', analysis)
+                    elif not failed:
+                        plan['analysis'] = {**analysis,'prepared_prompt':motion_prompt,
+                            'prepared_requested':requested,'prepared_preparation':preparation,
+                            'prepared_model_path':vision_model}
                 elif not failed:
-                    plan['analysis'] = {**analysis,'prepared_prompt':motion_prompt,
-                        'prepared_requested':requested,'prepared_preparation':preparation,
-                        'prepared_model_path':vision_model}
-            else:
-                if not failed:
                     background.update(prepared_prompt=background_prompt,
                                       prepared_preparation=background_preparation,
                                       prepared_model_path=vision_model)
-            if old and (mode == 'manual' or not points):
-                plan['landmarks'].extend(p for p in old['landmarks']
-                    if p.get('group','character') == prepare_target)
-            else:
-                for point in new_plan(identity,source.size,motion_prompt,requested,points,
-                        duration,fps,strength,short_side)['landmarks']:
-                    if prepare_target == 'background':
-                        point['group'] = 'background'
-                    plan['landmarks'].append(point)
-            plan['background'] = background
+                if old and (mode == 'manual' or failed or not points):
+                    plan['landmarks'].extend(p for p in old['landmarks'] if p.get('group','character') == target)
+                else:
+                    for point in new_plan(identity,source.size,motion_prompt,requested,points,
+                            duration,fps,strength,short_side)['landmarks']:
+                        if target == 'background': point['group'] = 'background'
+                        plan['landmarks'].append(point)
+                plan['background'] = background
+                old = plan
             validate_plan(plan)
         elif stage == 'render':
             try:

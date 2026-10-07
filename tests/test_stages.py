@@ -9,6 +9,24 @@ from ambient_loop.staged_comfy import AmbientMotionEditor, AmbientSavedCandidate
 
 
 class StageTests(unittest.TestCase):
+    def test_combined_prepare_builds_both_groups_in_one_plan(self):
+        import numpy as np
+        image = np.zeros((1,100,80,3),dtype=np.float32)
+        suggestions = [
+            [dict(label='tip',x=.3,y=.4,body_part='hair',motion_role='move',reason='sway')],
+            [dict(label='leaf',x=.7,y=.3,body_part='foliage',motion_role='move',reason='wind')],
+        ]
+        with patch('ambient_loop.staged_comfy.canvas_image',return_value=image), \
+             patch('ambient_loop.staged_comfy.analyze',side_effect=suggestions) as analyze:
+            plan = AmbientMotionEditor().execute(image,'hair','auto',6,24,.01,720,
+                42,'model','local Qwen','{}','prepare',background_prompt='Leaves sway',
+                background_preparation='model',prepare_target='both')['result'][2]
+        self.assertEqual(analyze.call_count,2)
+        self.assertEqual([point.get('group','character') for point in plan['landmarks']],
+                         ['character','background'])
+        self.assertEqual(plan['review']['state'],'pending')
+        self.assertEqual(plan['background']['enabled'],True)
+
     def test_background_model_replaces_only_background_and_render_combines_guidance(self):
         import hashlib
         import numpy as np
@@ -45,7 +63,7 @@ class StageTests(unittest.TestCase):
         with patch('ambient_loop.staged_comfy.canvas_image',return_value=image):
             off = AmbientMotionEditor().execute(image,'hair','auto',6,24,.01,720,
                 42,'model','manual',json.dumps(reviewed),'render',animate_background=False,
-                background_prompt='Leaves sway',background_preparation='model')
+                background_prompt='',background_preparation='model')
         self.assertEqual(len(json.loads(off['result'][1])),1)
         self.assertEqual(len(off['result'][2]['landmarks']),2)
         self.assertIn('stationary background',off['result'][6])

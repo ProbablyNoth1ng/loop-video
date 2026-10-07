@@ -51,6 +51,7 @@ BACKGROUND_PLAN['background'] = {'enabled':True,'prompt':'Gently sway the visibl
 BACKGROUND_PLAN['landmarks'].append({**new_plan('fixture',(600,900),'leaves',['auto'],[
     dict(label='leaf tip',x=.75,y=.3,body_part='foliage',motion_role='move',reason='Requested leaf sway')
 ])['landmarks'][0],'group':'background'})
+COMBINED_PLAN = copy.deepcopy(BACKGROUND_PLAN)
 RECORD = {'schema':'ambient-render-handle/1','kind':'candidate','state':'awaiting_visual_review',
           'frame_count':72,'fps':24,'dimensions':[128,72],'feedback':['Local playback fixture.']}
 CANDIDATES = ['candidate-fixture-new/record.json','candidate-fixture-old/record.json']
@@ -163,7 +164,7 @@ class Handler(BaseHTTPRequestHandler):
             editor=next((n for n in data['output'].values() if n['class_type']=='AmbientMotionEditor'),None)
             if editor and editor['inputs']['stage']=='prepare':
                 target=editor['inputs'].get('prepare_target','character')
-                self.reply({'node':2,'ui':{'motion_plan':[BACKGROUND_PLAN if target=='background' else PLAN],
+                self.reply({'node':2,'ui':{'motion_plan':[COMBINED_PLAN if target=='both' else BACKGROUND_PLAN if target=='background' else PLAN],
                     'bg_image':[base64.b64encode(PNG).decode()]}})
             elif any(n['class_type']=='AmbientSaveCandidate' for n in data['output'].values()):
                 self.reply({'node':5,'ui':{'preview_paths':['ambient-loop/candidate-fixture-new/loop.mp4','ambient-loop/candidate-fixture-new/seam.mp4'],'render_handle':[RECORD]}})

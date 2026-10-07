@@ -47,7 +47,12 @@ async function queue(stage, target, status, expectedGraph, prepareTarget='charac
         let selected;
         try { selected = stageGraph(output,target.id,stage); }
         catch (error) { throw new Error(`${stage} stage graph failed at target ${target.id}: ${error.message}`); }
-        if(stage==='prepare')selected[String(target.id)].inputs.prepare_target=prepareTarget;
+        if(stage==='prepare') {
+            const editor=find('AmbientMotionEditor');
+            if((prepareTarget==='background'||prepareTarget==='both')&&!String(widget(editor,'background_prompt')?.value??'').trim())
+                throw new Error('Enter Background motion before preparing background points.');
+            selected[String(target.id)].inputs.prepare_target=prepareTarget;
+        }
         console.info('[ambient-loop] selected', {stage,targetId:target.id,nodes:Object.entries(selected).map(([id,node])=>({id,class_type:node.class_type}))});
         workflow.extra ??= {};
         workflow.extra.ambient_motion_plans = Object.fromEntries(nodes()
@@ -115,6 +120,7 @@ function showStageChooser(graph) {
         controls.push(control);
     };
     choose('prepare','Prepare character points');choose('prepare','Prepare background points','background');
+    choose('prepare','Prepare character + background points','both');
     choose('render','Render');choose('upscale','Upscale');
     const cancel=button(actions,'Cancel',closeStageChooser);controls.push(cancel);
     const reasons=Object.values(targets).map(state=>state.reason).filter(Boolean);
@@ -143,10 +149,10 @@ function checkSettings(node) {
     if(p.analysis?.prepared_prompt!==undefined &&
        (p.analysis.prepared_preparation!==value('preparation')||p.analysis.prepared_model_path!==value('vision_model')))
         throw new Error('Prepare character points for changed preparation settings.');
-    if((p.background?.enabled??false)!==(value('animate_background')??false))
-        throw new Error('Review the changed background animation setting.');
-    if(p.background?.enabled){
-        if(!String(value('background_prompt')??'').trim())throw new Error('Enter background motion first.');
+    const backgroundEnabled=String(value('background_prompt')??'').trim().length>0;
+    if((p.background?.enabled??false)!==backgroundEnabled)
+        throw new Error('Background motion changed; review points again.');
+    if(backgroundEnabled){
         if(p.background.prompt!==value('background_prompt')||p.background.preparation!==value('background_preparation')||
            p.background.prepared_prompt!==p.background.prompt||p.background.prepared_preparation!==p.background.preparation||
            (p.background.preparation==='model'&&p.background.prepared_model_path!==undefined&&
@@ -191,28 +197,22 @@ function editor(node) {
     hide(node,'plan_json');hide(node,'stage');hide(node,'prepare_target');
     const root = panel(node,540);
     const controls=element('div',root);
-    const backgroundControls=element('div',root);
     const bgToggle=widget(node,'animate_background'),bgPrompt=widget(node,'background_prompt'),
         bgPreparation=widget(node,'background_preparation');
-    const toggle=element('input',backgroundControls);toggle.type='checkbox';toggle.checked=!!bgToggle?.value;
-    element('span',backgroundControls,' Animate background');
-    const bgFields=element('div',backgroundControls);
-    const promptField=element('textarea',bgFields);promptField.placeholder='Example: Gently sway the visible leaves; keep the tree trunk still.';
-    promptField.value=bgPrompt?.value??'';promptField.rows=3;promptField.style.width='100%';
-    const mode=element('select',bgFields);mode.title='Background preparation';
-    for(const choice of ['model','manual']){const option=element('option',mode,choice);option.value=choice;}
-    mode.value=bgPreparation?.value??'model';
-    function showBackground(){
-        bgFields.style.display=toggle.checked?'block':'none';
-        groupControl.style.display=toggle.checked?'block':'none';
-    }
-    hide(node,'background_prompt');hide(node,'background_preparation');hide(node,'animate_background');
+    if(bgPrompt)bgPrompt.label='Background motion';
+    if(bgPreparation)bgPreparation.label='Background preparation';
+    hide(node,'animate_background');
     const status=element('p',root,'Load an image, then Prepare points. Choose manual preparation to skip Qwen.');
     const canvas=element('canvas',root);canvas.width=480;canvas.height=300;
     Object.assign(canvas.style,{width:'100%',height:'300px',objectFit:'contain',touchAction:'none',background:'#080a0f'});
-    const groupControl=element('select',root);groupControl.title='Active point group';
+    const groupControl=element('select',root);groupControl.title='New point group';
     for(const choice of ['character','background']){const option=element('option',groupControl,choice);option.value=choice;}
-    showBackground();
+    const visibilityControl=element('select',root);visibilityControl.title='Visible points';
+    for(const [value,label] of [['character','Character'],['background','Background'],['all','All']]){
+        const option=element('option',visibilityControl,label);option.value=value;
+    }
+    groupControl.value=node.properties.ambient_new_point_group??'character';
+    visibilityControl.value=node.properties.ambient_visible_points??'all';
     const pointList=element('div',root);
     pointList.setAttribute('aria-label','Landmarks');
     Object.assign(pointList.style,{maxHeight:'160px',overflowY:'auto'});
@@ -240,7 +240,7 @@ function editor(node) {
     const pointRole=point=>point.motion_role??(point.path.every(k=>k.x===point.x&&k.y===point.y)?'anchor':'move');
     const color=point=>!point.enabled?'#aaa':pointRole(point)==='anchor'?'#72c8ff':'#a7ff69';
     const group=point=>point.group??'character';
-    const visible=point=>group(point)==='character'||toggle.checked;
+    const visible=point=>visibilityControl.value==='all'||group(point)===visibilityControl.value;
     function returningPath(point,moving) {
         const amplitude=moving?Math.min(plan().strength??.01,1-point.x):0;
         const path=Array.from({length:17},(_,i)=>({t:i/16,x:point.x+amplitude*(1-Math.cos(2*Math.PI*i/16))/2,y:point.y}));
@@ -267,16 +267,18 @@ function editor(node) {
         app.graph.setDirtyCanvas(true,true);pathSelection();draw();renderList();
     }
     function saveBackground() {
-        bgToggle.value=toggle.checked;bgPrompt.value=promptField.value;bgPreparation.value=mode.value;
-        showBackground();
+        // Keep the old serialized slot in sync for legacy workflows, but never read it.
+        bgToggle.value=!!String(bgPrompt.value??'').trim();
         const p=plan();if(!validPlan(p))return;
-        p.background={...(p.background??{}),enabled:toggle.checked,prompt:promptField.value,preparation:mode.value};
-        if(!toggle.checked&&groupControl.value==='background')groupControl.value='character';
-        if(selected>=0&&!visible(p.landmarks[selected]))selected=-1;
+        p.background={...(p.background??{}),enabled:!!String(bgPrompt.value??'').trim(),prompt:bgPrompt.value,preparation:bgPreparation.value};
         save(p);selection(p);
     }
-    toggle.onchange=saveBackground;promptField.oninput=saveBackground;mode.onchange=saveBackground;
-    groupControl.onchange=()=>{selected=-1;selection(plan());draw();};
+    for(const control of [bgPrompt,bgPreparation]) {
+        if(!control)continue;const changed=control.callback;
+        control.callback=function(){changed?.apply(this,arguments);saveBackground();};
+    }
+    groupControl.onchange=()=>{(node.properties??={}).ambient_new_point_group=groupControl.value;app.graph.setDirtyCanvas(true,true);};
+    visibilityControl.onchange=()=>{(node.properties??={}).ambient_visible_points=visibilityControl.value;selected=-1;drag=null;selection(plan());draw();app.graph.setDirtyCanvas(true,true);};
     function persist(p) {
         app.graph.extra??={};
         app.graph.extra.ambient_motion_plans??={};
@@ -348,11 +350,12 @@ function editor(node) {
             element('p',pointList,'No landmarks yet. Click Add point, then click the image. Review requires at least one enabled point.');
             return;
         }
-        for(const name of ['character','background']) {
+        for(const name of (visibilityControl.value==='all'?['character','background']:[visibilityControl.value])) {
           const section=element('div',pointList);section.setAttribute('aria-label',`${name} points`);
-          if(name==='background'&&!toggle.checked)section.style.display='none';
           element('strong',section,name==='character'?'Character':'Background');
-          for(const [index,point] of points.entries().filter(([,point])=>group(point)===name)) {
+          const listed=points.entries().filter(([,point])=>group(point)===name);
+          if(!listed.length)element('p',section,`No ${name} points. Choose ${name} as New point group, then click Add point.`);
+          for(const [index,point] of listed) {
             const row=button(section,`${index+1}. ${point.label} · ${pointRole(point)} (${point.x.toFixed(3)}, ${point.y.toFixed(3)}) · ${point.enabled?'enabled':'disabled'}`,()=>{
                 selected=index;selection(plan());draw();
             });
@@ -480,8 +483,9 @@ function editor(node) {
         if(timer){clearInterval(timer);timer=null;return;}
         timer=setInterval(()=>{timeline.value=(Number(timeline.value)+.05/(Number(widget(node,'duration').value)||6))%1;draw();},50);
     });
-    button(controls,'Prepare points',()=>queue('prepare',node,status,undefined,'character'));
-    button(bgFields,'Prepare background points',()=>queue('prepare',node,status,undefined,'background'));
+    button(controls,'Prepare character points',()=>queue('prepare',node,status,undefined,'character'));
+    button(controls,'Prepare background points',()=>queue('prepare',node,status,undefined,'background'));
+    button(controls,'Prepare character + background points',()=>queue('prepare',node,status,undefined,'both'));
     reviewButton=button(controls,'Accept point review',async()=>{
         try {
             const p=checkSettings(node);
@@ -517,10 +521,17 @@ function editor(node) {
     node.onConfigure=function(){configured?.apply(this,arguments);
         const stored=app.graph.extra?.ambient_motion_plans?.[String(node.id)];
         if(!plan().schema&&stored)widget(node,'plan_json').value=JSON.stringify(stored);
+        const reopened=plan(),enabledByPrompt=!!String(bgPrompt?.value??'').trim();
+        if(validPlan(reopened) && (reopened.background?.enabled??false)!==enabledByPrompt) {
+            reopened.background={...(reopened.background??{}),enabled:enabledByPrompt,
+                prompt:bgPrompt?.value??'',preparation:bgPreparation?.value??'model'};
+            reopened.review={state:'pending'};widget(node,'plan_json').value=JSON.stringify(reopened);persist(reopened);
+            status.textContent='Background motion was migrated from the legacy checkbox. Review points again before rendering.';
+        }
         const load=find('LoadImage'),name=widget(load??{},'image')?.value;
         if(name)background.src=api.apiURL('/view?'+new URLSearchParams({filename:name,type:'input'}));
         renderList();
-        status.textContent=plan().review?.state==='reviewed'?'Saved point review loaded. Inspect before rendering.':'Prepare or review saved points.';
+        if(!status.textContent.includes('migrated'))status.textContent=plan().review?.state==='reviewed'?'Saved point review loaded. Inspect before rendering.':'Prepare or review saved points.';
     };
     const removed=node.onRemoved;
     node.onRemoved=function(){clearInterval(timer);removed?.apply(this,arguments);};
