@@ -1,5 +1,10 @@
 # Ambient Loop · ComfyUI anime loops
 
+Project context: [product specification](docs/product-spec.md),
+[code map](codemap.md), [technical specs and plans](docs/superpowers/README.md),
+and [agent workflow rules](AGENTS.md). Every implementation updates the paired
+specs, checks current library docs with Context7, and uses tests before production code.
+
 Load image → enter character motion → **Prepare character points** → review/edit → **Render**
 → preview → optionally **Upscale** → save. Creative work stays inside ComfyUI.
 The existing CLI remains compatible: see [legacy CLI](docs/legacy-cli.md).
