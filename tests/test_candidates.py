@@ -6,11 +6,76 @@ from unittest.mock import patch
 import numpy as np
 from PIL import Image
 
-from ambient_loop.candidates import save_candidate, load_handle, finish_candidate
+from ambient_loop.candidates import save_candidate, save_record, load_handle, finish_candidate
 from ambient_loop.motion import new_plan, review_plan
 
 
 class CandidateTests(unittest.TestCase):
+    def test_near_widescreen_export_center_crops_pixels_and_record(self):
+        with tempfile.TemporaryDirectory() as tmp, patch('ambient_loop.candidates.encode_previews'):
+            plan = review_plan(new_plan('abc', (1290,720), 'hair', ['tip'],
+                               [{'label':'tip','x':.5,'y':.5}], duration=1, fps=8, short_side=720))
+            canvas_w,canvas_h = plan['transform']['canvas']
+            images = np.zeros((9,canvas_h,canvas_w,3),dtype=np.uint8)
+            content_x,content_y,content_w,content_h = plan['transform']['content']
+            images[:,content_y:content_y+content_h,content_x:content_x+content_w,0] = np.arange(content_w,dtype=np.uint16).astype(np.uint8)
+            handle = save_candidate(images,plan,42,Path(tmp),{})
+            with Image.open(Path(handle['directory'])/'frames/000000.png') as frame:
+                frame_size = frame.size
+                first_pixel = frame.getpixel((0,0))[0]
+                last_pixel = frame.getpixel((1279,0))[0]
+            with Image.open(Path(handle['directory'])/'raw/000000.png') as raw:
+                raw_size = raw.size
+            self.assertEqual(frame_size,(1280,720))
+            self.assertEqual(handle['dimensions'],[1280,720])
+            self.assertEqual(raw_size,(canvas_w,canvas_h))
+            self.assertEqual(first_pixel,5)
+            self.assertEqual(last_pixel,4)
+
+    def test_legacy_near_widescreen_candidate_finishes_exactly_without_modifying_source(self):
+        with tempfile.TemporaryDirectory() as tmp, patch('ambient_loop.candidates.encode_previews'):
+            root = Path(tmp)
+            legacy = root/'candidate-legacy'
+            (legacy/'frames').mkdir(parents=True)
+            (legacy/'raw').mkdir()
+            pixels = np.zeros((720,1290,3),dtype=np.uint8)
+            pixels[...,0] = np.arange(1290,dtype=np.uint16).astype(np.uint8)
+            for index in range(8):
+                Image.fromarray(pixels).save(legacy/'frames'/f'{index:06d}.png')
+            Image.fromarray(pixels).save(legacy/'raw'/'000000.png')
+            original = save_record(legacy,{'kind':'candidate','dimensions':[1290,720],
+                'fps':8,'frame_count':8,'generated_frames':9,'seed':42,
+                'generation_settings':{},'state':'awaiting_visual_review'})
+            record_bytes = Path(original['record']).read_bytes()
+            frame_bytes = (Path(original['directory'])/'frames/000000.png').read_bytes()
+            raw_bytes = (Path(original['directory'])/'raw/000000.png').read_bytes()
+            calls = []
+            def enhance(image, target):
+                calls.append((image.size,image.getpixel((0,0))[0],target))
+                return image.resize(target)
+            for resolution, expected in [('1080p',(1920,1080)),('1440p',(2560,1440)),('4K',(3840,2160))]:
+                final = finish_candidate(original,root,resolution,32,enhance)
+                self.assertEqual(final['dimensions'],list(expected))
+                with Image.open(Path(final['directory'])/'frames/000000.png') as frame:
+                    self.assertEqual(frame.size,expected)
+            self.assertEqual(calls, [((1280,720),5,(1920,1080))]*8 +
+                                    [((1280,720),5,(2560,1440))]*8 +
+                                    [((1280,720),5,(3840,2160))]*8)
+            self.assertEqual(Path(original['record']).read_bytes(),record_bytes)
+            self.assertEqual((Path(original['directory'])/'frames/000000.png').read_bytes(),frame_bytes)
+            self.assertEqual((Path(original['directory'])/'raw/000000.png').read_bytes(),raw_bytes)
+
+    def test_exact_widescreen_portrait_and_outside_tolerance_size_rules(self):
+        cases = [((1600,900),(1600,900)),((720,1290),(720,1280)),
+                 ((1307,720),(1308,720))]
+        with tempfile.TemporaryDirectory() as tmp, patch('ambient_loop.candidates.encode_previews'):
+            for source, expected in cases:
+                with self.subTest(source=source):
+                    plan = review_plan(new_plan('abc',source,'hair',['tip'],
+                                       [{'label':'tip','x':.5,'y':.5}],duration=1,fps=8,short_side=min(source)))
+                    width,height = plan['transform']['canvas']
+                    handle = save_candidate(np.zeros((9,height,width,3),dtype=np.uint8),plan,42,Path(tmp),{})
+                    self.assertEqual(handle['dimensions'],list(expected))
     def test_all_resolutions_preserve_orientation_frames_timing_and_original(self):
         from ambient_loop.staged_comfy import AmbientUpscale
         options = AmbientUpscale.INPUT_TYPES()['required']['resolution']

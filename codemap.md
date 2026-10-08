@@ -8,7 +8,7 @@ changes. Confirm details against source; this is navigation, not a substitute fo
 
 | Work | Start here | Tests / reference |
 | --- | --- | --- |
-| Product intent and accepted behavior | `docs/product-spec.md` | `docs/superpowers/specs/2026-10-08-ambient-loop-baseline-design.md` |
+| Product intent and accepted behavior | `docs/product-spec.md` | `docs/superpowers/specs/2026-10-08-ambient-loop-baseline-design.md`, `docs/superpowers/specs/2026-10-08-exact-16x9-render-design.md` |
 | Development workflow and new specs | `AGENTS.md`, `docs/superpowers/README.md` | Workflow design and plan under `docs/superpowers/` |
 | Motion plans, roles, groups, review, timing and canvas mapping | `ambient_loop/motion.py` | `tests/test_motion.py`, `tests/test_semantic_points.py` |
 | Automatic character/background point proposals and model cleanup | `ambient_loop/vision.py` | `tests/test_vision.py` |
@@ -23,6 +23,13 @@ changes. Confirm details against source; this is navigation, not a substitute fo
 | RunPod launch adapter and start-command generation | `cloud/runpod_entrypoint.py`, `tools/build_runpod_command.py` | `tests/fixtures/`, `docs/runpod-autoinstall.md` |
 | Deployed GPU proof and visual acceptance | `tools/qualify_ltx.py`, `docs/qualification.md` | `evidence/`; actual GPU evidence remains pending |
 | Existing CLI, approvals and regional workflow | `ambient_loop/cli.py`, `project.py`, `jobs.py`, `regional.py` | `tests/test_workflow.py`, `tests/test_operations.py`, `docs/legacy-cli.md` |
+
+## Current change documents
+
+- `docs/superpowers/specs/2026-10-08-exact-16x9-render-design.md`: near-16:9
+  crop contract, Pillow compatibility research and verification boundary.
+- `docs/superpowers/plans/2026-10-08-exact-16x9-render.md`: test-first
+  implementation ledger for exact export and finish dimensions.
 
 ## Complete maintained project tree
 

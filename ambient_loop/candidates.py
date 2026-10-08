@@ -36,6 +36,28 @@ def output_size(size, short_side):
     return tuple(max(2, round(value*scale/2)*2) for value in size)
 
 
+def exact_widescreen_size(size):
+    """Return a centered-crop 16:9/9:16 size for a source within 2% tolerance."""
+    width,height = size
+    short,long = sorted((width,height))
+    if abs(long/short/(16/9)-1) > .02:
+        return size
+    if width >= height:
+        scale = min(width//16,height//9)
+        return (16*scale,9*scale)
+    scale = min(width//9,height//16)
+    return (9*scale,16*scale)
+
+
+def crop_exact_widescreen(image):
+    """Center-crop a near-widescreen exported frame without resizing it."""
+    width,height = image.size
+    target_w,target_h = exact_widescreen_size(image.size)
+    x = (width-target_w)//2
+    y = (height-target_h)//2
+    return image.crop((x,y,x+target_w,y+target_h))
+
+
 def allocate(root, prefix):
     directory = Path(root)/f'{prefix}-{uuid.uuid4().hex[:12]}'
     directory.mkdir(parents=True, exist_ok=False)
@@ -95,7 +117,7 @@ def save_candidate(images, plan, seed, root, settings):
     out = allocate(root, f'candidate-{seed}')
     (out/'raw').mkdir()
     x,y,w,h = plan['transform']['content']
-    size = output_size(plan['source_size'],min(w,h))
+    size = exact_widescreen_size(output_size(plan['source_size'],min(w,h)))
     first = last = None
     for index in range(len(images)):
         value = images[index]
@@ -108,7 +130,9 @@ def save_candidate(images, plan, seed, root, settings):
             value = np.rint(np.clip(value,0,1)*255).astype(np.uint8)
         image = Image.fromarray(value[:,:,:3])
         image.save(out/'raw'/f'{index:06d}.png')
-        image = image.crop((x,y,x+w,y+h)).resize(size,Image.Resampling.LANCZOS)
+        image = image.crop((x,y,x+w,y+h)).resize(
+            output_size(plan['source_size'],min(w,h)),Image.Resampling.LANCZOS)
+        image = crop_exact_widescreen(image)
         pixels = np.asarray(image,dtype=np.float32)
         if first is None:
             first = pixels
@@ -159,7 +183,7 @@ def finish_candidate(handle, root, resolution, chunk_size=4, enhancer=None):
     handle = load_handle(Path(handle['record']),root)
     if handle['kind'] != 'candidate':
         raise ValueError('Select an original animation candidate to upscale')
-    target = output_size(handle['dimensions'],resolutions[resolution])
+    target = exact_widescreen_size(output_size(handle['dimensions'],resolutions[resolution]))
     out = allocate(root,f"finish-{Path(handle['directory']).name}-{resolution}")
     enhancer = enhancer or anime_enhancer()
     try:
@@ -168,7 +192,7 @@ def finish_candidate(handle, root, resolution, chunk_size=4, enhancer=None):
             # cancellation/progress and never materialize the complete tensor batch.
             for index in range(start,min(start+chunk_size,handle['frame_count'])):
                 with Image.open(Path(handle['directory'])/'frames'/f'{index:06d}.png') as image:
-                    result = enhancer(image.convert('RGB'),target)
+                    result = enhancer(crop_exact_widescreen(image.convert('RGB')),target)
                     if result.size != target:
                         raise ValueError('Upscaler returned unexpected dimensions')
                     result.save(out/'frames'/f'{index:06d}.png')

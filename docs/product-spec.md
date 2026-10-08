@@ -20,7 +20,7 @@ does not guarantee them. Real anime and GPU qualification is still pending.
 
 | ID | Requirement and acceptance criteria | Delivery status |
 | --- | --- | --- |
-| P-01 | Load exactly one source image. Preserve orientation and aspect ratio through preparation, rendering and finishing. | Implemented; deployment qualification pending |
+| P-01 | Load exactly one source image. Preserve orientation and aspect ratio through preparation, rendering and finishing, except the small centered crop required by P-11. | Implemented; deployment qualification pending |
 | P-02 | Enter character motion and optionally requested parts. Prepare suggestions with local Qwen3.5, local Qwen3-VL or manual editing. Automatic failures show actionable feedback and leave manual correction available. Useful visible suggestions survive partial responses; hidden anatomy is omitted. | Implemented; real model accuracy pending |
 | P-03 | Enter background motion to enable scenery animation. Choose Model or Manual; prepare Character, Background or both. Each preparation changes its own group. Clearing background motion excludes background tracks and retains saved points. Failed automatic preparation preserves existing points. | Implemented; deployed scenery render pending |
 | P-04 | Review/edit points on the source image. Filter Character, Background or All; hidden points cannot be selected. Choose the group for new points. Add, move, delete or disable points, edit labels/objects/roles/reasons/strengths and inspect trajectories. Moving points are green, stationary anchors blue, disabled points gray; character points are circles and background points squares. | Implemented; installed frontend qualification pending |
@@ -30,6 +30,7 @@ does not guarantee them. Real anime and GPU qualification is still pending.
 | P-08 | Select original saved candidates after reopening; automatically select the newest completed render and refresh the list when requested. Preserve reviewed points in the saved workflow. | Implemented; real ComfyUI restart qualification pending |
 | P-09 | Optionally upscale a selected candidate to short sides of 1080, 1440 or 2160 pixels. Preserve aspect ratio, even dimensions, frame count, FPS, timing and original candidate files. Default to 1440. Save a silent MP4 with lossless frames alongside it. | Implemented; GPU and temporal-flicker qualification pending |
 | P-10 | Support documented cloud installation and retain the existing CLI. Record deployment/model versions and actual runtime evidence before promising supported hardware or performance. | Implemented setup paths; provider qualification pending |
+| P-11 | For source content whose long-to-short ratio is within 2% of 16:9, save exact 16:9 exported render frames after generation-canvas padding is removed: 1280x720 at the standard 720-pixel short side, or 720x1280 for portrait. Center-crop only the exported/finished frame; raw generated frames and the reviewed canvas remain unchanged. Finishing those candidates at 1080p, 1440p and 4K saves 1920x1080, 2560x1440 and 3840x2160 (portrait counterparts included). Sources outside tolerance retain their existing aspect ratio behavior. | Implemented locally; GPU and visual qualification pending |
 
 "Implemented" describes repository behavior and existing evidence. It does not
 mean this session reran all tests or that a production GPU run was accepted.
@@ -75,6 +76,10 @@ Update [codemap.md](../codemap.md) whenever project structure changes.
 
 ## Delivery notes
 
+- 2026-10-08: Added centered near-16:9 export/finish cropping. Local regression
+  coverage includes an independently constructed legacy 1290x720 candidate; FFmpeg
+  probes confirmed 1280x720 render and 1920x1080 finish MP4s. GPU and visual
+  qualification remain pending. See the [exact 16:9 render design](superpowers/specs/2026-10-08-exact-16x9-render-design.md).
 - 2026-10-08: Established this baseline from current source, README and existing
   qualification records. Added owner/agent specs, maintained code navigation,
   mandatory test-first rules and Context7 research configuration. This setup changes

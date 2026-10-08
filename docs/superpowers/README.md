@@ -10,12 +10,14 @@ for the required workflow.
 | --- | --- |
 | [Ambient Loop baseline](specs/2026-10-08-ambient-loop-baseline-design.md) | Current architecture, contracts, dependencies and test ownership |
 | [Project workflow design](specs/2026-10-08-project-workflow-design.md) | Product/technical specs, Context7, test-first work and codemap maintenance |
+| [Exact 16:9 render design](specs/2026-10-08-exact-16x9-render-design.md) | Export and finishing crop rule for near-16:9 sources |
 | [Project workflow plan](plans/2026-10-08-project-workflow.md) | Setup tasks and verification evidence |
 
 ## Existing implementation history
 
 - [Staged points plan](plans/2026-10-04-ambient-loop-staged-points.md)
 - [Global Run plan](plans/2026-10-04-ambient-loop-global-run.md)
+- [Exact 16:9 render plan](plans/2026-10-08-exact-16x9-render.md)
 - [Original implementation brief](../implementation-plan.md)
 - [Semantic points ledger](../smarter-points-progress.md)
 - [Qualification evidence and pending checks](../qualification.md)
