@@ -25,8 +25,11 @@ test('Preparation uses original image and saved selection has no generation link
   assert.equal(adapted.nodes.find(n=>n.id===link[1]).type,'LoadImage');
   const selector=adapted.nodes.find(n=>n.type==='AmbientSavedCandidate');
   assert.equal(selector.inputs.length,0);
-  const upscale=adapted.nodes.find(n=>n.type==='AmbientUpscale');
-  assert.equal(adapted.links.find(l=>l[0]===upscale.inputs[0].link)[1],selector.id);
+  const finish=adapted.nodes.find(n=>n.type==='AmbientFinish');
+  assert.ok(finish);
+  assert.deepEqual(finish.widgets_values,['1080p','Fast',4]);
+  assert.equal(adapted.links.find(l=>l[0]===finish.inputs[0].link)[1],selector.id);
+  assert.equal(adapted.nodes.some(n=>n.type==='AmbientUpscale'),false);
 });
 test('Recorded canvas bypasses official resizes',()=>{
   const input=adapted.definitions.subgraphs.find(s=>s.name==='Input Parameters');

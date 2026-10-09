@@ -1,16 +1,146 @@
 import tempfile
 import unittest
+import shutil
+import sys
+import json
+import subprocess
+from types import ModuleType, SimpleNamespace
 from pathlib import Path
 from unittest.mock import patch
 
 import numpy as np
 from PIL import Image
 
-from ambient_loop.candidates import save_candidate, save_record, load_handle, finish_candidate
+from ambient_loop.candidates import save_candidate, save_record, load_handle, finish_candidate, anime_enhancer, tiled_anime_scale
 from ambient_loop.motion import new_plan, review_plan
 
 
 class CandidateTests(unittest.TestCase):
+    def test_fast_finish_uses_saved_frames_and_records_method(self):
+        if not shutil.which('ffmpeg') or not shutil.which('ffprobe'):
+            self.skipTest('ffmpeg/ffprobe unavailable')
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root/'candidate-fast'
+            (source/'frames').mkdir(parents=True)
+            (source/'raw').mkdir()
+            for index in range(2):
+                Image.new('RGB',(1280,720),(index*80,20,40)).save(source/'frames'/f'{index:06d}.png')
+            original = save_record(source,{'kind':'candidate','dimensions':[1280,720],
+                'fps':8,'frame_count':2,'seed':42,'generation_settings':{},
+                'state':'awaiting_visual_review'})
+            before = {p.name:p.read_bytes() for p in (source/'frames').glob('*.png')}
+            record_bytes = Path(original['record']).read_bytes()
+            with patch('ambient_loop.candidates.anime_enhancer',side_effect=AssertionError('AI loaded')):
+                finish = finish_candidate(original,root,'1080p',method='fast')
+            self.assertEqual(finish['finish_method'],'fast')
+            self.assertEqual(finish['dimensions'],[1920,1080])
+            self.assertEqual((finish['fps'],finish['frame_count']),(8,2))
+            self.assertIsNone(finish['upscale_model'])
+            self.assertNotEqual(finish['record'],original['record'])
+            for index in range(2):
+                with Image.open(Path(finish['directory'])/'frames'/f'{index:06d}.png') as image:
+                    self.assertEqual(image.size,(1920,1080))
+                    self.assertEqual(image.getpixel((960,540)),(index*80,20,40))
+            streams = json.loads(subprocess.run(['ffprobe','-v','error','-count_frames',
+                '-show_streams','-of','json',str(Path(finish['directory'])/'loop.mp4')],
+                check=True,capture_output=True,text=True).stdout)['streams']
+            self.assertEqual(len(streams),1)
+            self.assertEqual(streams[0]['codec_type'],'video')
+            self.assertEqual((streams[0]['width'],streams[0]['height']),(1920,1080))
+            self.assertEqual((streams[0]['nb_read_frames'],streams[0]['r_frame_rate']),('2','8/1'))
+            self.assertEqual({p.name:p.read_bytes() for p in (source/'frames').glob('*.png')},before)
+            self.assertEqual(Path(original['record']).read_bytes(),record_bytes)
+
+    def test_balanced_and_original_choose_distinct_model_policies(self):
+        with tempfile.TemporaryDirectory() as tmp, patch('ambient_loop.candidates.encode_previews'):
+            root = Path(tmp)
+            source = root/'candidate-ai'
+            (source/'frames').mkdir(parents=True)
+            Image.new('RGB',(16,16)).save(source/'frames/000000.png')
+            original = save_record(source,{'kind':'candidate','dimensions':[16,16],
+                'fps':8,'frame_count':1,'seed':42,'generation_settings':{},
+                'state':'awaiting_visual_review'})
+            def enhancer(image,size):
+                return image.resize(size)
+            enhancer.model_sha256 = 'weights'
+            with patch('ambient_loop.candidates.anime_enhancer',side_effect=[enhancer,enhancer]) as load:
+                balanced = finish_candidate(original,root,'1080p',method='balanced_ai')
+                original_ai = finish_candidate(original,root,'1080p',method='original_ai')
+            self.assertEqual(load.call_args_list[0].kwargs,{'precision':'fp16'})
+            self.assertEqual(load.call_args_list[1].kwargs,{})
+            self.assertEqual((balanced['finish_method'],original_ai['finish_method']),
+                             ('balanced_ai','original_ai'))
+            self.assertEqual(balanced['upscale_model_sha256'],'weights')
+            self.assertNotEqual(balanced['record'],original_ai['record'])
+
+    def test_invalid_finish_method_rejected_before_allocating(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaisesRegex(ValueError,'method'):
+                finish_candidate({'record':'unused'},Path(tmp),'1080p',method='unknown')
+            self.assertEqual(list(Path(tmp).iterdir()),[])
+
+    def test_balanced_tiles_fall_back_only_on_oom(self):
+        attempts = []
+        def scale(tensor, run, **kwargs):
+            attempts.append(kwargs['tile_x'])
+            if len(attempts) < 3:
+                raise RuntimeError('CUDA out of memory')
+            return 'scaled'
+        def oom_only(error):
+            if 'out of memory' not in str(error):
+                raise error
+        tile_state = {}
+        result = tiled_anime_scale('input',lambda chunk:chunk,'fp16',
+            SimpleNamespace(tiled_scale=scale),SimpleNamespace(raise_non_oom=oom_only),
+            SimpleNamespace(device=lambda value:value),tile_state)
+        self.assertEqual(result,'scaled')
+        self.assertEqual(attempts,[512,256,128])
+        self.assertEqual(tile_state['size'],128)
+        tiled_anime_scale('input',lambda chunk:chunk,'fp16',
+            SimpleNamespace(tiled_scale=scale),SimpleNamespace(raise_non_oom=oom_only),
+            SimpleNamespace(device=lambda value:value),tile_state)
+        self.assertEqual(attempts,[512,256,128,128])
+        attempts.clear()
+        with self.assertRaisesRegex(RuntimeError,'kernel failed'):
+            tiled_anime_scale('input',lambda chunk:chunk,'fp16',
+                SimpleNamespace(tiled_scale=lambda *a,**kw: (_ for _ in ()).throw(RuntimeError('kernel failed'))),
+                SimpleNamespace(raise_non_oom=oom_only),SimpleNamespace(device=lambda value:value))
+
+    def test_balanced_rejects_weights_without_half_support(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            weights = Path(tmp)/'upscale_models/realesr-animevideov3.pth'
+            weights.parent.mkdir()
+            weights.write_bytes(b'weights')
+            class Descriptor:
+                scale = 4
+                supports_half = False
+                def eval(self): return self
+            fake_model = Descriptor()
+            folder_paths = ModuleType('folder_paths')
+            folder_paths.models_dir = tmp
+            torch = ModuleType('torch')
+            torch.inference_mode = lambda: lambda func: func
+            comfy = ModuleType('comfy')
+            comfy.__path__ = []
+            management = ModuleType('comfy.model_management')
+            management.unload_all_models = lambda: None
+            utils = ModuleType('comfy.utils')
+            utils.load_torch_file = lambda *a,**kw: {}
+            comfy.model_management = management
+            comfy.utils = utils
+            spandrel = ModuleType('spandrel')
+            spandrel.ImageModelDescriptor = Descriptor
+            spandrel.ModelLoader = lambda: SimpleNamespace(load_from_state_dict=lambda data:fake_model)
+            with patch.dict(sys.modules,{'folder_paths':folder_paths,'torch':torch,'comfy':comfy,
+                                         'comfy.model_management':management,'comfy.utils':utils,
+                                         'spandrel':spandrel}):
+                with self.assertRaisesRegex(ValueError,'does not support FP16'):
+                    anime_enhancer(precision='fp16')
+                del Descriptor.supports_half
+                with self.assertRaisesRegex(ValueError,'does not support FP16'):
+                    anime_enhancer(precision='fp16')
+
     def test_near_widescreen_export_center_crops_pixels_and_record(self):
         with tempfile.TemporaryDirectory() as tmp, patch('ambient_loop.candidates.encode_previews'):
             plan = review_plan(new_plan('abc', (1290,720), 'hair', ['tip'],

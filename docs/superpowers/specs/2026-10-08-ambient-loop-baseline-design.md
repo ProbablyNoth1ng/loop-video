@@ -77,8 +77,10 @@ not a claim that every acceptance criterion has deployed evidence.
 - Candidates retain raw PNGs, playback PNGs, previews, settings and hashes. Handles
   contain disk records rather than live tensors. Candidate paths remain within the
   output root. Reopening discovers completed original candidates.
-- Finishing uses `realesr-animevideov3` in bounded chunks; short sides 1080/1440/2160,
-  default 1440. Preserve candidate files, aspect ratio, even dimensions, count and FPS.
+- The legacy `AmbientUpscale` node uses `realesr-animevideov3` in bounded chunks;
+  short sides 1080/1440/2160, default 1440. New workflows use the finishing methods
+  in the [faster finishing design](2026-10-08-faster-finishing-design.md). Preserve
+  candidate files, aspect ratio, even dimensions, count and FPS.
 - New schema, socket ordering or model-cache changes need explicit compatibility
   tests against existing saved workflows and manifests.
 

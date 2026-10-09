@@ -19,6 +19,18 @@ test('Prepare excludes generation and finishing',()=>{
 });
 test('Render excludes finishing',()=>assert.deepEqual(Object.keys(stageGraph(graph,5,'render')),['1','2','3','4','5']));
 test('Upscale uses only disk selection',()=>assert.deepEqual(Object.keys(stageGraph(graph,7,'upscale')),['6','7']));
+test('new finishing node uses only saved candidate and rejects render ancestors',()=>{
+  const next=structuredClone(graph);
+  next[8]={class_type:'AmbientFinish',inputs:{candidate:['6',0],resolution:'1080p',method:'fast'}};
+  assert.deepEqual(Object.keys(stageGraph(next,8,'upscale')),['6','8']);
+  next[8].inputs.candidate=['5',0];
+  assert.throws(()=>stageGraph(next,8,'upscale'),/saved candidate/i);
+  next[8].inputs.candidate=['7',0];
+  assert.throws(()=>stageGraph(next,8,'upscale'),/saved candidate/i);
+  delete next[8].inputs.candidate;
+  assert.throws(()=>stageGraph(next,8,'upscale'),/saved candidate/i);
+  assert.deepEqual(Object.keys(stageGraph(next,5,'render')),['1','2','3','4','5']);
+});
 test('Unsafe stage connections fail before queueing',()=>{
   assert.throws(()=>stageGraph(graph,5,'prepare'));
   const bad=structuredClone(graph);bad[7].inputs.candidate=['5',0];

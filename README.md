@@ -56,10 +56,16 @@ see [automatic installation](docs/runpod-autoinstall.md).
    unselected areas, though generation may drift.
 6. The last completed render is automatically selected in **Select saved candidate**.
    Choose another original render in its dropdown to preview it automatically.
-   Optionally click **Upscale** for 1080p/1440p/4K (1440p remains the default).
+   Optionally choose a finishing method and click **Upscale**. New workflows default
+   to **Fast** at 1080p: FFmpeg Lanczos resizing without AI detail. **Balanced AI**
+   uses the installed anime model in FP16 when supported, with adaptive tiles.
+   **Original AI** uses the existing model path. Existing saved workflows keep
+   their Original AI node and 1440p default. Re-select the same candidate and
+   run another method to compare separate finishes.
    Resolutions use short sides of 1080/1440/2160, preserving orientation and
    aspect ratio with even dimensions. Finishing reads saved PNGs and
-   keeps the same frame count, FPS and timing. Review for flicker and click
+   keeps the same frame count, FPS and timing. Review linework, faces, flicker and
+   the seam, then click
    **Save silent MP4**. Lossless frames remain beside the output.
 
 Use **Run** to choose exactly one Ambient Loop stage: **Prepare character points**,

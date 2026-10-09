@@ -1,4 +1,4 @@
-const ambientClasses = new Set(['AmbientMotionEditor','AmbientSaveCandidate','AmbientUpscale']);
+const ambientClasses = new Set(['AmbientMotionEditor','AmbientSaveCandidate','AmbientUpscale','AmbientFinish']);
 const installed = new WeakSet();
 const guardedApis = new WeakSet();
 const noticedGraphs = new WeakSet();
@@ -21,11 +21,11 @@ export function resolveStageTargets(graph) {
     const find = type => graphNodes(graph).filter(node => nodeClass(node) === type);
     const editors=find('AmbientMotionEditor');
     const savers=find('AmbientSaveCandidate');
-    const upscalers=find('AmbientUpscale');
+    const upscalers=[...find('AmbientUpscale'),...find('AmbientFinish')];
     return {
         prepare: editors.length===1 ? {target:editors[0]} : {reason:editors.length?'Prepare points needs one motion editor.':'Prepare points needs an Ambient Motion Editor.'},
         render: editors.length!==1 ? {reason:'Render needs exactly one motion editor; resolve the editor ambiguity.'} : savers.length===1 ? {target:savers[0]} : {reason:savers.length?'Render needs one candidate saver.':'Render needs an Ambient Save Candidate node.'},
-        upscale: upscalers.length===1 ? {target:upscalers[0]} : {reason:upscalers.length?'Upscale needs one output node.':'Upscale needs an Ambient Upscale node.'}
+        upscale: upscalers.length===1 ? {target:upscalers[0]} : {reason:upscalers.length?'Upscale needs one output node.':'Upscale needs an Ambient Upscale or Ambient Finish node.'}
     };
 }
 
@@ -77,7 +77,7 @@ export function installUnsafePromptGuard(api) {
         const prompt=args[1]??{};
         const output=prompt.output??{};
         const classes=Object.values(output).map(node=>node.class_type);
-        if(classes.includes('AmbientUpscale')&&classes.includes('AmbientSaveCandidate')) {
+        if(classes.some(c=>c==='AmbientUpscale'||c==='AmbientFinish')&&classes.includes('AmbientSaveCandidate')) {
             throw new Error('Use the separate Prepare, Render or Upscale buttons to queue one stage.');
         }
         if(classes.includes('AmbientSaveCandidate')&&Object.values(output).some(node=>node.class_type==='AmbientMotionEditor'&&node.inputs?.stage==='prepare')) {

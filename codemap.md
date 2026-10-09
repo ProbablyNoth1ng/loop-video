@@ -16,7 +16,7 @@ changes. Confirm details against source; this is navigation, not a substitute fo
 | Points UI, background controls, review and previews | `comfy_nodes/ambient_loop/web/ambient_loop.js` | `tests/test_editor_semantics.mjs`, `tests/test_previews.mjs`, `tests/editor_harness.py` |
 | Coordinate mapping and letterboxing | `comfy_nodes/ambient_loop/web/geometry.mjs` | `tests/test_editor_geometry.mjs` |
 | Stage pruning and global Run chooser/queue guards | `comfy_nodes/ambient_loop/web/stages.mjs`, `queue_control.mjs` in the same directory | `tests/test_stages.mjs`, `tests/test_queue_control.mjs` |
-| Saved candidates, MP4 encoding, finishing and resolution | `ambient_loop/candidates.py` | `tests/test_candidates.py`, `tests/test_resolution_integration.py` |
+| Saved candidates, MP4 encoding, Fast/AI finishing and resolution | `ambient_loop/candidates.py` | `tests/test_candidates.py`, `tests/test_resolution_integration.py` |
 | Review/candidate HTTP endpoints | `ambient_loop/comfy_routes.py` | Backend stage tests and editor fixture |
 | Official and adapted LTX graph | `workflows/`, `tools/build_motion_workflow.mjs` | `tests/test_motion_workflow.mjs`, `docs/qualification.md` |
 | Cloud install, ComfyUI compatibility and model snapshots | `cloud/install.py` | `tests/test_cloud_install.py`, `tests/test_vision_install.py` |
@@ -30,6 +30,10 @@ changes. Confirm details against source; this is navigation, not a substitute fo
   crop contract, Pillow compatibility research and verification boundary.
 - `docs/superpowers/plans/2026-10-08-exact-16x9-render.md`: test-first
   implementation ledger for exact export and finish dimensions.
+- `docs/superpowers/specs/2026-10-08-faster-finishing-design.md`: three finishing
+  methods, new/old node contracts and library research.
+- `docs/superpowers/plans/2026-10-08-faster-finishing.md`: finishing implementation
+  and verification ledger.
 
 ## Complete maintained project tree
 
@@ -49,7 +53,7 @@ anime-loop-research/
 │   ├── __main__.py                   python -m ambient_loop entry
 │   ├── assets.py                     Checked model-weight caching
 │   ├── benchmark.py                  CLI rendering/transfer benchmark
-│   ├── candidates.py                 Persistent render records, previews and finishing
+│   ├── candidates.py                 Persistent records, previews and Fast/AI finishing
 │   ├── cli.py                        Existing CLI commands
 │   ├── comfy.py                      Legacy node/export integration and node registry
 │   ├── comfy_routes.py               Same-origin review and candidate endpoints
@@ -89,9 +93,13 @@ anime-loop-research/
 │       ├── plans/
 │       │   ├── 2026-10-04-ambient-loop-global-run.md
 │       │   ├── 2026-10-04-ambient-loop-staged-points.md
+│       │   ├── 2026-10-08-exact-16x9-render.md
+│       │   ├── 2026-10-08-faster-finishing.md
 │       │   └── 2026-10-08-project-workflow.md
 │       └── specs/
 │           ├── 2026-10-08-ambient-loop-baseline-design.md
+│           ├── 2026-10-08-exact-16x9-render-design.md
+│           ├── 2026-10-08-faster-finishing-design.md
 │           └── 2026-10-08-project-workflow-design.md
 ├── evidence/
 │   ├── comfy-local-validation.json   Historical local validation record

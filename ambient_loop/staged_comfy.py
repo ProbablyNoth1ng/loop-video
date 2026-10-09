@@ -234,11 +234,35 @@ class AmbientUpscale:
         return {'ui':preview_ui(record),'result':(record,)}
 
 
+class AmbientFinish:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {'required':{'candidate':('RENDER_HANDLE',),
+                 'resolution':(['1080p','1440p','4K'],{'default':'1080p'}),
+                 'method':(['Fast','Balanced AI','Original AI'],{'default':'Fast'}),
+                 'chunk_size':('INT',{'default':4,'min':1,'max':32})}}
+    RETURN_TYPES = ('RENDER_HANDLE',)
+    FUNCTION = 'execute'
+    CATEGORY = 'ambient-loop/staged'
+    OUTPUT_NODE = True
+    @classmethod
+    def IS_CHANGED(cls,**kwargs):
+        return float('nan')
+    def execute(self,candidate,resolution,method,chunk_size):
+        methods = {'Fast':'fast','Balanced AI':'balanced_ai','Original AI':'original_ai'}
+        if method not in methods:
+            raise ValueError('Choose Fast, Balanced AI or Original AI')
+        record = finish_candidate(candidate,output_root(),resolution,chunk_size,method=methods[method])
+        return {'ui':preview_ui(record),'result':(record,)}
+
+
 NODE_CLASS_MAPPINGS = {'AmbientMotionEditor':AmbientMotionEditor,
                        'AmbientSaveCandidate':AmbientSaveCandidate,
                        'AmbientSavedCandidate':AmbientSavedCandidate,
-                       'AmbientUpscale':AmbientUpscale}
+                       'AmbientUpscale':AmbientUpscale,
+                       'AmbientFinish':AmbientFinish}
 NODE_DISPLAY_NAME_MAPPINGS = {'AmbientMotionEditor':'Ambient Loop · Prepare and review',
     'AmbientSaveCandidate':'Ambient Loop · Render preview',
     'AmbientSavedCandidate':'Ambient Loop · Select saved candidate',
-    'AmbientUpscale':'Ambient Loop · Upscale preview'}
+    'AmbientUpscale':'Ambient Loop · Upscale preview',
+    'AmbientFinish':'Ambient Loop · Finish preview'}

@@ -5,10 +5,27 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from ambient_loop.staged_comfy import AmbientMotionEditor, AmbientSavedCandidate
+from ambient_loop.staged_comfy import AmbientMotionEditor, AmbientSavedCandidate, AmbientUpscale, AmbientFinish
 
 
 class StageTests(unittest.TestCase):
+    def test_new_finish_defaults_and_old_upscale_contract(self):
+        modern = AmbientFinish.INPUT_TYPES()['required']
+        legacy = AmbientUpscale.INPUT_TYPES()['required']
+        self.assertEqual(modern['resolution'][1]['default'],'1080p')
+        self.assertEqual(modern['method'][1]['default'],'Fast')
+        self.assertEqual(modern['method'][0],['Fast','Balanced AI','Original AI'])
+        self.assertEqual(list(legacy),['candidate','resolution','chunk_size'])
+        self.assertEqual(legacy['resolution'][1]['default'],'1440p')
+        candidate = {'record':'saved'}
+        with patch('ambient_loop.staged_comfy.output_root',return_value=Path('output')), \
+             patch('ambient_loop.staged_comfy.finish_candidate',return_value={'directory':'output/finish','record':'output/finish/record.json'}) as finish, \
+             patch('ambient_loop.staged_comfy.preview_ui',return_value={}):
+            AmbientFinish().execute(candidate,'1080p','Balanced AI',4)
+            self.assertEqual(finish.call_args.kwargs,{'method':'balanced_ai'})
+            AmbientUpscale().execute(candidate,'1440p',4)
+            self.assertEqual(finish.call_args.kwargs,{})
+
     def test_combined_prepare_builds_both_groups_in_one_plan(self):
         import numpy as np
         image = np.zeros((1,100,80,3),dtype=np.float32)

@@ -20,14 +20,14 @@ const record = {schema:'ambient-render-handle/1',kind:'candidate',state:'awaitin
 let instance=0;
 
 async function fixture(fetchApi = async path => ({ok:true,json:async()=>path.startsWith('/ambient-loop/candidates')
-  ? ['candidate-new/record.json','candidate-old/record.json'] : record})) {
+  ? ['candidate-new/record.json','candidate-old/record.json'] : record}), finishType='AmbientUpscale') {
   globalThis.document={createElement:tag=>new Element(tag),body:new Element('body')};
   const make=(id,type,values={})=>({id,type,comfyClass:type,size:[520,300],properties:{},
     widgets:Object.entries(values).map(([name,value])=>({name,value,options:{values:[]}})),
     addDOMWidget(name,type,root){this.root=root;return{};},setSize(size){this.size=size;}});
   const saver=make(5,'AmbientSaveCandidate');
   const selector=make(6,'AmbientSavedCandidate',{candidate:'Select a saved candidate'});
-  const upscale=make(7,'AmbientUpscale',{resolution:'1440p',chunk_size:4});
+  const upscale=make(7,finishType,{resolution:'1440p',chunk_size:4});
   const submissions=[];
   const app={graph:{_nodes:[saver,selector,upscale],setDirtyCanvas(){}},
     registerExtension(extension){this.extension=extension;},
@@ -35,7 +35,7 @@ async function fixture(fetchApi = async path => ({ok:true,json:async()=>path.sta
       4:{class_type:'Sampler',inputs:{}},
       5:{class_type:'AmbientSaveCandidate',inputs:{video:['4',0]}},
       6:{class_type:'AmbientSavedCandidate',inputs:{candidate:selector.widgets[0].value}},
-      7:{class_type:'AmbientUpscale',inputs:{candidate:['6',0],resolution:'1440p',chunk_size:4}}
+      7:{class_type:finishType,inputs:{candidate:['6',0],resolution:'1440p',chunk_size:4}}
     }};}};
   const api={apiURL:path=>'/comfy'+path,fetchApi,async queuePrompt(number,prompt){
     submissions.push(prompt.output);return{prompt_id:'test',node_errors:{}};
@@ -90,6 +90,15 @@ test('the last render is selected immediately and upscale queues that saved rend
   await f.buttons(f.upscale).find(b=>b.textContent==='Upscale').onclick();
   assert.deepEqual(Object.keys(f.submissions[0]),['6','7']);
   assert.equal(f.submissions[0]['6'].inputs.candidate,'candidate-last/record.json');
+});
+
+test('new finish preview displays the recorded method and queues only disk nodes',async()=>{
+  const f=await fixture(undefined,'AmbientFinish');await flush();
+  const finished={...record,kind:'finish',finish_method:'fast'};
+  f.upscale.onExecuted({preview_paths:['ambient-loop/finish-new/loop.mp4','ambient-loop/finish-new/seam.mp4'],render_handle:[finished]});
+  assert.match(f.upscale.root.children.filter(el=>el.tag==='p').map(el=>el.textContent).join(' '),/Fast/);
+  await f.buttons(f.upscale).find(b=>b.textContent==='Upscale').onclick();
+  assert.deepEqual(Object.keys(f.submissions[0]),['6','7']);
 });
 
 test('saved preview paths reopen with folder normalization and automatic playback',async()=>{

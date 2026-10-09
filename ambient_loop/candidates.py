@@ -176,46 +176,90 @@ def load_handle(path, root):
     return record
 
 
-def finish_candidate(handle, root, resolution, chunk_size=4, enhancer=None):
+def finish_candidate(handle, root, resolution, chunk_size=4, enhancer=None, method='original_ai'):
     resolutions = {'1080p':1080, '1440p':1440, '4K':2160}
     if resolution not in resolutions or not 1 <= chunk_size <= 32:
         raise ValueError('Choose 1080p, 1440p or 4K and a chunk size from 1 to 32')
+    if method not in ('fast','balanced_ai','original_ai'):
+        raise ValueError('Choose a valid finish method')
     handle = load_handle(Path(handle['record']),root)
     if handle['kind'] != 'candidate':
         raise ValueError('Select an original animation candidate to upscale')
     target = exact_widescreen_size(output_size(handle['dimensions'],resolutions[resolution]))
     out = allocate(root,f"finish-{Path(handle['directory']).name}-{resolution}")
-    enhancer = enhancer or anime_enhancer()
-    try:
-        for start in range(0,handle['frame_count'],chunk_size):
-            # At most one input/output image lives in memory; chunk boundaries allow
-            # cancellation/progress and never materialize the complete tensor batch.
-            for index in range(start,min(start+chunk_size,handle['frame_count'])):
-                with Image.open(Path(handle['directory'])/'frames'/f'{index:06d}.png') as image:
-                    result = enhancer(crop_exact_widescreen(image.convert('RGB')),target)
-                    if result.size != target:
-                        raise ValueError('Upscaler returned unexpected dimensions')
-                    result.save(out/'frames'/f'{index:06d}.png')
-            try:
-                from comfy.model_management import throw_exception_if_processing_interrupted
-                throw_exception_if_processing_interrupted()
-            except ImportError:
-                pass
-    finally:
-        close = getattr(enhancer,'close',None)
-        if close:
-            close()
+    if method == 'fast':
+        source = Path(handle['directory'])/'frames'
+        crop_w,crop_h = exact_widescreen_size(handle['dimensions'])
+        width,height = handle['dimensions']
+        crop = (f'crop={crop_w}:{crop_h}:{(width-crop_w)//2}:{(height-crop_h)//2},'
+                if (crop_w,crop_h) != (width,height) else '')
+        subprocess.run(['ffmpeg','-hide_banner','-loglevel','error','-y',
+                        '-framerate',str(handle['fps']),'-start_number','0',
+                        '-i',str(source/'%06d.png'),'-vf',
+                        f'{crop}scale={target[0]}:{target[1]}:flags=lanczos',
+                        '-frames:v',str(handle['frame_count']),'-fps_mode','passthrough',
+                        '-start_number','0','-pix_fmt','rgb24',
+                        str(out/'frames/%06d.png')],check=True)
+        for index in range(handle['frame_count']):
+            frame = out/'frames'/f'{index:06d}.png'
+            if not frame.is_file():
+                raise ValueError(f'Fast finish omitted frame {index}')
+            with Image.open(frame) as image:
+                if image.size != target:
+                    raise ValueError('Fast finish returned unexpected dimensions')
+    else:
+        enhancer = enhancer or (anime_enhancer(precision='fp16') if method == 'balanced_ai'
+                                else anime_enhancer())
+        try:
+            for start in range(0,handle['frame_count'],chunk_size):
+                # At most one input/output image lives in memory; chunk boundaries allow
+                # cancellation/progress and never materialize the complete tensor batch.
+                for index in range(start,min(start+chunk_size,handle['frame_count'])):
+                    with Image.open(Path(handle['directory'])/'frames'/f'{index:06d}.png') as image:
+                        result = enhancer(crop_exact_widescreen(image.convert('RGB')),target)
+                        if result.size != target:
+                            raise ValueError('Upscaler returned unexpected dimensions')
+                        result.save(out/'frames'/f'{index:06d}.png')
+                try:
+                    from comfy.model_management import throw_exception_if_processing_interrupted
+                    throw_exception_if_processing_interrupted()
+                except ImportError:
+                    pass
+        finally:
+            close = getattr(enhancer,'close',None)
+            if close:
+                close()
     record = save_record(out, {'kind':'finish','parent':handle['record'],
         'dimensions':list(target),'fps':handle['fps'],'frame_count':handle['frame_count'],
         'seed':handle['seed'],'generation_settings':handle['generation_settings'],
-        'upscale_model':'realesr-animevideov3','upscale_model_sha256':getattr(enhancer,'model_sha256',None),'state':'encoding',
+        'finish_method':method,
+        'upscale_model':None if method == 'fast' else 'realesr-animevideov3',
+        'upscale_model_sha256':getattr(enhancer,'model_sha256',None) if method != 'fast' else None,
+        'state':'encoding',
         'visual_review_required':True,'feedback':['Inspect upscale flicker before downloading.']})
     encode_previews(out,record['frame_count'],record['fps'])
     record['state'] = 'awaiting_visual_review'
     return save_record(out,record)
 
 
-def anime_enhancer():
+def tiled_anime_scale(tensor, model, precision, utils, management, torch, tile_state=None):
+    initial_tile = 512 if precision == 'fp16' else 256
+    tile = tile_state.get('size',initial_tile) if tile_state is not None else initial_tile
+    while True:
+        try:
+            return utils.tiled_scale(tensor,lambda chunk:model(chunk if precision == 'fp16' else chunk.float()),
+                tile_x=tile,tile_y=tile,overlap=32,upscale_amount=4,
+                output_device=torch.device('cpu'))
+        except Exception as error:
+            management.raise_non_oom(error)
+            tile //= 2
+            if tile < 128:
+                raise
+            if tile_state is not None:
+                tile_state['size'] = tile
+
+
+def anime_enhancer(precision='fp32'):
     import folder_paths
     import torch
     import comfy.model_management as management
@@ -230,26 +274,23 @@ def anime_enhancer():
     model = ModelLoader().load_from_state_dict(weights).eval()
     if not isinstance(model,ImageModelDescriptor) or model.scale != 4:
         raise ValueError('Expected the x4 realesr-animevideov3 image model')
+    if precision == 'fp16':
+        if not getattr(model,'supports_half',False):
+            raise ValueError('Installed realesr-animevideov3 model does not support FP16; choose Original AI or Fast')
+        model.half()
     device = management.get_torch_device()
     model.to(device)
     class Enhancer:
         model_sha256 = sha(path)
+        def __init__(self):
+            self.tile_state = {}
         @torch.inference_mode()
         def __call__(self,image,size):
             # Spandrel consumes RGB. Tiled inference emits one frame on CPU.
             tensor = torch.from_numpy(np.asarray(image).copy()).float().div_(255).movedim(-1,0).unsqueeze(0).to(device)
-            tile = 256
-            while True:
-                try:
-                    result = utils.tiled_scale(tensor,lambda chunk:model(chunk.float()),
-                        tile_x=tile,tile_y=tile,overlap=32,upscale_amount=4,
-                        output_device=torch.device('cpu'))
-                    break
-                except Exception as error:
-                    management.raise_non_oom(error)
-                    tile //= 2
-                    if tile < 128:
-                        raise
+            if precision == 'fp16':
+                tensor = tensor.half()
+            result = tiled_anime_scale(tensor,model,precision,utils,management,torch,self.tile_state)
             pixels = result[0].movedim(0,-1).clamp_(0,1).mul_(255).round().byte().numpy()
             return Image.fromarray(pixels).resize(size,Image.Resampling.LANCZOS)
         def close(self):

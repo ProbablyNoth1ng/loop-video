@@ -554,7 +554,8 @@ function previews(node,upscale=false) {
     const download=element('a',root,'Save silent MP4');download.style.color='#7ce7dc';download.style.display='none';download.download='';
     function show(paths,record) {
         paths=paths.map(portablePath);
-        status.textContent=`${record.frame_count} frames · ${record.fps} FPS · ${record.dimensions.join(' × ')}. ${record.feedback?.join(' ')??''}`;
+        const method={fast:'Fast',balanced_ai:'Balanced AI',original_ai:'Original AI'}[record.finish_method];
+        status.textContent=`${method?method+' · ':''}${record.frame_count} frames · ${record.fps} FPS · ${record.dimensions.join(' × ')}. ${record.feedback?.join(' ')??''}`;
         videos.forEach((video,i)=>{
             video.src=viewURL(paths[i]);video.load();
             video.play()?.catch(error=>{
@@ -564,7 +565,8 @@ function previews(node,upscale=false) {
         download.href=viewURL(paths[0]);download.style.display='block';
         // Save only preview metadata, not a render record containing past workflows.
         const summary={frame_count:record.frame_count,fps:record.fps,
-                       dimensions:record.dimensions,feedback:record.feedback};
+                       dimensions:record.dimensions,feedback:record.feedback,
+                       finish_method:record.finish_method};
         node.properties.ambient_preview={paths,record:summary};
     }
     const executed=node.onExecuted;
@@ -647,7 +649,7 @@ app.registerExtension({name:'ambient-loop.staged',
         const type=node.comfyClass??node.type;
         if(type==='AmbientMotionEditor')editor(node);
         if(type==='AmbientSaveCandidate')previews(node);
-        if(type==='AmbientUpscale')previews(node,true);
+        if(type==='AmbientUpscale'||type==='AmbientFinish')previews(node,true);
         if(type==='AmbientSavedCandidate')selector(node);
     }
 });

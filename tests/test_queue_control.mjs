@@ -47,7 +47,7 @@ test('explicit partial execution stays on ComfyUI queue path', async () => {
 });
 
 test('auto queue is cancelled with one notice and all Ambient outputs are recognized', async () => {
-  for (const type of ['AmbientMotionEditor','AmbientSaveCandidate','AmbientUpscale']) {
+  for (const type of ['AmbientMotionEditor','AmbientSaveCandidate','AmbientUpscale','AmbientFinish']) {
     let originalCalls=0, notices=0;
     const app=controlledApp(ambient(type),async () => { originalCalls++; return true; });
     installStageQueueControl(app, () => assert.fail('auto queue must not open chooser'), () => { notices++; });
@@ -70,6 +70,7 @@ test('unsafe prompt guard preserves trailing API arguments and rejects mixed sta
   assert.deepEqual(result.args,[0,prompt,options,'later']);
 
   await assert.rejects(api.queuePrompt(0,{output:{1:{class_type:'AmbientSaveCandidate'},2:{class_type:'AmbientUpscale'}}}),/separate Prepare/i);
+  await assert.rejects(api.queuePrompt(0,{output:{1:{class_type:'AmbientSaveCandidate'},2:{class_type:'AmbientFinish'}}}),/separate Prepare/i);
   await assert.rejects(api.queuePrompt(0,{output:{1:{class_type:'AmbientSaveCandidate'},2:{class_type:'AmbientMotionEditor',inputs:{stage:'prepare'}}}}),/cannot start generation/i);
   assert.equal(calls,1);
 });
@@ -80,6 +81,9 @@ test('stage choices disable missing targets and ambiguous Render editors', () =>
   assert.equal(targets.prepare.target.id,2);
   assert.equal(targets.render.target.id,5);
   assert.equal(targets.upscale.target.id,7);
+  const newFinish={_nodes:[one._nodes[0],one._nodes[1],{id:8,comfyClass:'AmbientFinish'}]};
+  assert.equal(resolveStageTargets(newFinish).upscale.target.id,8);
+  assert.match(resolveStageTargets({_nodes:[...one._nodes,{id:8,comfyClass:'AmbientFinish'}]}).upscale.reason,/one output node/i);
 
   const ambiguous={_nodes:[{id:2,comfyClass:'AmbientMotionEditor'},{id:3,comfyClass:'AmbientMotionEditor'},{id:5,comfyClass:'AmbientSaveCandidate'}]};
   const disabled=resolveStageTargets(ambiguous);

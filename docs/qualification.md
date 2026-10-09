@@ -4,6 +4,21 @@ Status: **pending**. No provider instance was available. Local CPU tests do not
 prove LTX inference, Qwen anime landmark accuracy, Spandrel weight compatibility
 or ComfyUI browser behavior on a provider.
 
+## 2026-10-08 faster finishing implementation
+
+The source now offers Fast (FFmpeg Lanczos), Balanced AI (installed anime weights
+in supported FP16 with adaptive tiles), and Original AI (legacy path). The new
+editable workflow defaults to Fast/1080p; old Upscale nodes keep Original AI/1440p.
+Local Node tests passed (37); an FFmpeg 9.0 command probe cropped two 1290x720
+frames and wrote 1920x1080 PNGs in order. Its silent MP4 had one video stream,
+two frames at 8 FPS and 1920x1080. The local Python suite could not run: Windows PyManager
+reports no installed Python and network restrictions prevented `uv` from
+installing one. There is no saved LTX candidate or local GPU in this checkout.
+Required follow-up on a configured host: run the Python suite, then time all
+three methods against the same six-second 1280x720 LTX candidate, check Fast
+against the under-25%-of-Original target, and inspect faces, linework, flicker
+and seam side by side. Record elapsed times and visual judgment separately.
+
 ## 2026-10-06 background animation implementation
 
 The local Python and Node suites cover grouped validation, independent manual and

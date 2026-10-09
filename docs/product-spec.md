@@ -28,9 +28,10 @@ does not guarantee them. Real anime and GPU qualification is still pending.
 | P-06 | Run offers an explicit choice of Prepare character, Prepare background, Prepare both, Render or Upscale. One choice queues one isolated stage. Prepare cannot generate; Render cannot upscale; Upscale reads only a saved candidate. Cancel queues nothing. | Implemented; deployed conversion/queue qualification pending |
 | P-07 | Render with the official LTX-2.5 single-stage Motion Track pipeline. Show continuous and forward seam previews, allow another seed/candidate, and retain original lossless frames. Returning trajectories guide closure; the owner checks the seam. | Implemented; GPU and visual acceptance pending |
 | P-08 | Select original saved candidates after reopening; automatically select the newest completed render and refresh the list when requested. Preserve reviewed points in the saved workflow. | Implemented; real ComfyUI restart qualification pending |
-| P-09 | Optionally upscale a selected candidate to short sides of 1080, 1440 or 2160 pixels. Preserve aspect ratio, even dimensions, frame count, FPS, timing and original candidate files. Default to 1440. Save a silent MP4 with lossless frames alongside it. | Implemented; GPU and temporal-flicker qualification pending |
+| P-09 | Optionally finish a selected candidate at short sides of 1080, 1440 or 2160 pixels. Preserve aspect ratio, even dimensions, frame count, FPS, timing and original candidate files. The existing Original AI Upscale node defaults to 1440; new workflows use the P-12 default. Save a silent MP4 with lossless frames alongside it. | Implemented in source; GPU and temporal-flicker qualification pending |
 | P-10 | Support documented cloud installation and retain the existing CLI. Record deployment/model versions and actual runtime evidence before promising supported hardware or performance. | Implemented setup paths; provider qualification pending |
 | P-11 | For source content whose long-to-short ratio is within 2% of 16:9, save exact 16:9 exported render frames after generation-canvas padding is removed: 1280x720 at the standard 720-pixel short side, or 720x1280 for portrait. Center-crop only the exported/finished frame; raw generated frames and the reviewed canvas remain unchanged. Finishing those candidates at 1080p, 1440p and 4K saves 1920x1080, 2560x1440 and 3840x2160 (portrait counterparts included). Sources outside tolerance retain their existing aspect ratio behavior. | Implemented locally; GPU and visual qualification pending |
+| P-12 | After Render, finish any saved candidate again with Fast (FFmpeg Lanczos), Balanced AI (installed anime weights in supported FP16 with adaptive tiles), or Original AI (existing Real-ESRGAN path). New workflows default to Fast at 1080p; existing Upscale nodes retain Original AI and 1440p defaults. Every finish keeps frame count, FPS, silent MP4, lossless frames, aspect/crop rules and the candidate unchanged, with its method recorded. | Implemented in source; Python, installed ComfyUI, GPU speed and visual verification pending |
 
 "Implemented" describes repository behavior and existing evidence. It does not
 mean this session reran all tests or that a production GPU run was accepted.
@@ -45,7 +46,7 @@ See [qualification](qualification.md) for dated checks and unresolved deployment
 | Generation short side | Near 720 pixels, with internal alignment padding |
 | Character preparation | Local Qwen3.5 (`Qwen/Qwen3.5-9B`) |
 | Background preparation | Model; animation enabled only by nonblank background motion |
-| Finishing short side | 1440 pixels |
+| New workflow finishing | Fast at 1080 pixels; existing Upscale nodes default to Original AI at 1440 pixels |
 | Camera intent | Stationary |
 | Default generated / playback frames | 145 / 144 |
 
@@ -76,6 +77,11 @@ Update [codemap.md](../codemap.md) whenever project structure changes.
 
 ## Delivery notes
 
+- 2026-10-08: Added Fast, Balanced AI and Original AI finishing choices to the
+  editable workflow and retained the old Upscale node contract. Node tests and an
+  FFmpeg command probe passed; this Windows checkout has no Python runtime, so
+  Python regression tests remain unrun. No saved LTX candidate or local GPU is
+  available for timing/visual comparison. See the [faster finishing design](superpowers/specs/2026-10-08-faster-finishing-design.md).
 - 2026-10-08: Added centered near-16:9 export/finish cropping. Local regression
   coverage includes an independently constructed legacy 1290x720 candidate; FFmpeg
   probes confirmed 1280x720 render and 1920x1080 finish MP4s. GPU and visual
