@@ -1,4 +1,4 @@
-# Ambient Loop · ComfyUI anime loops
+# Comfy LTX Loop · ComfyUI anime loops
 
 Project context: [product specification](docs/product-spec.md),
 [code map](codemap.md), [technical specs and plans](docs/superpowers/README.md),
@@ -10,7 +10,7 @@ Load image → enter character motion → **Prepare character points** → revie
 The existing CLI remains compatible: see [legacy CLI](docs/legacy-cli.md).
 The new animation path does not require producing or accepting Workflow A.
 
-Import [ambient-motion.json](workflows/ambient-motion.json) after
+Import [comfy-ltx-loop-motion.json](workflows/comfy-ltx-loop-motion.json) after
 [cloud installation](docs/cloud-setup.md).
 
 RunPod can install all nodes, dependencies and model weights at first boot:
@@ -68,13 +68,13 @@ see [automatic installation](docs/runpod-autoinstall.md).
    the seam, then click
    **Save silent MP4**. Lossless frames remain beside the output.
 
-Use **Run** to choose exactly one Ambient Loop stage: **Prepare character points**,
+Use **Run** to choose exactly one animation stage: **Prepare character points**,
 **Prepare background points**, **Prepare character + background points**, **Render**, or **Upscale**. The chooser submits one stage and does not apply
 Run's batch count. The node stage buttons remain available. Preparing points
 cannot queue generation; Upscale has only the saved-candidate branch upstream.
 Save the workflow after editing: plans live in its serialized editor widget and
 metadata. Reopening retains accepted points, including legacy character-only plans.
-Render records live in `ComfyUI/output/ambient-loop/`. Saved candidates
+Render records live in `ComfyUI/output/comfy-ltx-loop/`. Saved candidates
 load automatically after reopening; **Refresh candidates** reloads the list.
 
 Defaults: six seconds, 24 FPS, seed 42, generation short side near 720 pixels,
@@ -96,7 +96,7 @@ The [unchanged official workflow](workflows/ltx-2.5-motion-track.official.json)
 is retained for qualification. The adapted graph replaces input preparation
 and output persistence while retaining model loading, the single-stage sampler,
 IC-LoRA conditioning and tiled decoding. Prompt enhancement is off. The official
-pipeline still uses audio latents; Ambient Loop exports silent videos.
+pipeline still uses audio latents; the adapted workflow exports silent videos.
 
 **Qualification is pending:** local tests cover motion transforms, review
 invalidation, stage isolation, candidate reopening and frame-preserving

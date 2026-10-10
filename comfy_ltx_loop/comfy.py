@@ -5,12 +5,12 @@ from .jobs import render
 from .project import Project, atomic_json, PRESETS
 
 
-class AmbientLoopRender:
+class ComfyLTXLoopRender:
     @classmethod
     def INPUT_TYPES(cls):
         return {'required': {
-            'project_path': ('STRING', {'default': '/workspace/ambient-loop/assets/project.json'}),
-            'output_directory': ('STRING', {'default': '/workspace/ambient-loop/outputs/loop'}),
+            'project_path': ('STRING', {'default': '/workspace/comfy-ltx-loop/assets/project.json'}),
+            'output_directory': ('STRING', {'default': '/workspace/comfy-ltx-loop/outputs/loop'}),
             'working_mode': (['720p', '1080p'], {'default': '1080p'}),
             'output_resolution': (['1080p', '1440p', '4K'], {'default': '1440p'}),
             'duration': ('FLOAT', {'default': 6, 'min': 4, 'max': 30, 'step': 1 / 24}),
@@ -21,7 +21,7 @@ class AmbientLoopRender:
     RETURN_TYPES = ('STRING',)
     RETURN_NAMES = ('manifest',)
     FUNCTION = 'execute'
-    CATEGORY = 'ambient-loop'
+    CATEGORY = 'comfy-ltx-loop'
     OUTPUT_NODE = True
 
     @classmethod
@@ -49,8 +49,8 @@ class AmbientLoopRender:
                 temporary.unlink(missing_ok=True)
 
 
-NODE_CLASS_MAPPINGS = {'AmbientLoopRender': AmbientLoopRender}
-NODE_DISPLAY_NAME_MAPPINGS = {'AmbientLoopRender': 'Ambient Loop - Workflow A'}
+NODE_CLASS_MAPPINGS = {'ComfyLTXLoopRender': ComfyLTXLoopRender}
+NODE_DISPLAY_NAME_MAPPINGS = {'ComfyLTXLoopRender': 'Comfy LTX Loop - Workflow A'}
 
 # Keep the legacy node/API graphs available for existing CLI clients.
 from .staged_comfy import NODE_CLASS_MAPPINGS as STAGED_NODES
@@ -65,12 +65,12 @@ def export_graphs(project, destination, output_directory, project_path=None):
               **{k: p.data[k] for k in ('working_mode', 'output_resolution', 'duration', 'preset', 'seed')},
               'chunk_size': 4}
     dest = Path(destination)
-    atomic_json(dest / 'workflow-a.api.json', {'1': {'class_type': 'AmbientLoopRender', 'inputs': inputs}})
+    atomic_json(dest / 'workflow-a.api.json', {'1': {'class_type': 'ComfyLTXLoopRender', 'inputs': inputs}})
     atomic_json(dest / 'workflow-a.json', {
         'last_node_id': 1, 'last_link_id': 0,
-        'nodes': [{'id': 1, 'type': 'AmbientLoopRender', 'pos': [120, 120], 'size': [430, 330],
+        'nodes': [{'id': 1, 'type': 'ComfyLTXLoopRender', 'pos': [120, 120], 'size': [430, 330],
                    'flags': {}, 'order': 0, 'mode': 0, 'inputs': [],
                    'outputs': [{'name': 'manifest', 'type': 'STRING', 'links': None}],
-                   'properties': {'Node name for S&R': 'AmbientLoopRender'},
+                   'properties': {'Node name for S&R': 'ComfyLTXLoopRender'},
                    'widgets_values': list(inputs.values())}],
         'links': [], 'groups': [], 'config': {}, 'extra': {}, 'version': .4})

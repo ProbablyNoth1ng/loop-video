@@ -68,8 +68,8 @@ class Project:
     def load(cls, path):
         path = Path(path).resolve()
         data = json.loads(path.read_text(encoding='utf-8'))
-        if data.get('schema') != 'ambient-loop/1':
-            raise ValueError('Expected ambient-loop/1')
+        if data.get('schema') != 'comfy-ltx-loop/1':
+            raise ValueError('Expected comfy-ltx-loop/1')
         for key, default in [('working_mode', '1080p'), ('output_resolution', '1440p'),
                              ('duration', 6), ('seed', 42), ('preset', 'calm-wind')]:
             data.setdefault(key, default)

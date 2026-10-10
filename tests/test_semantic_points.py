@@ -2,7 +2,7 @@ import copy
 import json
 import unittest
 
-from ambient_loop.motion import new_plan, parse_landmarks, review_plan, require_review, canvas_tracks
+from comfy_ltx_loop.motion import new_plan, parse_landmarks, review_plan, require_review, canvas_tracks
 
 
 class SemanticPointTests(unittest.TestCase):
@@ -54,7 +54,7 @@ class SemanticPointTests(unittest.TestCase):
         require_review(plan, 'abc', (600,1000), 'hair', 6,24,.01,720)
 
     def test_anchor_cannot_carry_a_moving_path(self):
-        from ambient_loop.motion import validate_plan
+        from comfy_ltx_loop.motion import validate_plan
         plan = new_plan('abc',(600,1000),'hair',['auto'],
             [dict(label='eye',x=.3,y=.4,motion_role='anchor',body_part='face',reason='still')])
         plan['landmarks'][0]['path'][3]['x'] += .01

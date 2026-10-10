@@ -6,8 +6,8 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
-from ambient_loop.project import Project
-from ambient_loop.renderer import Renderer
+from comfy_ltx_loop.project import Project
+from comfy_ltx_loop.renderer import Renderer
 
 
 class ResolutionIntegrationTests(unittest.TestCase):
@@ -27,7 +27,7 @@ class ResolutionIntegrationTests(unittest.TestCase):
                 for working in ('720p', '1080p'):
                     for output in ('1080p', '1440p', '4K'):
                         with self.subTest(portrait=portrait, working=working, output=output):
-                            data = {'schema': 'ambient-loop/1', 'source': 'source.png',
+                            data = {'schema': 'comfy-ltx-loop/1', 'source': 'source.png',
                                     'guard': 'guard.png', 'working_mode': working,
                                     'output_resolution': output, 'regions': [
                                         {'id': 'light', 'kind': 'shimmer', 'depth': 0,

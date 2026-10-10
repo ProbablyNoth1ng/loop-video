@@ -1,11 +1,11 @@
-const ambientClasses = new Set(['AmbientMotionEditor','AmbientSaveCandidate','AmbientUpscale','AmbientFinish']);
+const comfy_ltx_loopClasses = new Set(['ComfyLTXLoopMotionEditor','ComfyLTXLoopSaveCandidate','ComfyLTXLoopUpscale','ComfyLTXLoopFinish']);
 const installed = new WeakSet();
 const guardedApis = new WeakSet();
 const noticedGraphs = new WeakSet();
 
 const nodeClass = node => node?.comfyClass ?? node?.type;
 const graphNodes = graph => graph?._nodes ?? graph?.nodes ?? [];
-const hasAmbientNode = graph => graphNodes(graph).some(node => ambientClasses.has(nodeClass(node)));
+const hasComfyLTXLoopNode = graph => graphNodes(graph).some(node => comfy_ltx_loopClasses.has(nodeClass(node)));
 
 function hasExplicitTargets(options) {
     if (Array.isArray(options)) return true;
@@ -19,13 +19,13 @@ function isAutoQueue(options) {
 
 export function resolveStageTargets(graph) {
     const find = type => graphNodes(graph).filter(node => nodeClass(node) === type);
-    const editors=find('AmbientMotionEditor');
-    const savers=find('AmbientSaveCandidate');
-    const upscalers=[...find('AmbientUpscale'),...find('AmbientFinish')];
+    const editors=find('ComfyLTXLoopMotionEditor');
+    const savers=find('ComfyLTXLoopSaveCandidate');
+    const upscalers=[...find('ComfyLTXLoopUpscale'),...find('ComfyLTXLoopFinish')];
     return {
-        prepare: editors.length===1 ? {target:editors[0]} : {reason:editors.length?'Prepare points needs one motion editor.':'Prepare points needs an Ambient Motion Editor.'},
-        render: editors.length!==1 ? {reason:'Render needs exactly one motion editor; resolve the editor ambiguity.'} : savers.length===1 ? {target:savers[0]} : {reason:savers.length?'Render needs one candidate saver.':'Render needs an Ambient Save Candidate node.'},
-        upscale: upscalers.length===1 ? {target:upscalers[0]} : {reason:upscalers.length?'Upscale needs one output node.':'Upscale needs an Ambient Upscale or Ambient Finish node.'}
+        prepare: editors.length===1 ? {target:editors[0]} : {reason:editors.length?'Prepare points needs one motion editor.':'Prepare points needs an Comfy LTX Loop Motion Editor.'},
+        render: editors.length!==1 ? {reason:'Render needs exactly one motion editor; resolve the editor ambiguity.'} : savers.length===1 ? {target:savers[0]} : {reason:savers.length?'Render needs one candidate saver.':'Render needs an Comfy LTX Loop Save Candidate node.'},
+        upscale: upscalers.length===1 ? {target:upscalers[0]} : {reason:upscalers.length?'Upscale needs one output node.':'Upscale needs an Comfy LTX Loop Upscale or Comfy LTX Loop Finish node.'}
     };
 }
 
@@ -43,7 +43,7 @@ export function requireQueueSuccess(result) {
 }
 
 /**
- * Offer Ambient Loop's stage controls before ComfyUI converts a whole graph.
+ * Offer Comfy LTX Loop's stage controls before ComfyUI converts a whole graph.
  * Explicit partial execution deliberately remains ComfyUI's responsibility.
  */
 export function installStageQueueControl(app, showStageChooser, showAutoQueueNotice) {
@@ -54,7 +54,7 @@ export function installStageQueueControl(app, showStageChooser, showAutoQueueNot
     app.queuePrompt = async function (...args) {
         const graph = app.rootGraph ?? app.graph;
         const options = args[2];
-        if (!hasAmbientNode(graph) || hasExplicitTargets(options)) return original.apply(this,args);
+        if (!hasComfyLTXLoopNode(graph) || hasExplicitTargets(options)) return original.apply(this,args);
         if (isAutoQueue(options)) {
             if (!noticedGraphs.has(graph)) {
                 noticedGraphs.add(graph);
@@ -77,10 +77,10 @@ export function installUnsafePromptGuard(api) {
         const prompt=args[1]??{};
         const output=prompt.output??{};
         const classes=Object.values(output).map(node=>node.class_type);
-        if(classes.some(c=>c==='AmbientUpscale'||c==='AmbientFinish')&&classes.includes('AmbientSaveCandidate')) {
+        if(classes.some(c=>c==='ComfyLTXLoopUpscale'||c==='ComfyLTXLoopFinish')&&classes.includes('ComfyLTXLoopSaveCandidate')) {
             throw new Error('Use the separate Prepare, Render or Upscale buttons to queue one stage.');
         }
-        if(classes.includes('AmbientSaveCandidate')&&Object.values(output).some(node=>node.class_type==='AmbientMotionEditor'&&node.inputs?.stage==='prepare')) {
+        if(classes.includes('ComfyLTXLoopSaveCandidate')&&Object.values(output).some(node=>node.class_type==='ComfyLTXLoopMotionEditor'&&node.inputs?.stage==='prepare')) {
             throw new Error('Preparing points cannot start generation. Use Prepare points.');
         }
         return original.apply(this,args);

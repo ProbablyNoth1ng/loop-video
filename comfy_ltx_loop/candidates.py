@@ -20,7 +20,7 @@ def list_candidates(root):
     for path in root.glob('candidate-*/record.json'):
         try:
             record = json.loads(path.read_text(encoding='utf-8'))
-            if (not isinstance(record,dict) or record.get('schema') != 'ambient-render-handle/1'
+            if (not isinstance(record,dict) or record.get('schema') != 'comfy-ltx-loop-render-handle/1'
                     or record.get('kind') != 'candidate'
                     or record.get('state') != 'awaiting_visual_review'
                     or not all((path.parent/name).is_file() for name in ('loop.mp4','seam.mp4'))):
@@ -98,7 +98,7 @@ def encode_previews(out, count, fps):
 
 
 def save_record(out, record):
-    record.update(schema='ambient-render-handle/1', directory=str(out.resolve()),
+    record.update(schema='comfy-ltx-loop-render-handle/1', directory=str(out.resolve()),
                   record=str((out/'record.json').resolve()),
                   frame_hashes={p.name:sha(p) for p in sorted((out/'frames').glob('*.png'))})
     atomic_json(out/'record.json',record)
@@ -156,9 +156,9 @@ def load_handle(path, root):
     root = Path(root).resolve()
     path = Path(path).resolve()
     if not path.is_relative_to(root) or path.name != 'record.json':
-        raise ValueError('Select a saved candidate inside the Ambient Loop output directory')
+        raise ValueError('Select a saved candidate inside the Comfy LTX Loop output directory')
     record = json.loads(path.read_text(encoding='utf-8'))
-    if record.get('schema') != 'ambient-render-handle/1' or record.get('state') != 'awaiting_visual_review':
+    if record.get('schema') != 'comfy-ltx-loop-render-handle/1' or record.get('state') != 'awaiting_visual_review':
         raise ValueError('Render record is invalid or unfinished')
     out = path.parent
     expected = [f'{i:06d}.png' for i in range(record['frame_count'])]

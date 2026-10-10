@@ -2,7 +2,7 @@ import copy
 import json
 import unittest
 
-from ambient_loop.motion import (new_plan, parse_landmarks, validate_plan,
+from comfy_ltx_loop.motion import (new_plan, parse_landmarks, validate_plan,
                                  review_plan, require_review, canvas_transform,
                                  canvas_tracks, plan_fingerprint, legacy_plan_fingerprint)
 

@@ -42,12 +42,12 @@ class VisionInstallTests(unittest.TestCase):
             with tempfile.TemporaryDirectory() as tmp:
                 destination=Path(tmp)
                 install.install_workflows(project,destination,repo)
-                workflow=json.loads((destination/'ambient-motion.json').read_text())
-                editor=next(n for n in workflow['nodes'] if n['type']=='AmbientMotionEditor')
+                workflow=json.loads((destination/'comfy-ltx-loop-motion.json').read_text())
+                editor=next(n for n in workflow['nodes'] if n['type']=='ComfyLTXLoopMotionEditor')
                 self.assertEqual(editor['widgets_values'][7:9],[path,mode])
                 self.assertEqual((destination/'ltx-2.5-motion-track.official.json').read_bytes(),
                                  (project/'workflows/ltx-2.5-motion-track.official.json').read_bytes())
-                saved=destination/'ambient-motion.json';saved.write_text('{"custom":"saved widgets"}')
+                saved=destination/'comfy-ltx-loop-motion.json';saved.write_text('{"custom":"saved widgets"}')
                 install.install_workflows(project,destination,'Qwen/Qwen3.5-9B')
                 self.assertEqual(saved.read_text(),'{"custom":"saved widgets"}')
 

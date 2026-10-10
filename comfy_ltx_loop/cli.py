@@ -8,7 +8,7 @@ from .jobs import render, accept
 
 
 def main():
-    parser = argparse.ArgumentParser(prog='ambient-loop')
+    parser = argparse.ArgumentParser(prog='comfy-ltx-loop')
     sub = parser.add_subparsers(dest='command', required=True)
     p = sub.add_parser('examples')
     p.add_argument('destination')
@@ -33,7 +33,7 @@ def main():
     p = sub.add_parser('graphs')
     p.add_argument('project')
     p.add_argument('destination')
-    p.add_argument('--output', default='/workspace/ambient-loop/outputs/loop')
+    p.add_argument('--output', default='/workspace/comfy-ltx-loop/outputs/loop')
     p.add_argument('--project-path', help='Override project path for the target ComfyUI host')
     p = sub.add_parser('benchmark')
     p.add_argument('project')
@@ -130,7 +130,7 @@ def main():
             result = {k: v for k, v in result.items() if k not in ('frame_hashes', 'assets', 'artifacts')}
         print(json.dumps(result, indent=2))
     except (ValueError, OSError, RuntimeError) as error:
-        parser.exit(1, f'ambient-loop: {error}\n')
+        parser.exit(1, f'comfy-ltx-loop: {error}\n')
 
 
 if __name__ == '__main__':

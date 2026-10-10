@@ -19,17 +19,17 @@ async function fixture() {
   const values={motion_prompt:'Hair sway. Face still.',requested_parts:'auto',duration:6,fps:24,strength:.01,
     short_side:720,seed:42,vision_model:'models/Qwen3-VL-8B-Instruct',preparation:'local Qwen3.5',plan_json:'{}',stage:'render',
     animate_background:false,background_prompt:'',background_preparation:'model',prepare_target:'character'};
-  const node={id:2,type:'AmbientMotionEditor',size:[520,300],properties:{},
+  const node={id:2,type:'ComfyLTXLoopMotionEditor',size:[520,300],properties:{},
     widgets:Object.entries(values).map(([name,value])=>({name,value})),
     addDOMWidget(name,type,root){this.root=root;return{};},setSize(size){this.size=size;}};
   const load={id:1,type:'LoadImage',widgets:[{name:'image',value:'source.png'}]};
   const app={graph:{_nodes:[load,node],extra:{},setDirtyCanvas(){}},registerExtension(extension){this.extension=extension;}};
   const requests=[];
   const api={apiURL:path=>path,fetchApi:async(path,options)=>{requests.push(path);return{ok:true,json:async()=>({...JSON.parse(options.body),review:{state:'reviewed'}})};}};
-  globalThis.ambientEditorFixture={app,api};
-  const source=await readFile(new URL('../comfy_nodes/ambient_loop/web/ambient_loop.js',import.meta.url),'utf8');
-  const modified=source.replace(/import \{ app \}[^\n]+\nimport \{ api \}[^\n]+/,'const {app,api}=globalThis.ambientEditorFixture;')
-    .replace(/from '(\.\/[^']+)'/g,(_,path)=>`from '${new URL('../comfy_nodes/ambient_loop/web/'+path,import.meta.url).href}'`);
+  globalThis.comfy_ltx_loopEditorFixture={app,api};
+  const source=await readFile(new URL('../comfy_nodes/comfy_ltx_loop/web/comfy_ltx_loop.js',import.meta.url),'utf8');
+  const modified=source.replace(/import \{ app \}[^\n]+\nimport \{ api \}[^\n]+/,'const {app,api}=globalThis.comfy_ltx_loopEditorFixture;')
+    .replace(/from '(\.\/[^']+)'/g,(_,path)=>`from '${new URL('../comfy_nodes/comfy_ltx_loop/web/'+path,import.meta.url).href}'`);
   await import('data:text/javascript;base64,'+Buffer.from(modified+`\n// editor fixture ${instance++}`).toString('base64'));
   app.extension.nodeCreated(node);
   const widget=name=>node.widgets.find(w=>w.name===name);
@@ -39,7 +39,7 @@ async function fixture() {
     path:[{t:0,x:.2+i*.005,y:.4},{t:.5,x:.21+i*.005,y:.4},{t:1,x:.2+i*.005,y:.4}]}));
   points[23]={...points[23],label:'eye',motion_role:'anchor',body_part:'face',reason:'Face still'};
   points[23].path=points[23].path.map(k=>({...k,x:points[23].x}));
-  node.onExecuted({motion_plan:[{schema:'ambient-motion-plan/1',source_size:[600,900],transform:{canvas:[768,1088]},
+  node.onExecuted({motion_plan:[{schema:'comfy-ltx-loop-motion-plan/1',source_size:[600,900],transform:{canvas:[768,1088]},
     frames:145,prompt:values.motion_prompt,requested:['auto'],duration:6,fps:24,strength:.01,short_side:720,
     analysis:{preparation:'local Qwen3.5',model_path:'models/Qwen3.5-9B'},landmarks:points,review:{state:'pending'}}],bg_image:['fixture']});
   return{node,app,widget,plan,requests,elements:()=>descendants(node.root),

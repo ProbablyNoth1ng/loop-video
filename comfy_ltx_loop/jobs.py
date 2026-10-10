@@ -46,7 +46,7 @@ def review_package(out, project, renderer):
     overlay[renderer.allowed] = (overlay[renderer.allowed] * .5 + np.array([0, 128, 0])).astype('uint8')
     save_png(out / 'support-overlay.png', overlay)
     text = f'''<!doctype html><html lang="en"><meta charset="utf-8">
-<meta name="viewport" content="width=device-width"><title>Ambient loop review</title>
+<meta name="viewport" content="width=device-width"><title>Comfy LTX loop review</title>
 <style>body{{font:16px system-ui;margin:24px;background:#fafafa;color:#222}}
 video,img{{max-width:100%;max-height:70vh}}section{{margin:24px 0}}</style>
 <h1>{html.escape(project.path.stem)}</h1><p>Awaiting visual acceptance</p>
@@ -93,7 +93,7 @@ def _render(project, out, encode, chunk_size, sizes, preview):
         raise ValueError('Output belongs to different assets/settings; use a new output directory')
     frames = out / 'frames'
     frames.mkdir(exist_ok=True)
-    manifest = {'schema': 'ambient-loop-output/1', 'project_hash': project.fingerprint,
+    manifest = {'schema': 'comfy-ltx-loop-output/1', 'project_hash': project.fingerprint,
                 'render_hash': identity, 'state': 'rendered', 'preview': preview,
                 'working_size': renderer.working_size, 'output_size': renderer.output_size,
                 'fps': 24, 'frame_count': project.frames, 'duration': project.data['duration'],

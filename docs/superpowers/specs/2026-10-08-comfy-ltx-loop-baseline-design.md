@@ -1,4 +1,4 @@
-# Ambient Loop technical baseline
+# Comfy LTX Loop technical baseline
 
 Date: 2026-10-08. Status: implemented repository baseline; deployment qualification pending.
 Product contract: [P-01–P-10](../../product-spec.md).
@@ -11,23 +11,23 @@ GPU run. Historical test evidence is in [qualification](../../qualification.md).
 
 ```text
 Load image + settings
-  → AmbientMotionEditor (Prepare: manual or local Qwen)
+  → ComfyLTXLoopMotionEditor (Prepare: manual or local Qwen)
   → serialized MOTION_PLAN + shared frontend editor
   → explicit point review
-  → AmbientMotionEditor (Render: validate review, map canvas/tracks)
+  → ComfyLTXLoopMotionEditor (Render: validate review, map canvas/tracks)
   → adapted official LTX-2.5 single-stage graph
-  → AmbientSaveCandidate → disk record + continuous/seam previews
-  → AmbientSavedCandidate → optional AmbientUpscale → silent MP4
+  → ComfyLTXLoopSaveCandidate → disk record + continuous/seam previews
+  → ComfyLTXLoopSavedCandidate → optional ComfyLTXLoopUpscale → silent MP4
 ```
 
 | Product IDs | Owner | Existing test coverage |
 | --- | --- | --- |
-| P-01, P-05 | `ambient_loop/motion.py`, `staged_comfy.py`, frontend `geometry.mjs` and `ambient_loop.js` | `test_motion.py`, `test_stages.py`, `test_editor_geometry.mjs` |
-| P-02, P-03 | `ambient_loop/vision.py`, `motion.py`, `staged_comfy.py`, frontend editor | `test_vision.py`, `test_semantic_points.py`, `test_stages.py`, `test_editor_semantics.mjs` |
-| P-04, P-05 | Frontend editor, `ambient_loop/comfy_routes.py`, motion validation | `test_editor_semantics.mjs`, `test_motion.py`, local `editor_harness.py` |
-| P-06 | Frontend `queue_control.mjs`, `stages.mjs`, `ambient_loop.js` | `test_queue_control.mjs`, `test_stages.mjs`, `test_stages.py` |
-| P-07 | `workflows/ambient-motion.json`, `tools/build_motion_workflow.mjs`, `AmbientSaveCandidate` | `test_motion_workflow.mjs`, `test_candidates.py`, `test_previews.mjs` |
-| P-08, P-09 | `ambient_loop/candidates.py`, staged candidate/finishing nodes and frontend | `test_candidates.py`, `test_resolution_integration.py`, `test_previews.mjs` |
+| P-01, P-05 | `comfy_ltx_loop/motion.py`, `staged_comfy.py`, frontend `geometry.mjs` and `comfy_ltx_loop.js` | `test_motion.py`, `test_stages.py`, `test_editor_geometry.mjs` |
+| P-02, P-03 | `comfy_ltx_loop/vision.py`, `motion.py`, `staged_comfy.py`, frontend editor | `test_vision.py`, `test_semantic_points.py`, `test_stages.py`, `test_editor_semantics.mjs` |
+| P-04, P-05 | Frontend editor, `comfy_ltx_loop/comfy_routes.py`, motion validation | `test_editor_semantics.mjs`, `test_motion.py`, local `editor_harness.py` |
+| P-06 | Frontend `queue_control.mjs`, `stages.mjs`, `comfy_ltx_loop.js` | `test_queue_control.mjs`, `test_stages.mjs`, `test_stages.py` |
+| P-07 | `workflows/comfy-ltx-loop-motion.json`, `tools/build_comfy_ltx_loop_workflow.mjs`, `ComfyLTXLoopSaveCandidate` | `test_motion_workflow.mjs`, `test_candidates.py`, `test_previews.mjs` |
+| P-08, P-09 | `comfy_ltx_loop/candidates.py`, staged candidate/finishing nodes and frontend | `test_candidates.py`, `test_resolution_integration.py`, `test_previews.mjs` |
 | P-10 | `cloud/`, `runpod/`, `tools/build_runpod_command.py`, CLI modules | `test_cloud_install.py`, `test_vision_install.py`, `test_operations.py`, `test_workflow.py` |
 
 File names in the test column are under `tests/`. This maps coverage ownership,
@@ -35,7 +35,7 @@ not a claim that every acceptance criterion has deployed evidence.
 
 ## Motion and review contracts
 
-- `MOTION_PLAN` is JSON with schema `ambient-motion-plan/1`, source identity/size,
+- `MOTION_PLAN` is JSON with schema `comfy-ltx-loop-motion-plan/1`, source identity/size,
   prompt/requested parts, timing, strength, canvas transform, landmarks and review.
 - Landmark positions and paths use normalized source-image coordinates. Semantic
   fields identify `motion_role` (`move` or `anchor`), body part/object and reason.
@@ -70,14 +70,14 @@ not a claim that every acceptance criterion has deployed evidence.
 
 - Frontend stage pruning prevents preparing points from reaching generation,
   rendering from reaching finishing, and finishing from reaching generation.
-- Global Run is intercepted for Ambient workflows and opens explicit stage choices.
+- Global Run is intercepted for Comfy LTX workflows and opens explicit stage choices.
   Ordinary workflows and explicit partial execution preserve their queue contracts.
 - Plans persist in serialized editor widgets/workflow metadata. Saved candidates
-  persist under `ComfyUI/output/ambient-loop/`, with schema `ambient-render-handle/1`.
+  persist under `ComfyUI/output/comfy-ltx-loop/`, with schema `comfy-ltx-loop-render-handle/1`.
 - Candidates retain raw PNGs, playback PNGs, previews, settings and hashes. Handles
   contain disk records rather than live tensors. Candidate paths remain within the
   output root. Reopening discovers completed original candidates.
-- The legacy `AmbientUpscale` node uses `realesr-animevideov3` in bounded chunks;
+- The legacy `ComfyLTXLoopUpscale` node uses `realesr-animevideov3` in bounded chunks;
   short sides 1080/1440/2160, default 1440. New workflows use the finishing methods
   in the [faster finishing design](2026-10-08-faster-finishing-design.md). Preserve
   candidate files, aspect ratio, even dimensions, count and FPS.

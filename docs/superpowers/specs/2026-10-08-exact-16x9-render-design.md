@@ -16,7 +16,7 @@ Correct dimensions caused by slightly-wide sources after generation-canvas paddi
 
 ## Architecture and contracts
 
-`ambient_loop.candidates` owns `output_size` and exported frame persistence. `save_candidate` crops its post-padding content image before writing `frames/` and records that exact size. `finish_candidate` normalizes a loaded candidate frame to the same exact-aspect target before calling the enhancer, so legacy saved candidates are corrected only in the new finish output. The crop keeps its centered axis and uses only integral, even output sizes.
+`comfy_ltx_loop.candidates` owns `output_size` and exported frame persistence. `save_candidate` crops its post-padding content image before writing `frames/` and records that exact size. `finish_candidate` normalizes a loaded candidate frame to the same exact-aspect target before calling the enhancer, so legacy saved candidates are corrected only in the new finish output. The crop keeps its centered axis and uses only integral, even output sizes.
 
 ## Library research
 

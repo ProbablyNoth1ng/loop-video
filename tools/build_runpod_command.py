@@ -5,12 +5,12 @@ from pathlib import Path
 
 def build_command():
     code = '''import os,pathlib,subprocess,sys,tempfile
-p=pathlib.Path(os.environ.get("PROJECT_ROOT","/workspace/ambient-loop"))
+p=pathlib.Path(os.environ.get("PROJECT_ROOT","/workspace/comfy-ltx-loop"))
 if not p.exists():
     p.parent.mkdir(parents=True,exist_ok=True)
-    t=pathlib.Path(tempfile.mkdtemp(prefix="ambient-clone-",dir=p.parent))
-    subprocess.run(["git","clone","--depth","1",os.environ.get("AMBIENT_REPO","https://github.com/ProbablyNoth1ng/loop-video.git"),str(t)],check=True)
-    r=os.environ.get("AMBIENT_REVISION")
+    t=pathlib.Path(tempfile.mkdtemp(prefix="comfy-ltx-loop-clone-",dir=p.parent))
+    subprocess.run(["git","clone","--depth","1",os.environ.get("COMFY_LTX_LOOP_REPO","https://github.com/ProbablyNoth1ng/loop-video.git"),str(t)],check=True)
+    r=os.environ.get("COMFY_LTX_LOOP_REVISION")
     if r:
         subprocess.run(["git","-C",str(t),"fetch","--depth","1","origin",r],check=True)
         subprocess.run(["git","-C",str(t),"checkout","--detach","FETCH_HEAD"],check=True)

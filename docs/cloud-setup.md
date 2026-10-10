@@ -19,7 +19,7 @@ on each fresh Pod.
 
 ```bash
 export COMFY_ROOT=/workspace/runpod-slim/ComfyUI
-export PROJECT_ROOT=/workspace/ambient-loop
+export PROJECT_ROOT=/workspace/comfy-ltx-loop
 bash "$PROJECT_ROOT/cloud/bootstrap.sh"
 bash "$PROJECT_ROOT/cloud/start.sh"
 ```
@@ -36,7 +36,7 @@ ComfyUI and this project on the provider's actual persistent mount:
 
 ```bash
 export COMFY_ROOT=/workspace/ComfyUI
-export PROJECT_ROOT=/workspace/ambient-loop
+export PROJECT_ROOT=/workspace/comfy-ltx-loop
 bash "$PROJECT_ROOT/cloud/bootstrap.sh"
 bash "$PROJECT_ROOT/cloud/start.sh"
 ```
@@ -48,7 +48,7 @@ before destroying an instance; instance disks are not assumed to survive.
 
 ## Models and dependencies
 
-Bootstrap installs Ambient Loop's vision extra and ComfyUI-LTXVideo. It does
+Bootstrap installs Comfy LTX Loop's vision extra and ComfyUI-LTXVideo. It does
 not download gated weights or replace the template Torch/CUDA installation.
 Dependency ranges are installation candidates, not a tested lock. Record the
 installed revisions/package freeze during qualification.
@@ -62,7 +62,7 @@ New automatic installations default to a Qwen3.5-9B snapshot in
 `$COMFY_ROOT/models/Qwen3.5-9B`. Qwen3-VL-8B-Instruct remains supported in
 `$COMFY_ROOT/models/Qwen3-VL-8B-Instruct`; existing installations retain their
 selection. Both require configs, tokenizer and weights, plus
-`transformers>=5.2,<6`. Set `AMBIENT_VISION_MODEL=Qwen/Qwen3-VL-8B-Instruct`
+`transformers>=5.2,<6`. Set `COMFY_LTX_LOOP_VISION_MODEL=Qwen/Qwen3-VL-8B-Instruct`
 or pass `cloud/install.py --vision-model Qwen/Qwen3-VL-8B-Instruct` to select it.
 Record its immutable revision and SHA256 files. Set the editor's `vision_model`
 to that absolute path or use the populated relative path. Switching preparation

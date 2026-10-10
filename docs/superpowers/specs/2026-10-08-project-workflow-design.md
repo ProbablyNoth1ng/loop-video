@@ -78,6 +78,13 @@ Future research must not silently claim Context7 was consulted if it was unavail
 - README links to product spec, codemap and the workflow index.
 - No credential is present in tracked changes. Existing product code is untouched.
 
+## Documentation maintenance: README naming, 2026-10-09
+
+This superseded note originally described a prose-only edit. The later
+[Comfy LTX Loop rebrand design](2026-10-09-comfy-ltx-loop-rebrand-design.md)
+replaces every technical identifier and public interface as an intentional
+breaking change; it is the authoritative record.
+
 ## Verification boundary
 
 ### Context7 research and connection evidence, 2026-10-08
@@ -105,6 +112,11 @@ Future research must not silently claim Context7 was consulted if it was unavail
   authentication without printing the credential. `git diff --check` passed.
 - Product code was not changed and product test suites were not rerun. Documentation
   checks and authenticated MCP requests are this setup's verification evidence.
+
+### README naming verification, 2026-10-09
+
+Superseded by the complete rebrand. Its delivery evidence belongs to the
+[rebrand implementation plan](../plans/2026-10-09-comfy-ltx-loop-rebrand.md).
 
 Completed plan: [Project workflow implementation](../plans/2026-10-08-project-workflow.md).
 

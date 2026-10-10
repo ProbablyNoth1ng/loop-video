@@ -14,7 +14,7 @@ def patch_start_script(source):
                if line.strip() in (array_launch, string_launch)]
     if len(matches) != 1:
         raise RuntimeError('Unsupported official image launcher; expected one ComfyUI launch.')
-    hook = ('python "${AMBIENT_INSTALLER:-$PROJECT_ROOT/cloud/install.py}" '
+    hook = ('python "${COMFY_LTX_LOOP_INSTALLER:-$PROJECT_ROOT/cloud/install.py}" '
             '--project-root "$PROJECT_ROOT" --comfy-root "$COMFYUI_DIR" || exit $?\n')
     index, launch = matches[0]
     if launch == array_launch:
@@ -25,24 +25,24 @@ def patch_start_script(source):
 
 
 def main():
-    project = Path(os.environ.get('PROJECT_ROOT', '/workspace/ambient-loop'))
+    project = Path(os.environ.get('PROJECT_ROOT', '/workspace/comfy-ltx-loop'))
     os.environ['PROJECT_ROOT'] = str(project)
-    os.environ['AMBIENT_INSTALLER'] = str(Path(__file__).with_name('install.py').resolve())
+    os.environ['COMFY_LTX_LOOP_INSTALLER'] = str(Path(__file__).with_name('install.py').resolve())
     os.environ.setdefault('HF_HOME', '/workspace/.cache/huggingface')
     try:
         # Check compatibility before downloading or starting any official services.
         patched = patch_start_script(Path('/start.sh').read_text(encoding='utf-8'))
         from install import clone_once
-        clone_once(os.environ.get('AMBIENT_REPO', 'https://github.com/ProbablyNoth1ng/loop-video.git'),
-                   project, os.environ.get('AMBIENT_REVISION'))
+        clone_once(os.environ.get('COMFY_LTX_LOOP_REPO', 'https://github.com/ProbablyNoth1ng/loop-video.git'),
+                   project, os.environ.get('COMFY_LTX_LOOP_REVISION'))
         if not (project / 'pyproject.toml').is_file():
-            raise RuntimeError('Repository does not contain the Ambient Loop project.')
+            raise RuntimeError('Repository does not contain the Comfy LTX Loop project.')
         with tempfile.NamedTemporaryFile(mode='w', suffix='.sh', delete=False, encoding='utf-8') as stream:
             stream.write(patched)
             launcher = stream.name
         os.execv('/bin/bash', ['/bin/bash', launcher])
     except (OSError, RuntimeError, subprocess.CalledProcessError) as error:
-        print('AMBIENT LOOP STARTUP FAILED: ' + str(error), file=sys.stderr, flush=True)
+        print('COMFY_LTX_LOOP STARTUP FAILED: ' + str(error), file=sys.stderr, flush=True)
         return 1
 
 

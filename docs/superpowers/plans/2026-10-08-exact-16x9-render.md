@@ -4,7 +4,7 @@
 
 **Goal:** Save exact 16:9/9:16 frames for near-16:9 sources and correctly finish existing legacy candidates.
 
-**Architecture:** Centralize the tolerance and centered crop in `ambient_loop.candidates`, applying it after padding removal on candidate export and before enhancement on finish. Persist dimensions from the actual written frame.
+**Architecture:** Centralize the tolerance and centered crop in `comfy_ltx_loop.candidates`, applying it after padding removal on candidate export and before enhancement on finish. Persist dimensions from the actual written frame.
 
 **Tech Stack:** Python 3.11+, NumPy 2.2.6, Pillow 11.3.0, FFmpeg when available.
 
@@ -26,7 +26,7 @@
 
 ### Task 1: Regression coverage and exact-dimension implementation
 
-**Files:** Modify `tests/test_candidates.py`, `ambient_loop/candidates.py`, and this plan.
+**Files:** Modify `tests/test_candidates.py`, `comfy_ltx_loop/candidates.py`, and this plan.
 
 **Interfaces:** `save_candidate(images, plan, seed, root, settings)` continues to return a record; `finish_candidate(handle, root, resolution, chunk_size, enhancer)` continues to accept legacy records.
 

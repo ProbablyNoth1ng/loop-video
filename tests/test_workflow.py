@@ -8,9 +8,9 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
-from ambient_loop.project import Project, dimensions, approve
-from ambient_loop.renderer import Renderer, displacement, rain_state
-from ambient_loop.jobs import render
+from comfy_ltx_loop.project import Project, dimensions, approve
+from comfy_ltx_loop.renderer import Renderer, displacement, rain_state
+from comfy_ltx_loop.jobs import render
 
 
 class WorkflowTests(unittest.TestCase):
@@ -26,7 +26,7 @@ class WorkflowTests(unittest.TestCase):
         for name, data in [('support', support), ('guard', np.zeros_like(support)),
                            ('weight', support)]:
             Image.fromarray(data).save(self.root / (name + '.png'))
-        self.data = {'schema': 'ambient-loop/1', 'source': 'source.png',
+        self.data = {'schema': 'comfy-ltx-loop/1', 'source': 'source.png',
                      'guard': 'guard.png', 'working_mode': '1080p',
                      'output_resolution': '1440p', 'duration': 4, 'seed': 42,
                      'preset': 'sunset-field', 'regions': [

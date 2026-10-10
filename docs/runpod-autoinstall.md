@@ -62,10 +62,10 @@ The extracted image launcher is covered by local regression tests.
 
 | Variable | Value |
 | --- | --- |
-| `AMBIENT_REPO` | Optional repository URL; defaults to the URL above |
-| `AMBIENT_REVISION` | Optional Git branch/tag/commit, used on first clone |
+| `COMFY_LTX_LOOP_REPO` | Optional repository URL; defaults to the URL above |
+| `COMFY_LTX_LOOP_REVISION` | Optional Git branch/tag/commit, used on first clone |
 | `LTX_REVISION` | Optional LTX Git branch/tag/commit, used on first clone |
-| `AMBIENT_VISION_MODEL` | `Qwen/Qwen3.5-9B` for new installs, or `Qwen/Qwen3-VL-8B-Instruct`; existing installs retain their choice when unset |
+| `COMFY_LTX_LOOP_VISION_MODEL` | `Qwen/Qwen3.5-9B` for new installs, or `Qwen/Qwen3-VL-8B-Instruct`; existing installs retain their choice when unset |
 | `HF_TOKEN` | Hugging Face token with read access to the required models |
 | `JUPYTER_PASSWORD` | Your JupyterLab token/password |
 | `FILEBROWSER_PASSWORD` | Your FileBrowser password if exposing port 8080 |
@@ -77,14 +77,14 @@ in the generated command. Your current public GitHub repository needs no token.
 
 ## What happens on boot
 
-- Clone Ambient Loop and ComfyUI-LTXVideo into `/workspace` on the container disk.
+- Clone Comfy LTX Loop and ComfyUI-LTXVideo into `/workspace` on the container disk.
 - Check for the LTX-2.5 diffusion VAE loader in ComfyUI and update incompatible
   core code to the pinned revision. Local changes block this update explicitly;
   models, user workflows and custom nodes are preserved.
 - Install project, vision, ComfyUI and LTX requirements using ComfyUI's active
   virtual environment, while constraining Torch/torchvision/torchaudio to the
   image's installed versions. Install ffmpeg if missing.
-- Connect the Ambient Loop custom nodes.
+- Connect the Comfy LTX Loop custom nodes.
 - Download the six exact model files declared by the official Motion Track
   workflow, the selected Qwen snapshot including configs/tokenizer/weights,
   and Real-ESRGAN's `realesr-animevideov3.pth`.
@@ -96,14 +96,14 @@ in the generated command. Your current public GitHub repository needs no token.
 
 The first boot includes large downloads and checksum reads. Its duration depends
 on the network and disk throughput. During setup, use the Pod logs or Jupyter;
-the ComfyUI port is not ready yet. Look for `AMBIENT LOOP INSTALLED`, followed by
-ComfyUI's normal server startup. Open `ambient-motion` from saved workflows.
+the ComfyUI port is not ready yet. Look for `COMFY_LTX_LOOP INSTALLED`, followed by
+ComfyUI's normal server startup. Open `comfy-ltx-loop-motion` from saved workflows.
 Successful installation is not proof of GPU rendering or visual loop quality.
 
 When files still exist, another invocation uses the existing project/LTX revisions,
 installed dependencies and model files. Only incompatible ComfyUI core code is
 updated to the pinned compatibility revision; compatible code is not pulled.
-An existing `/workspace/ambient-loop` checkout does not automatically pull a
+An existing `/workspace/comfy-ltx-loop` checkout does not automatically pull a
 published adapter fix on restart. Use a fresh Pod or update that checkout explicitly.
 A new or cleared container disk always gets a complete installation. Fast model checks
 compare recorded sizes, plus the small upscale model's checksum. They do not
@@ -114,12 +114,12 @@ Qwen3.5 retains installed Qwen3-VL files for comparison. Download manifests
 record immutable HF revisions and file checksums; no vision weights download
 during Prepare.
 Legacy manifests migrate with their existing pinned revisions. Per-model ready
-manifests and `vision-*.json` provenance live in `.ambient-loop-install/`, so
+manifests and `vision-*.json` provenance live in `.comfy-ltx-loop-install/`, so
 switching back to an installed snapshot reuses its recorded revision. Newly
 copied workflows match the selected analyzer; saved workflows remain unchanged.
 Missing/truncated models trigger recovery.
 Checksums, model revisions and `pip freeze` are retained under
-`ComfyUI/.ambient-loop-install/`. Run one Pod at a time against this installation.
+`ComfyUI/.comfy-ltx-loop-install/`. Run one Pod at a time against this installation.
 
 ## Video VAE loading error
 
@@ -151,7 +151,7 @@ installation never writes a completed models marker.
 For an already initialized ComfyUI environment with the project available:
 
 ```bash
-python3.12 /workspace/ambient-loop/cloud/install.py
+python3.12 /workspace/comfy-ltx-loop/cloud/install.py
 ```
 
 This command selects the official ComfyUI virtual environment if invoked from

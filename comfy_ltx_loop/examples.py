@@ -50,7 +50,7 @@ def create_examples(destination):
                           ('weight', weight), ('roots', roots)]:
             Image.fromarray(arr.astype('uint8')).save(root / f'{name}.png')
         kind = {'calm-wind': 'foliage', 'rainy-window': 'rain', 'sunset-field': 'shimmer'}[preset]
-        region = {'id': 'ambient', 'kind': kind, 'mask': 'mask.png',
+        region = {'id': 'comfy_ltx_loop', 'kind': kind, 'mask': 'mask.png',
                   'support': 'support.png', 'depth': 0}
         if kind == 'foliage':
             region.update(root_weight='weight.png', roots='roots.png', amplitude=2)
@@ -59,6 +59,6 @@ def create_examples(destination):
         else:
             region['strength'] = .04
         atomic_json(root / 'project.json', {
-            'schema': 'ambient-loop/1', 'source': 'source.png', 'guard': 'guard.png',
+            'schema': 'comfy-ltx-loop/1', 'source': 'source.png', 'guard': 'guard.png',
             'working_mode': '1080p', 'output_resolution': '1440p', 'duration': 6,
             'fps': 24, 'preset': preset, 'seed': 42, 'regions': [region]})

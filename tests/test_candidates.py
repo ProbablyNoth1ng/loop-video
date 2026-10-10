@@ -11,8 +11,8 @@ from unittest.mock import patch
 import numpy as np
 from PIL import Image
 
-from ambient_loop.candidates import save_candidate, save_record, load_handle, finish_candidate, anime_enhancer, tiled_anime_scale
-from ambient_loop.motion import new_plan, review_plan
+from comfy_ltx_loop.candidates import save_candidate, save_record, load_handle, finish_candidate, anime_enhancer, tiled_anime_scale
+from comfy_ltx_loop.motion import new_plan, review_plan
 
 
 class CandidateTests(unittest.TestCase):
@@ -31,7 +31,7 @@ class CandidateTests(unittest.TestCase):
                 'state':'awaiting_visual_review'})
             before = {p.name:p.read_bytes() for p in (source/'frames').glob('*.png')}
             record_bytes = Path(original['record']).read_bytes()
-            with patch('ambient_loop.candidates.anime_enhancer',side_effect=AssertionError('AI loaded')):
+            with patch('comfy_ltx_loop.candidates.anime_enhancer',side_effect=AssertionError('AI loaded')):
                 finish = finish_candidate(original,root,'1080p',method='fast')
             self.assertEqual(finish['finish_method'],'fast')
             self.assertEqual(finish['dimensions'],[1920,1080])
@@ -53,7 +53,7 @@ class CandidateTests(unittest.TestCase):
             self.assertEqual(Path(original['record']).read_bytes(),record_bytes)
 
     def test_balanced_and_original_choose_distinct_model_policies(self):
-        with tempfile.TemporaryDirectory() as tmp, patch('ambient_loop.candidates.encode_previews'):
+        with tempfile.TemporaryDirectory() as tmp, patch('comfy_ltx_loop.candidates.encode_previews'):
             root = Path(tmp)
             source = root/'candidate-ai'
             (source/'frames').mkdir(parents=True)
@@ -64,7 +64,7 @@ class CandidateTests(unittest.TestCase):
             def enhancer(image,size):
                 return image.resize(size)
             enhancer.model_sha256 = 'weights'
-            with patch('ambient_loop.candidates.anime_enhancer',side_effect=[enhancer,enhancer]) as load:
+            with patch('comfy_ltx_loop.candidates.anime_enhancer',side_effect=[enhancer,enhancer]) as load:
                 balanced = finish_candidate(original,root,'1080p',method='balanced_ai')
                 original_ai = finish_candidate(original,root,'1080p',method='original_ai')
             self.assertEqual(load.call_args_list[0].kwargs,{'precision':'fp16'})
@@ -142,7 +142,7 @@ class CandidateTests(unittest.TestCase):
                     anime_enhancer(precision='fp16')
 
     def test_near_widescreen_export_center_crops_pixels_and_record(self):
-        with tempfile.TemporaryDirectory() as tmp, patch('ambient_loop.candidates.encode_previews'):
+        with tempfile.TemporaryDirectory() as tmp, patch('comfy_ltx_loop.candidates.encode_previews'):
             plan = review_plan(new_plan('abc', (1290,720), 'hair', ['tip'],
                                [{'label':'tip','x':.5,'y':.5}], duration=1, fps=8, short_side=720))
             canvas_w,canvas_h = plan['transform']['canvas']
@@ -163,7 +163,7 @@ class CandidateTests(unittest.TestCase):
             self.assertEqual(last_pixel,4)
 
     def test_legacy_near_widescreen_candidate_finishes_exactly_without_modifying_source(self):
-        with tempfile.TemporaryDirectory() as tmp, patch('ambient_loop.candidates.encode_previews'):
+        with tempfile.TemporaryDirectory() as tmp, patch('comfy_ltx_loop.candidates.encode_previews'):
             root = Path(tmp)
             legacy = root/'candidate-legacy'
             (legacy/'frames').mkdir(parents=True)
@@ -198,7 +198,7 @@ class CandidateTests(unittest.TestCase):
     def test_exact_widescreen_portrait_and_outside_tolerance_size_rules(self):
         cases = [((1600,900),(1600,900)),((720,1290),(720,1280)),
                  ((1307,720),(1308,720))]
-        with tempfile.TemporaryDirectory() as tmp, patch('ambient_loop.candidates.encode_previews'):
+        with tempfile.TemporaryDirectory() as tmp, patch('comfy_ltx_loop.candidates.encode_previews'):
             for source, expected in cases:
                 with self.subTest(source=source):
                     plan = review_plan(new_plan('abc',source,'hair',['tip'],
@@ -207,13 +207,13 @@ class CandidateTests(unittest.TestCase):
                     handle = save_candidate(np.zeros((9,height,width,3),dtype=np.uint8),plan,42,Path(tmp),{})
                     self.assertEqual(handle['dimensions'],list(expected))
     def test_all_resolutions_preserve_orientation_frames_timing_and_original(self):
-        from ambient_loop.staged_comfy import AmbientUpscale
-        options = AmbientUpscale.INPUT_TYPES()['required']['resolution']
+        from comfy_ltx_loop.staged_comfy import ComfyLTXLoopUpscale
+        options = ComfyLTXLoopUpscale.INPUT_TYPES()['required']['resolution']
         self.assertIn('1080p', options[0])
         self.assertEqual(options[1]['default'], '1440p')
         for source, expected in [((1600,900),[(1920,1080),(2560,1440),(3840,2160)]),
                                  ((900,1600),[(1080,1920),(1440,2560),(2160,3840)])]:
-            with tempfile.TemporaryDirectory() as tmp, patch('ambient_loop.candidates.encode_previews'):
+            with tempfile.TemporaryDirectory() as tmp, patch('comfy_ltx_loop.candidates.encode_previews'):
                 root = Path(tmp)
                 plan = review_plan(new_plan('abc',source,'hair',['tip'],
                     [dict(label='tip',x=.5,y=.5)],duration=1,fps=8,short_side=288))
@@ -256,7 +256,7 @@ class CandidateTests(unittest.TestCase):
             plan = review_plan(new_plan('abc', (32,32), 'hair', ['tip'],
                                [{'label':'tip','x':.5,'y':.5}], short_side=256))
             images = np.zeros((145,256,256,3), dtype=np.uint8)
-            with patch('ambient_loop.candidates.encode_previews'):
+            with patch('comfy_ltx_loop.candidates.encode_previews'):
                 handle = save_candidate(images, plan, 42, Path(tmp), {'cfg':1})
                 reopened = load_handle(Path(handle['record']), Path(tmp))
                 calls = []
@@ -284,7 +284,7 @@ class CandidateTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             plan = review_plan(new_plan('abc',(32,32),'hair',['tip'],
                                [{'label':'tip','x':.5,'y':.5}],short_side=256))
-            with patch('ambient_loop.candidates.encode_previews'):
+            with patch('comfy_ltx_loop.candidates.encode_previews'):
                 h = save_candidate(np.zeros((145,256,256,3),dtype=np.uint8),plan,42,Path(tmp),{})
             Image.new('RGB',(256,256),'white').save(Path(h['directory'])/'frames/000001.png')
             with self.assertRaisesRegex(ValueError,'modified'):

@@ -1,6 +1,6 @@
-# Ambient Loop product specification
+# Comfy LTX Loop product specification
 
-Updated: 2026-10-08.
+Updated: 2026-10-09.
 
 This is the living product agreement for the owner. Technical designs and task
 plans are indexed in [Superpowers documents](superpowers/README.md).
@@ -32,6 +32,7 @@ does not guarantee them. Real anime and GPU qualification is still pending.
 | P-10 | Support documented cloud installation and retain the existing CLI. Record deployment/model versions and actual runtime evidence before promising supported hardware or performance. | Implemented setup paths; provider qualification pending |
 | P-11 | For source content whose long-to-short ratio is within 2% of 16:9, save exact 16:9 exported render frames after generation-canvas padding is removed: 1280x720 at the standard 720-pixel short side, or 720x1280 for portrait. Center-crop only the exported/finished frame; raw generated frames and the reviewed canvas remain unchanged. Finishing those candidates at 1080p, 1440p and 4K saves 1920x1080, 2560x1440 and 3840x2160 (portrait counterparts included). Sources outside tolerance retain their existing aspect ratio behavior. | Implemented locally; GPU and visual qualification pending |
 | P-12 | After Render, finish any saved candidate again with Fast (FFmpeg Lanczos), Balanced AI (installed anime weights in supported FP16 with adaptive tiles), or Original AI (existing Real-ESRGAN path). New workflows default to Fast at 1080p; existing Upscale nodes retain Original AI and 1440p defaults. Every finish keeps frame count, FPS, silent MP4, lossless frames, aspect/crop rules and the candidate unchanged, with its method recorded. | Implemented in source; Python, installed ComfyUI, GPU speed and visual verification pending |
+| P-13 | Use only the Comfy LTX Loop public identity: `comfy-ltx-loop` for commands and hyphenated paths, `comfy_ltx_loop` for Python/import paths, `ComfyLTXLoop…` for node types, and `Comfy LTX Loop` for display text. Previous names, commands, saved workflows, records, routes, output paths and environment variables are intentionally unsupported. | Implemented locally; deployment/GPU qualification unchanged and pending |
 
 "Implemented" describes repository behavior and existing evidence. It does not
 mean this session reran all tests or that a production GPU run was accepted.
@@ -77,6 +78,10 @@ Update [codemap.md](../codemap.md) whenever project structure changes.
 
 ## Delivery notes
 
+- 2026-10-09: Completed the intentional breaking rebrand to Comfy LTX Loop. It replaces
+  every tracked legacy identifier and persisted key; no compatibility aliases or
+  data migration are provided. Python, Node and fixture verification passed;
+  deployment/GPU qualification is unchanged and pending. See the [rebrand design](superpowers/specs/2026-10-09-comfy-ltx-loop-rebrand-design.md).
 - 2026-10-08: Added Fast, Balanced AI and Original AI finishing choices to the
   editable workflow and retained the old Upscale node contract. Node tests and an
   FFmpeg command probe passed; this Windows checkout has no Python runtime, so

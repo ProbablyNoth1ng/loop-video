@@ -52,7 +52,7 @@ def returning_path(x, y, amplitude, samples=17):
 
 def new_plan(identity, size, prompt, requested, landmarks, duration=6, fps=24,
              strength=.01, short_side=720, feedback=None, analysis=None):
-    plan = {'schema': 'ambient-motion-plan/1', 'source_id': identity,
+    plan = {'schema': 'comfy-ltx-loop-motion-plan/1', 'source_id': identity,
             'source_size': list(size), 'prompt': prompt, 'requested': requested,
             'duration': float(duration), 'fps': int(fps), 'strength': float(strength),
             'short_side': int(short_side), 'frames': frame_count(duration, fps),
@@ -85,7 +85,7 @@ def validate_semantics(point):
 
 
 def validate_plan(plan):
-    if not isinstance(plan, dict) or plan.get('schema') != 'ambient-motion-plan/1':
+    if not isinstance(plan, dict) or plan.get('schema') != 'comfy-ltx-loop-motion-plan/1':
         raise ValueError('Invalid motion plan; Prepare or place points manually')
     if plan['frames'] != frame_count(plan['duration'], plan['fps']):
         raise ValueError('Motion plan timing changed; prepare and review again')

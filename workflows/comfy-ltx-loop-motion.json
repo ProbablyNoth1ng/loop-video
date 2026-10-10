@@ -87,7 +87,7 @@
       "title": "Inputs",
       "properties": {},
       "widgets_values": [
-        "## Ambient Loop\nLoad one image. Set character motion prompt and requested parts. Prepare character points, edit paths, then review.\n\nBackground motion is always available on the editor. Text enables background animation; blank text keeps saved background points but excludes their tracks. Choose Model or Manual, then prepare Background points or prepare both groups together. Use Visible points to inspect Character, Background, or All while New point group controls only newly placed points. Circles mark character points and squares mark background points.\n\nUse Run to choose Prepare character points, Prepare background points, Prepare character + background points, Render, or Upscale. Each choice queues one stage. Accept point review before Render.\n\nRender uses the official LTX-2.5 pipeline with a stationary camera. Small generation drift may remain. Inspect continuous and seam previews. Finish the same saved candidate again with Fast, Balanced AI, or Original AI to compare results."
+        "## Comfy LTX Loop\nLoad one image. Set character motion prompt and requested parts. Prepare character points, edit paths, then review.\n\nBackground motion is always available on the editor. Text enables background animation; blank text keeps saved background points but excludes their tracks. Choose Model or Manual, then prepare Background points or prepare both groups together. Use Visible points to inspect Character, Background, or All while New point group controls only newly placed points. Circles mark character points and squares mark background points.\n\nUse Run to choose Prepare character points, Prepare background points, Prepare character + background points, Render, or Upscale. Each choice queues one stage. Accept point review before Render.\n\nRender uses the official LTX-2.5 pipeline with a stationary camera. Small generation drift may remain. Inspect continuous and seam previews. Finish the same saved candidate again with Fast, Balanced AI, or Original AI to compare results."
       ],
       "color": "#432",
       "bgcolor": "#653"
@@ -903,7 +903,7 @@
     },
     {
       "id": 10000,
-      "type": "AmbientMotionEditor",
+      "type": "ComfyLTXLoopMotionEditor",
       "pos": [
         450,
         0
@@ -976,7 +976,7 @@
         }
       ],
       "properties": {
-        "Node name for S&R": "AmbientMotionEditor"
+        "Node name for S&R": "ComfyLTXLoopMotionEditor"
       },
       "widgets_values": [
         "Gentle hair sway. Stationary camera.",
@@ -998,7 +998,7 @@
     },
     {
       "id": 4852,
-      "type": "AmbientSaveCandidate",
+      "type": "ComfyLTXLoopSaveCandidate",
       "pos": [
         2200,
         0
@@ -1038,7 +1038,7 @@
         }
       ],
       "properties": {
-        "Node name for S&R": "AmbientSaveCandidate"
+        "Node name for S&R": "ComfyLTXLoopSaveCandidate"
       },
       "widgets_values": [
         42
@@ -1046,7 +1046,7 @@
     },
     {
       "id": 10001,
-      "type": "AmbientSavedCandidate",
+      "type": "ComfyLTXLoopSavedCandidate",
       "pos": [
         2200,
         600
@@ -1069,7 +1069,7 @@
         }
       ],
       "properties": {
-        "Node name for S&R": "AmbientSavedCandidate"
+        "Node name for S&R": "ComfyLTXLoopSavedCandidate"
       },
       "widgets_values": [
         "Select a saved candidate"
@@ -1077,7 +1077,7 @@
     },
     {
       "id": 10002,
-      "type": "AmbientFinish",
+      "type": "ComfyLTXLoopFinish",
       "pos": [
         2650,
         600
@@ -1104,7 +1104,7 @@
         }
       ],
       "properties": {
-        "Node name for S&R": "AmbientFinish"
+        "Node name for S&R": "ComfyLTXLoopFinish"
       },
       "widgets_values": [
         "1080p",
@@ -6899,7 +6899,7 @@
   },
   "config": {},
   "extra": {
-    "ambient_loop": {
+    "comfy_ltx_loop": {
       "schema": 1,
       "official_sha256": "6ff1604c041771f9be6a375c27f5fcb5689ffe94194f56d188ce1d3c2e809ecd",
       "qualification": "pending actual cloud GPU run"

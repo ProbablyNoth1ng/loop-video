@@ -1,16 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {installStageQueueControl,installUnsafePromptGuard,resolveStageTargets,isCurrentStageSelection,requireQueueSuccess} from '../comfy_nodes/ambient_loop/web/queue_control.mjs';
+import {installStageQueueControl,installUnsafePromptGuard,resolveStageTargets,isCurrentStageSelection,requireQueueSuccess} from '../comfy_nodes/comfy_ltx_loop/web/queue_control.mjs';
 
-const ambient = type => ({_nodes:[{id:1,comfyClass:type}]});
+const comfy_ltx_loop = type => ({_nodes:[{id:1,comfyClass:type}]});
 const ordinary = {_nodes:[{id:1,comfyClass:'KSampler'}]};
 
 function controlledApp(graph, implementation = async function (...args) { return {receiver:this,args}; }) {
   return {graph, queuePrompt:implementation};
 }
 
-test('main Run on an Ambient workflow opens stage controls without queueing', async () => {
-  const graph=ambient('AmbientSaveCandidate');
+test('main Run on an Comfy LTX workflow opens stage controls without queueing', async () => {
+  const graph=comfy_ltx_loop('ComfyLTXLoopSaveCandidate');
   let originalCalls=0, shown;
   const app=controlledApp(graph, async () => { originalCalls++; return true; });
   installStageQueueControl(app, value => { shown=value; }, () => assert.fail('unexpected notice'));
@@ -37,7 +37,7 @@ test('ordinary queues preserve arguments, receiver, result, and errors', async (
 test('explicit partial execution stays on ComfyUI queue path', async () => {
   for (const options of [{queueNodeIds:[1]},[1,2],{partialExecutionTargets:[1]}]) {
     let calls=0;
-    const app=controlledApp(ambient('AmbientMotionEditor'),async function (...args) { calls++; return {receiver:this,args}; });
+    const app=controlledApp(comfy_ltx_loop('ComfyLTXLoopMotionEditor'),async function (...args) { calls++; return {receiver:this,args}; });
     installStageQueueControl(app, () => assert.fail('partial run must not open chooser'), () => assert.fail('partial run is not auto queue'));
     const result=await app.queuePrompt(0,1,options);
     assert.equal(calls,1);
@@ -46,10 +46,10 @@ test('explicit partial execution stays on ComfyUI queue path', async () => {
   }
 });
 
-test('auto queue is cancelled with one notice and all Ambient outputs are recognized', async () => {
-  for (const type of ['AmbientMotionEditor','AmbientSaveCandidate','AmbientUpscale','AmbientFinish']) {
+test('auto queue is cancelled with one notice and all Comfy LTX outputs are recognized', async () => {
+  for (const type of ['ComfyLTXLoopMotionEditor','ComfyLTXLoopSaveCandidate','ComfyLTXLoopUpscale','ComfyLTXLoopFinish']) {
     let originalCalls=0, notices=0;
-    const app=controlledApp(ambient(type),async () => { originalCalls++; return true; });
+    const app=controlledApp(comfy_ltx_loop(type),async () => { originalCalls++; return true; });
     installStageQueueControl(app, () => assert.fail('auto queue must not open chooser'), () => { notices++; });
     assert.equal(await app.queuePrompt(0,1,{autoQueue:true}),false);
     assert.equal(await app.queuePrompt(0,1,{autoQueue:true}),false);
@@ -69,30 +69,30 @@ test('unsafe prompt guard preserves trailing API arguments and rejects mixed sta
   assert.equal(result.receiver,api);
   assert.deepEqual(result.args,[0,prompt,options,'later']);
 
-  await assert.rejects(api.queuePrompt(0,{output:{1:{class_type:'AmbientSaveCandidate'},2:{class_type:'AmbientUpscale'}}}),/separate Prepare/i);
-  await assert.rejects(api.queuePrompt(0,{output:{1:{class_type:'AmbientSaveCandidate'},2:{class_type:'AmbientFinish'}}}),/separate Prepare/i);
-  await assert.rejects(api.queuePrompt(0,{output:{1:{class_type:'AmbientSaveCandidate'},2:{class_type:'AmbientMotionEditor',inputs:{stage:'prepare'}}}}),/cannot start generation/i);
+  await assert.rejects(api.queuePrompt(0,{output:{1:{class_type:'ComfyLTXLoopSaveCandidate'},2:{class_type:'ComfyLTXLoopUpscale'}}}),/separate Prepare/i);
+  await assert.rejects(api.queuePrompt(0,{output:{1:{class_type:'ComfyLTXLoopSaveCandidate'},2:{class_type:'ComfyLTXLoopFinish'}}}),/separate Prepare/i);
+  await assert.rejects(api.queuePrompt(0,{output:{1:{class_type:'ComfyLTXLoopSaveCandidate'},2:{class_type:'ComfyLTXLoopMotionEditor',inputs:{stage:'prepare'}}}}),/cannot start generation/i);
   assert.equal(calls,1);
 });
 
 test('stage choices disable missing targets and ambiguous Render editors', () => {
-  const one={_nodes:[{id:2,comfyClass:'AmbientMotionEditor'},{id:5,comfyClass:'AmbientSaveCandidate'},{id:7,comfyClass:'AmbientUpscale'}]};
+  const one={_nodes:[{id:2,comfyClass:'ComfyLTXLoopMotionEditor'},{id:5,comfyClass:'ComfyLTXLoopSaveCandidate'},{id:7,comfyClass:'ComfyLTXLoopUpscale'}]};
   const targets=resolveStageTargets(one);
   assert.equal(targets.prepare.target.id,2);
   assert.equal(targets.render.target.id,5);
   assert.equal(targets.upscale.target.id,7);
-  const newFinish={_nodes:[one._nodes[0],one._nodes[1],{id:8,comfyClass:'AmbientFinish'}]};
+  const newFinish={_nodes:[one._nodes[0],one._nodes[1],{id:8,comfyClass:'ComfyLTXLoopFinish'}]};
   assert.equal(resolveStageTargets(newFinish).upscale.target.id,8);
-  assert.match(resolveStageTargets({_nodes:[...one._nodes,{id:8,comfyClass:'AmbientFinish'}]}).upscale.reason,/one output node/i);
+  assert.match(resolveStageTargets({_nodes:[...one._nodes,{id:8,comfyClass:'ComfyLTXLoopFinish'}]}).upscale.reason,/one output node/i);
 
-  const ambiguous={_nodes:[{id:2,comfyClass:'AmbientMotionEditor'},{id:3,comfyClass:'AmbientMotionEditor'},{id:5,comfyClass:'AmbientSaveCandidate'}]};
+  const ambiguous={_nodes:[{id:2,comfyClass:'ComfyLTXLoopMotionEditor'},{id:3,comfyClass:'ComfyLTXLoopMotionEditor'},{id:5,comfyClass:'ComfyLTXLoopSaveCandidate'}]};
   const disabled=resolveStageTargets(ambiguous);
   assert.match(disabled.render.reason,/exactly one motion editor/i);
-  assert.match(disabled.upscale.reason,/Ambient Upscale/i);
+  assert.match(disabled.upscale.reason,/Comfy LTX Upscale/i);
 });
 
 test('a captured stage target cannot submit after a graph change or removal', () => {
-  const graph={_nodes:[{id:2,comfyClass:'AmbientMotionEditor'}]};
+  const graph={_nodes:[{id:2,comfyClass:'ComfyLTXLoopMotionEditor'}]};
   const app={graph};
   const target=graph._nodes[0];
   assert.equal(isCurrentStageSelection(app,graph,target),true);
@@ -103,11 +103,11 @@ test('a captured stage target cannot submit after a graph change or removal', ()
 });
 
 test('a captured target becomes invalid when its stage is ambiguous', () => {
-  const target={id:5,comfyClass:'AmbientSaveCandidate'};
-  const graph={_nodes:[{id:2,comfyClass:'AmbientMotionEditor'},target]};
+  const target={id:5,comfyClass:'ComfyLTXLoopSaveCandidate'};
+  const graph={_nodes:[{id:2,comfyClass:'ComfyLTXLoopMotionEditor'},target]};
   const app={graph};
   assert.equal(isCurrentStageSelection(app,graph,target,'render'),true);
-  graph._nodes.push({id:3,comfyClass:'AmbientMotionEditor'});
+  graph._nodes.push({id:3,comfyClass:'ComfyLTXLoopMotionEditor'});
   assert.equal(isCurrentStageSelection(app,graph,target,'render'),false);
 });
 

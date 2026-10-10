@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {imageRect, normalizedPoint} from '../comfy_nodes/ambient_loop/web/geometry.mjs';
+import {imageRect, normalizedPoint} from '../comfy_nodes/comfy_ltx_loop/web/geometry.mjs';
 
 test('portrait image maps content corners and rejects side letterboxing',()=>{
   const rect=imageRect(600,900,480,300);

@@ -15,7 +15,7 @@ from .candidates import save_candidate, load_handle, finish_candidate, list_cand
 
 def output_root():
     import folder_paths
-    return Path(folder_paths.get_output_directory())/'ambient-loop'
+    return Path(folder_paths.get_output_directory())/'comfy-ltx-loop'
 
 
 def image_array(image):
@@ -42,10 +42,10 @@ def canvas_image(image, transform):
 def preview_ui(record):
     directory = Path(record['directory']).relative_to(output_root()).as_posix()
     return {'render_handle':[record], 'preview_paths':[
-        f'ambient-loop/{directory}/loop.mp4',f'ambient-loop/{directory}/seam.mp4']}
+        f'comfy-ltx-loop/{directory}/loop.mp4',f'comfy-ltx-loop/{directory}/seam.mp4']}
 
 
-class AmbientMotionEditor:
+class ComfyLTXLoopMotionEditor:
     @classmethod
     def INPUT_TYPES(cls):
         return {'required':{
@@ -72,7 +72,7 @@ class AmbientMotionEditor:
     RETURN_TYPES = ('IMAGE','STRING','MOTION_PLAN','FLOAT','FLOAT','INT','STRING')
     RETURN_NAMES = ('canvas','tracks','motion_plan','fps','duration','seed','prompt')
     FUNCTION = 'execute'
-    CATEGORY = 'ambient-loop/staged'
+    CATEGORY = 'comfy-ltx-loop/staged'
     OUTPUT_NODE = True
 
     @classmethod
@@ -166,7 +166,7 @@ class AmbientMotionEditor:
         ui = {'motion_plan':[plan], 'bg_image':[base64.b64encode(buffer.getvalue()).decode()]}
         if extra_pnginfo is not None:
             workflow = extra_pnginfo.setdefault('workflow',{})
-            workflow.setdefault('extra',{}).setdefault('ambient_motion_plans',{})[str(unique_id)] = plan
+            workflow.setdefault('extra',{}).setdefault('comfy_ltx_loop_motion_plans',{})[str(unique_id)] = plan
         render_prompt = motion_prompt
         if plan.get('background', {}).get('enabled'):
             render_prompt += ('\nBackground motion: '+background_prompt.strip()+
@@ -177,7 +177,7 @@ class AmbientMotionEditor:
                                  float(fps),float(duration),seed,render_prompt)}
 
 
-class AmbientSaveCandidate:
+class ComfyLTXLoopSaveCandidate:
     @classmethod
     def INPUT_TYPES(cls):
         return {'required':{'video':('VIDEO',),'motion_plan':('MOTION_PLAN',),
@@ -186,7 +186,7 @@ class AmbientSaveCandidate:
     RETURN_TYPES = ('RENDER_HANDLE',)
     RETURN_NAMES = ('candidate',)
     FUNCTION = 'execute'
-    CATEGORY = 'ambient-loop/staged'
+    CATEGORY = 'comfy-ltx-loop/staged'
     OUTPUT_NODE = True
     @classmethod
     def IS_CHANGED(cls,**kwargs):
@@ -201,14 +201,14 @@ class AmbientSaveCandidate:
         return {'ui':preview_ui(record),'result':(record,)}
 
 
-class AmbientSavedCandidate:
+class ComfyLTXLoopSavedCandidate:
     @classmethod
     def INPUT_TYPES(cls):
         records = list_candidates(output_root())
         return {'required':{'candidate':(records or ['Select a saved candidate'],)}}
     RETURN_TYPES = ('RENDER_HANDLE',)
     FUNCTION = 'execute'
-    CATEGORY = 'ambient-loop/staged'
+    CATEGORY = 'comfy-ltx-loop/staged'
     @classmethod
     def IS_CHANGED(cls,**kwargs):
         return float('nan')
@@ -216,7 +216,7 @@ class AmbientSavedCandidate:
         return (load_handle(output_root()/candidate,output_root()),)
 
 
-class AmbientUpscale:
+class ComfyLTXLoopUpscale:
     @classmethod
     def INPUT_TYPES(cls):
         return {'required':{'candidate':('RENDER_HANDLE',),
@@ -224,7 +224,7 @@ class AmbientUpscale:
                  'chunk_size':('INT',{'default':4,'min':1,'max':32})}}
     RETURN_TYPES = ('RENDER_HANDLE',)
     FUNCTION = 'execute'
-    CATEGORY = 'ambient-loop/staged'
+    CATEGORY = 'comfy-ltx-loop/staged'
     OUTPUT_NODE = True
     @classmethod
     def IS_CHANGED(cls,**kwargs):
@@ -234,7 +234,7 @@ class AmbientUpscale:
         return {'ui':preview_ui(record),'result':(record,)}
 
 
-class AmbientFinish:
+class ComfyLTXLoopFinish:
     @classmethod
     def INPUT_TYPES(cls):
         return {'required':{'candidate':('RENDER_HANDLE',),
@@ -243,7 +243,7 @@ class AmbientFinish:
                  'chunk_size':('INT',{'default':4,'min':1,'max':32})}}
     RETURN_TYPES = ('RENDER_HANDLE',)
     FUNCTION = 'execute'
-    CATEGORY = 'ambient-loop/staged'
+    CATEGORY = 'comfy-ltx-loop/staged'
     OUTPUT_NODE = True
     @classmethod
     def IS_CHANGED(cls,**kwargs):
@@ -256,13 +256,13 @@ class AmbientFinish:
         return {'ui':preview_ui(record),'result':(record,)}
 
 
-NODE_CLASS_MAPPINGS = {'AmbientMotionEditor':AmbientMotionEditor,
-                       'AmbientSaveCandidate':AmbientSaveCandidate,
-                       'AmbientSavedCandidate':AmbientSavedCandidate,
-                       'AmbientUpscale':AmbientUpscale,
-                       'AmbientFinish':AmbientFinish}
-NODE_DISPLAY_NAME_MAPPINGS = {'AmbientMotionEditor':'Ambient Loop · Prepare and review',
-    'AmbientSaveCandidate':'Ambient Loop · Render preview',
-    'AmbientSavedCandidate':'Ambient Loop · Select saved candidate',
-    'AmbientUpscale':'Ambient Loop · Upscale preview',
-    'AmbientFinish':'Ambient Loop · Finish preview'}
+NODE_CLASS_MAPPINGS = {'ComfyLTXLoopMotionEditor':ComfyLTXLoopMotionEditor,
+                       'ComfyLTXLoopSaveCandidate':ComfyLTXLoopSaveCandidate,
+                       'ComfyLTXLoopSavedCandidate':ComfyLTXLoopSavedCandidate,
+                       'ComfyLTXLoopUpscale':ComfyLTXLoopUpscale,
+                       'ComfyLTXLoopFinish':ComfyLTXLoopFinish}
+NODE_DISPLAY_NAME_MAPPINGS = {'ComfyLTXLoopMotionEditor':'Comfy LTX Loop · Prepare and review',
+    'ComfyLTXLoopSaveCandidate':'Comfy LTX Loop · Render preview',
+    'ComfyLTXLoopSavedCandidate':'Comfy LTX Loop · Select saved candidate',
+    'ComfyLTXLoopUpscale':'Comfy LTX Loop · Upscale preview',
+    'ComfyLTXLoopFinish':'Comfy LTX Loop · Finish preview'}

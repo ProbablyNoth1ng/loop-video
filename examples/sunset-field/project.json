@@ -1,5 +1,5 @@
 {
-  "schema": "ambient-loop/1",
+  "schema": "comfy-ltx-loop/1",
   "source": "source.png",
   "guard": "guard.png",
   "working_mode": "1080p",
@@ -10,7 +10,7 @@
   "seed": 42,
   "regions": [
     {
-      "id": "ambient",
+      "id": "comfy_ltx_loop",
       "kind": "shimmer",
       "mask": "mask.png",
       "support": "support.png",

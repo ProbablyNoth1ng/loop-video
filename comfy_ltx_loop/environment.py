@@ -39,8 +39,8 @@ def environment(action, comfy, lock, image_digest=None):
     if shutil.disk_usage(comfy).free < 2 * 1024**3:
         raise ValueError('At least 2 GiB free storage required for startup smoke test')
     from .comfy import NODE_CLASS_MAPPINGS
-    if 'AmbientLoopRender' not in NODE_CLASS_MAPPINGS:
-        raise ValueError('AmbientLoopRender node missing')
+    if 'ComfyLTXLoopRender' not in NODE_CLASS_MAPPINGS:
+        raise ValueError('ComfyLTXLoopRender node missing')
     current = {'comfy_revision': revision(comfy), 'dependencies': versions,
                'torch': torch.__version__, 'cuda': torch.version.cuda,
                'node_code_sha256': sha(Path(__file__).with_name('comfy.py')),
@@ -76,8 +76,8 @@ def environment(action, comfy, lock, image_digest=None):
         # Qualification also confirms the running server registered the custom node.
         with urlopen('http://127.0.0.1:8188/object_info', timeout=15) as response:
             nodes = json.load(response)
-        if 'AmbientLoopRender' not in nodes:
-            raise ValueError('Running ComfyUI has not registered AmbientLoopRender')
+        if 'ComfyLTXLoopRender' not in nodes:
+            raise ValueError('Running ComfyUI has not registered ComfyLTXLoopRender')
         current.update(image_digest=image_digest, tested_at=datetime.now(timezone.utc).isoformat(),
                        smoke={'render': True, 'encode': True, 'gpu': True, 'node_registered': True})
         atomic_json(lock, current)

@@ -219,9 +219,9 @@ class CloudInstallTests(unittest.TestCase):
             subprocess.run(['git', '-C', str(project), 'add', '.'], check=True)
             subprocess.run(['git', '-C', str(project), '-c', 'user.name=Test',
                             '-c', 'user.email=test@example.invalid', 'commit', '--quiet', '-m', 'fixture'], check=True)
-            target = Path(tmp) / 'pod/workspace/ambient-loop'
-            env = dict(os.environ, AMBIENT_REPO=project.as_uri(), PROJECT_ROOT=str(target))
-            env.pop('AMBIENT_REVISION', None)
+            target = Path(tmp) / 'pod/workspace/comfy-ltx-loop'
+            env = dict(os.environ, COMFY_LTX_LOOP_REPO=project.as_uri(), PROJECT_ROOT=str(target))
+            env.pop('COMFY_LTX_LOOP_REVISION', None)
             command = build_command()
             for attempt in range(2):
                 result = subprocess.run([sys.executable, '-c', command['cmd'][0]],

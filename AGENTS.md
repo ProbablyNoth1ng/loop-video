@@ -1,4 +1,4 @@
-# Working on Ambient Loop
+# Working on Comfy LTX Loop
 
 ## Read first
 

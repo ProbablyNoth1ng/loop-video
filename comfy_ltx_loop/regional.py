@@ -267,7 +267,7 @@ def finish(project, accepted_a, destination, seed, raw_frames):
     shutil.move(str(seam / 'seam.mp4'), str(output / 'seam.mp4'))
     shutil.rmtree(seam)
     review_package(output, p, renderer)
-    manifest = {'schema': 'ambient-loop-output/1', 'state': 'awaiting_review',
+    manifest = {'schema': 'comfy-ltx-loop-output/1', 'state': 'awaiting_review',
                 'project_hash': p.fingerprint, 'preview': False, 'seed': seed,
                 'frame_hashes': hashes, 'output_size': p.output_size, 'fps': 24,
                 'frame_count': 144, 'fallback': str(accepted_a), 'regional_plan_hash': plan['hash'],

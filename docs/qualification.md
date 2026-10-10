@@ -39,10 +39,10 @@ ComfyUI logs and output. Export the API graph using ComfyUI's developer option
 after selecting the source image. The observer queues that graph without edits:
 
 ```bash
-python /workspace/ambient-loop/tools/qualify_ltx.py \
+python /workspace/comfy-ltx-loop/tools/qualify_ltx.py \
   --comfy "$COMFY_ROOT" --api-graph baseline.api.json \
   --image-digest 'REGISTRY/IMAGE@sha256:ACTUAL_DIGEST' \
-  --record /workspace/ambient-loop/evidence/cloud-baseline.json
+  --record /workspace/comfy-ltx-loop/evidence/cloud-baseline.json
 ```
 
 It records queue/history result, wall time including queue wait, sampled total

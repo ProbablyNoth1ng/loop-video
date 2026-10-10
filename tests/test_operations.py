@@ -4,14 +4,14 @@ import unittest
 from unittest.mock import patch
 from pathlib import Path
 
-from ambient_loop.examples import create_examples
-from ambient_loop.project import Project
-from ambient_loop.comfy import export_graphs
-from ambient_loop.regional import transform_tracks
-from ambient_loop.regional import candidate
-from ambient_loop.assets import cache_weight
-from ambient_loop.project import sha
-from ambient_loop.queue import submit
+from comfy_ltx_loop.examples import create_examples
+from comfy_ltx_loop.project import Project
+from comfy_ltx_loop.comfy import export_graphs
+from comfy_ltx_loop.regional import transform_tracks
+from comfy_ltx_loop.regional import candidate
+from comfy_ltx_loop.assets import cache_weight
+from comfy_ltx_loop.project import sha
+from comfy_ltx_loop.queue import submit
 
 
 class OperationTests(unittest.TestCase):
@@ -37,7 +37,7 @@ class OperationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             (root / 'attempts.json').write_text(json.dumps([{'seed': seed} for seed in (42,43,44)]))
-            with patch('ambient_loop.regional.check_fallback'), patch('ambient_loop.regional.prepare') as prepare:
+            with patch('comfy_ltx_loop.regional.check_fallback'), patch('comfy_ltx_loop.regional.prepare') as prepare:
                 with self.assertRaisesRegex(ValueError, 'exhausted'):
                     candidate('project.json', 'accepted-a', root, 'reviewer')
                 prepare.assert_not_called()
@@ -54,9 +54,9 @@ class OperationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             graph = root / 'graph.json'
-            graph.write_text('{"1": {"class_type": "AmbientLoopRender", "inputs": {}}}')
+            graph.write_text('{"1": {"class_type": "ComfyLTXLoopRender", "inputs": {}}}')
             receipt = root / 'receipt.json'
-            with patch('ambient_loop.queue.request', side_effect=OSError('disconnected')) as request:
+            with patch('comfy_ltx_loop.queue.request', side_effect=OSError('disconnected')) as request:
                 with self.assertRaises(OSError):
                     submit(graph, receipt, 'http://localhost:8188')
                 self.assertEqual(submit(graph, receipt, 'http://localhost:8188')['state'], 'submission_pending')

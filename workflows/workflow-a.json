@@ -4,7 +4,7 @@
   "nodes": [
     {
       "id": 1,
-      "type": "AmbientLoopRender",
+      "type": "ComfyLTXLoopRender",
       "pos": [
         120,
         120
@@ -25,11 +25,11 @@
         }
       ],
       "properties": {
-        "Node name for S&R": "AmbientLoopRender"
+        "Node name for S&R": "ComfyLTXLoopRender"
       },
       "widgets_values": [
-        "/workspace/ambient-loop/examples/rainy-window/project.json",
-        "/workspace/ambient-loop/outputs/loop",
+        "/workspace/comfy-ltx-loop/examples/rainy-window/project.json",
+        "/workspace/comfy-ltx-loop/outputs/loop",
         "1080p",
         "1440p",
         6,

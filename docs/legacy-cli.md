@@ -1,4 +1,4 @@
-# Ambient Loop - Workflow A
+# Comfy LTX Loop - Workflow A
 
 Runnable deterministic Workflow A, with optional gated regional Motion Track
 experiments. The renderer runs on CPU using NumPy float32 and SciPy sampling;
@@ -11,9 +11,9 @@ Requires Python 3.11+, ffmpeg and ffprobe on PATH.
 
 ```powershell
 python -m pip install -e .
-python -m ambient_loop examples examples
-python -m ambient_loop validate examples/rainy-window/project.json
-python -m ambient_loop preview examples/rainy-window/project.json outputs/preview
+python -m comfy_ltx_loop examples examples
+python -m comfy_ltx_loop validate examples/rainy-window/project.json
+python -m comfy_ltx_loop preview examples/rainy-window/project.json outputs/preview
 ```
 
 The supplied examples are synthetic test images, not the licensed 12-image
@@ -21,10 +21,10 @@ artwork pilot and not approved assets. Inspect their source, masks, roots,
 support overlay, movement and seams. For an actual prepared project:
 
 ```powershell
-python -m ambient_loop approve assets/project.json masks --reviewer YOUR_NAME --reviewed
-python -m ambient_loop approve assets/project.json motion --reviewer YOUR_NAME --reviewed
-python -m ambient_loop render assets/project.json outputs/job
-python -m ambient_loop accept outputs/job --reviewer YOUR_NAME --visually-reviewed
+python -m comfy_ltx_loop approve assets/project.json masks --reviewer YOUR_NAME --reviewed
+python -m comfy_ltx_loop approve assets/project.json motion --reviewer YOUR_NAME --reviewed
+python -m comfy_ltx_loop render assets/project.json outputs/job
+python -m comfy_ltx_loop accept outputs/job --reviewer YOUR_NAME --visually-reviewed
 ```
 
 The two approval commands are human attestations, not automatic approvals.
@@ -35,7 +35,7 @@ seam-centered playback and support overlay. Preview outputs cannot be accepted.
 
 ## Project contract
 
-Projects are JSON, `schema: ambient-loop/1`. Paths resolve relative to the
+Projects are JSON, `schema: comfy-ltx-loop/1`. Paths resolve relative to the
 project file. `source` is opaque RGB/RGBA; `guard` is a grayscale immutable mask.
 Every region specifies a unique `id`, integer `depth`, `kind`, grayscale `mask`
 and binary `support`, all at original source dimensions. Support excludes guards.
@@ -44,7 +44,7 @@ requires a `roots` mask with zero weight on all white roots.
 
 ```json
 {
-  "schema": "ambient-loop/1",
+  "schema": "comfy-ltx-loop/1",
   "source": "source.png",
   "guard": "guard.png",
   "working_mode": "1080p",
@@ -102,14 +102,14 @@ Checkpoint hashes remain authoritative. States are `rendered`, `failed`,
 It validates all approvals before rendering and records individual failures.
 
 ```powershell
-python -m ambient_loop graphs assets/project.json workflows --output /workspace/ambient-loop/outputs/job
-python -m ambient_loop submit workflows/workflow-a.api.json queue-receipt.json --server http://127.0.0.1:8188
-python -m ambient_loop status queue-receipt.json
-python -m ambient_loop benchmark assets/project.json benchmarks --transfer-to REVIEW_DOWNLOAD_DIRECTORY
+python -m comfy_ltx_loop graphs assets/project.json workflows --output /workspace/comfy-ltx-loop/outputs/job
+python -m comfy_ltx_loop submit workflows/workflow-a.api.json queue-receipt.json --server http://127.0.0.1:8188
+python -m comfy_ltx_loop status queue-receipt.json
+python -m comfy_ltx_loop benchmark assets/project.json benchmarks --transfer-to REVIEW_DOWNLOAD_DIRECTORY
 ```
 
-When exporting locally for RunPod, add `--project-path /workspace/ambient-loop/assets/project.json`.
-The supplied sample graphs point to `/workspace/ambient-loop/examples/rainy-window/project.json`.
+When exporting locally for RunPod, add `--project-path /workspace/comfy-ltx-loop/assets/project.json`.
+The supplied sample graphs point to `/workspace/comfy-ltx-loop/examples/rainy-window/project.json`.
 
 Queue submission persists an intent before the request. A lost response is marked
 uncertain and never automatically resubmitted. Check the server queue/history.
@@ -123,17 +123,17 @@ automatically. Transfer is a file copy, network transfer only for a network targ
 ## RunPod
 
 Use the existing official RunPod ComfyUI template, attach persistent storage at
-`/workspace`, and put this project at `/workspace/ambient-loop`. Default ComfyUI
+`/workspace`, and put this project at `/workspace/comfy-ltx-loop`. Default ComfyUI
 path is `/workspace/runpod-slim/ComfyUI`; override `COMFY_ROOT` if your template
 uses another persistent path. No compute is rented by these scripts.
 
 1. Run `bash runpod/bootstrap.sh` once in the template's Python environment.
-2. Start ComfyUI, verify the Ambient Loop node is registered.
+2. Start ComfyUI, verify the Comfy LTX Loop node is registered.
 3. Record the actual image digest supplied by your container/RunPod deployment:
 
 ```bash
-ambient-loop environment record --comfy "$COMFY_ROOT" \
-  --lock /workspace/ambient-loop/environment.lock.json \
+comfy-ltx-loop environment record --comfy "$COMFY_ROOT" \
+  --lock /workspace/comfy-ltx-loop/environment.lock.json \
   --image-digest 'REGISTRY/IMAGE@sha256:ACTUAL_64_CHARACTER_DIGEST'
 ```
 
@@ -175,12 +175,12 @@ and bind a compatible loader. The experiment fixes 512x512, 145 frames, 24 FPS,
 CFG 1, adapter strength 1 and prompt enhancement off. Seeds are 42,43,44.
 
 ```bash
-ambient-loop regional prepare assets/project.json outputs/accepted-a experiments/region
+comfy-ltx-loop regional prepare assets/project.json outputs/accepted-a experiments/region
 # Human inspects crop, track-guide.png and track-guide.mp4 before the next command.
-ambient-loop regional candidate assets/project.json outputs/accepted-a experiments/region --reviewer NAME
-ambient-loop submit experiments/region/candidate-42.api.json experiments/region/receipt-42.json
-ambient-loop status experiments/region/receipt-42.json
-ambient-loop regional finish assets/project.json outputs/accepted-a experiments/region \
+comfy-ltx-loop regional candidate assets/project.json outputs/accepted-a experiments/region --reviewer NAME
+comfy-ltx-loop submit experiments/region/candidate-42.api.json experiments/region/receipt-42.json
+comfy-ltx-loop status experiments/region/receipt-42.json
+comfy-ltx-loop regional finish assets/project.json outputs/accepted-a experiments/region \
   --seed 42 --raw-frames RAW_145_FRAME_PNG_DIRECTORY
 ```
 

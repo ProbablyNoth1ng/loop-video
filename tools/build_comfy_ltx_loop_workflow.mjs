@@ -13,20 +13,20 @@ function node(id,type,pos,inputs,outputs,values,size=[360,240]) {
     return {id,type,pos,size,flags:{},order:0,mode:0,inputs,outputs,
             properties:{'Node name for S&R':type},widgets_values:values};
 }
-const editor=node(10000,'AmbientMotionEditor',[450,0],
+const editor=node(10000,'ComfyLTXLoopMotionEditor',[450,0],
     [{name:'image',type:'IMAGE',link:null}],
     ['IMAGE','STRING','MOTION_PLAN','FLOAT','FLOAT','INT','STRING'].map((type,i)=>({
         name:['canvas','tracks','motion_plan','fps','duration','seed','prompt'][i],type,links:[]})),
     ['Gentle hair sway. Stationary camera.','auto',6,24,.01,720,
      42,'models/Qwen3.5-9B','local Qwen3.5','{}','render',false,'','model','character'],[540,1050]);
-const saver=node(4852,'AmbientSaveCandidate',[2200,0],
+const saver=node(4852,'ComfyLTXLoopSaveCandidate',[2200,0],
     [{name:'video',type:'VIDEO',link:null},{name:'motion_plan',type:'MOTION_PLAN',link:null},
      {name:'seed',type:'INT',widget:{name:'seed'},link:null}],
     [{name:'candidate',type:'RENDER_HANDLE',links:[]}],[42],[540,550]);
 graph.nodes=graph.nodes.filter(n=>n.id!==4852);
-const selector=node(10001,'AmbientSavedCandidate',[2200,600],[],
+const selector=node(10001,'ComfyLTXLoopSavedCandidate',[2200,600],[],
     [{name:'RENDER_HANDLE',type:'RENDER_HANDLE',links:[]}],['Select a saved candidate']);
-const upscale=node(10002,'AmbientFinish',[2650,600],
+const upscale=node(10002,'ComfyLTXLoopFinish',[2650,600],
     [{name:'candidate',type:'RENDER_HANDLE',link:null}],
     [{name:'RENDER_HANDLE',type:'RENDER_HANDLE',links:[]}],['1080p','Fast',4],[540,550]);
 graph.nodes.push(editor,saver,selector,upscale);
@@ -79,10 +79,10 @@ for(const n of graph.nodes) {
     if(n.type==='MarkdownNote') {n.pos=[(noteIndex++%4)*600,1200+Math.floor(noteIndex/4)*400];}
 }
 graph.nodes.find(n=>n.id===5527).widgets_values=[
-    '## Ambient Loop\nLoad one image. Set character motion prompt and requested parts. Prepare character points, edit paths, then review.\n\nBackground motion is always available on the editor. Text enables background animation; blank text keeps saved background points but excludes their tracks. Choose Model or Manual, then prepare Background points or prepare both groups together. Use Visible points to inspect Character, Background, or All while New point group controls only newly placed points. Circles mark character points and squares mark background points.\n\nUse Run to choose Prepare character points, Prepare background points, Prepare character + background points, Render, or Upscale. Each choice queues one stage. Accept point review before Render.\n\nRender uses the official LTX-2.5 pipeline with a stationary camera. Small generation drift may remain. Inspect continuous and seam previews. Finish the same saved candidate again with Fast, Balanced AI, or Original AI to compare results.'];
+    '## Comfy LTX Loop\nLoad one image. Set character motion prompt and requested parts. Prepare character points, edit paths, then review.\n\nBackground motion is always available on the editor. Text enables background animation; blank text keeps saved background points but excludes their tracks. Choose Model or Manual, then prepare Background points or prepare both groups together. Use Visible points to inspect Character, Background, or All while New point group controls only newly placed points. Circles mark character points and squares mark background points.\n\nUse Run to choose Prepare character points, Prepare background points, Prepare character + background points, Render, or Upscale. Each choice queues one stage. Accept point review before Render.\n\nRender uses the official LTX-2.5 pipeline with a stationary camera. Small generation drift may remain. Inspect continuous and seam previews. Finish the same saved candidate again with Fast, Balanced AI, or Original AI to compare results.'];
 graph.groups=[];
 graph.last_node_id=10002;graph.last_link_id=next-1;
-graph.extra={ambient_loop:{schema:1,official_sha256:crypto.createHash('sha256').update(fs.readFileSync(official)).digest('hex'),
+graph.extra={comfy_ltx_loop:{schema:1,official_sha256:crypto.createHash('sha256').update(fs.readFileSync(official)).digest('hex'),
                           qualification:'pending actual cloud GPU run'}};
-fs.writeFileSync('workflows/ambient-motion.json',JSON.stringify(graph,null,2)+'\n');
-console.log('Wrote workflows/ambient-motion.json');
+fs.writeFileSync('workflows/comfy-ltx-loop-motion.json',JSON.stringify(graph,null,2)+'\n');
+console.log('Wrote workflows/comfy-ltx-loop-motion.json');

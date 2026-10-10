@@ -13,7 +13,7 @@ Keep official LTX graph unchanged, old Upscale inputs/defaults compatible, and s
 
 ## Task 1: Finishing methods
 
-Files: `ambient_loop/candidates.py`, `tests/test_candidates.py`.
+Files: `comfy_ltx_loop/candidates.py`, `tests/test_candidates.py`.
 
 - [x] Write behavioral tests for Fast exact frames/timing/candidate immutability, method records, FP16 rejection and adaptive tile fallback.
 - [ ] Run focused Python tests and observe missing-method/incorrect-dispatch failures. Blocked: no Python runtime; PyManager could not download one.
@@ -22,7 +22,7 @@ Files: `ambient_loop/candidates.py`, `tests/test_candidates.py`.
 
 ## Task 2: Nodes and stage isolation
 
-Files: `ambient_loop/staged_comfy.py`, `comfy_nodes/ambient_loop/web/{stages,queue_control,ambient_loop}.mjs`, `tests/test_stages.py`, `tests/{test_stages,test_queue_control,test_previews}.mjs`.
+Files: `comfy_ltx_loop/staged_comfy.py`, `comfy_nodes/comfy_ltx_loop/web/{stages,queue_control,comfy_ltx_loop}.mjs`, `tests/test_stages.py`, `tests/{test_stages,test_queue_control,test_previews}.mjs`.
 
 - [x] Write tests for the new node defaults, old node compatibility, chooser target and isolated queueing.
 - [x] Run focused Node tests; observed four expected failures for missing new-node handling. Python red check blocked as above.
@@ -31,7 +31,7 @@ Files: `ambient_loop/staged_comfy.py`, `comfy_nodes/ambient_loop/web/{stages,que
 
 ## Task 3: Editable workflow and handoff
 
-Files: `tools/build_motion_workflow.mjs`, `workflows/ambient-motion.json`, `tests/test_motion_workflow.mjs`, specs, `codemap.md`.
+Files: `tools/build_comfy_ltx_loop_workflow.mjs`, `workflows/comfy-ltx-loop-motion.json`, `tests/test_motion_workflow.mjs`, specs, `codemap.md`.
 
 - [x] Write workflow test for Fast/1080p default and saved-selector edge; observed expected missing-node failure.
 - [x] Update builder and regenerate workflow; workflow tests passed 5/5.
@@ -40,4 +40,4 @@ Files: `tools/build_motion_workflow.mjs`, `workflows/ambient-motion.json`, `test
 
 ## Verification and handoff
 
-Node red: `node --test tests/test_stages.mjs tests/test_queue_control.mjs` failed 4 expected new-node cases; `node --test tests/test_motion_workflow.mjs` failed on missing `AmbientFinish`; `node --test tests/test_previews.mjs` failed on missing method display. Node green: the same focused suites passed after implementation; `node --test <all tests/*.mjs>` passed 37/37. `git diff --check` and `git diff --exit-code -- workflows/ltx-2.5-motion-track.official.json` passed. FFmpeg 9.0 probe cropped two 1290x720 source frames to numbered 1920x1080 PNGs; an independent encoder probe produced a silent MP4 with one video stream, two frames and 8 FPS. `python -m unittest discover -s tests -v` could not start: no installed Python, and `uv python install 3.11` failed because network access is blocked. Thus Python red/green, application MP4 integration, GPU timings and visual acceptance are pending.
+Node red: `node --test tests/test_stages.mjs tests/test_queue_control.mjs` failed 4 expected new-node cases; `node --test tests/test_motion_workflow.mjs` failed on missing `ComfyLTXLoopFinish`; `node --test tests/test_previews.mjs` failed on missing method display. Node green: the same focused suites passed after implementation; `node --test <all tests/*.mjs>` passed 37/37. `git diff --check` and `git diff --exit-code -- workflows/ltx-2.5-motion-track.official.json` passed. FFmpeg 9.0 probe cropped two 1290x720 source frames to numbered 1920x1080 PNGs; an independent encoder probe produced a silent MP4 with one video stream, two frames and 8 FPS. `python -m unittest discover -s tests -v` could not start: no installed Python, and `uv python install 3.11` failed because network access is blocked. Thus Python red/green, application MP4 integration, GPU timings and visual acceptance are pending.

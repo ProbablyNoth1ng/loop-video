@@ -1,4 +1,4 @@
-"""Install the saved Ambient Loop workflow in an initialized ComfyUI environment."""
+"""Install the saved Comfy LTX Loop workflow in an initialized ComfyUI environment."""
 import argparse
 import hashlib
 import importlib.metadata
@@ -271,14 +271,14 @@ def ensure_comfy_compatibility(comfy):
 def install_workflows(project, destination, vision_repo):
     vision_repo = select_vision_repo(vision_repo, None)
     destination.mkdir(parents=True, exist_ok=True)
-    for name in ('ambient-motion.json', 'ltx-2.5-motion-track.official.json'):
+    for name in ('comfy-ltx-loop-motion.json', 'ltx-2.5-motion-track.official.json'):
         target = destination / name
         if target.exists():
             continue
-        if name == 'ambient-motion.json':
+        if name == 'comfy-ltx-loop-motion.json':
             workflow = read_json(project / 'workflows' / name)
             for node in workflow['nodes']:
-                if node['type'] == 'AmbientMotionEditor':
+                if node['type'] == 'ComfyLTXLoopMotionEditor':
                     node['widgets_values'][7:9] = ['models/'+vision_repo.split('/')[-1],
                         'local Qwen3.5' if vision_repo == QWEN_REPO else 'local Qwen']
             write_json(target, workflow)
@@ -291,14 +291,14 @@ def install(project, comfy, vision_repo=None):
     if sys.version_info < (3, 12):
         raise RuntimeError('Use Python 3.12+ from the ComfyUI environment.')
     if not (comfy / 'main.py').is_file() or not (project / 'pyproject.toml').is_file():
-        raise RuntimeError('ComfyUI or Ambient Loop installation is missing.')
+        raise RuntimeError('ComfyUI or Comfy LTX Loop installation is missing.')
     if Path(sys.prefix).resolve() == Path(sys.base_prefix).resolve():
         candidates = [comfy / name / 'bin/python' for name in ('.venv-cu128', '.venv-cu130', '.venv')]
         python = next((p for p in candidates if p.is_file()), None)
         if python is None:
             raise RuntimeError('Wait for the official image to initialize its ComfyUI virtual environment.')
         os.execv(str(python), [str(python), __file__, '--project-root', str(project), '--comfy-root', str(comfy), *vision_args])
-    state = comfy / '.ambient-loop-install'
+    state = comfy / '.comfy-ltx-loop-install'
     state.mkdir(exist_ok=True)
     ensure_comfy_compatibility(comfy)
     for command in ('ffmpeg', 'ffprobe'):
@@ -326,46 +326,46 @@ def install(project, comfy, vision_repo=None):
     installed = read_json(state / 'dependencies.json')
     changed = not installed or installed['fingerprint'] != expected
     if changed:
-        print('Installing Ambient Loop and LTX dependencies in ' + sys.prefix, flush=True)
+        print('Installing Comfy LTX Loop and LTX dependencies in ' + sys.prefix, flush=True)
         subprocess.run([sys.executable, '-m', 'pip', 'install', '-c', str(constraints),
                         '-r', str(comfy / 'requirements.txt'), '-r', str(ltx / 'requirements.txt'),
                         '-e', str(project) + '[vision]'], check=True)
     subprocess.run([sys.executable, '-c', 'import numpy, PIL, scipy, accelerate, spandrel; '
                     'from transformers import AutoProcessor, Qwen3VLForConditionalGeneration, Qwen3_5ForConditionalGeneration; '
-                    'import ambient_loop.comfy'], cwd=comfy, check=True)
+                    'import comfy_ltx_loop.comfy'], cwd=comfy, check=True)
     write_json(state / 'dependencies.json', dict(fingerprint=expected, torch=versions))
     if changed:
         # pip may have replaced packages already imported by torch in this process.
         os.execv(sys.executable, [sys.executable, __file__, '--project-root', str(project),
                                 '--comfy-root', str(comfy), *vision_args])
-    link = comfy / 'custom_nodes/ambient_loop'
-    source = project / 'comfy_nodes/ambient_loop'
+    link = comfy / 'custom_nodes/comfy_ltx_loop'
+    source = project / 'comfy_nodes/comfy_ltx_loop'
     if link.is_symlink():
         if link.resolve() != source.resolve():
-            raise RuntimeError('Existing Ambient Loop node points to another project.')
+            raise RuntimeError('Existing Comfy LTX Loop node points to another project.')
     elif link.exists():
-        raise RuntimeError('Existing ambient_loop custom node is not this project symlink.')
+        raise RuntimeError('Existing comfy_ltx_loop custom node is not this project symlink.')
     else:
         link.symlink_to(source, target_is_directory=True)
     download_models(project, comfy, state, vision_repo)
     install_workflows(project, comfy / 'user/default/workflows',
                       select_vision_repo(vision_repo, read_json(state / 'models-ready.json')))
     (state / 'packages.txt').write_bytes(subprocess.check_output([sys.executable, '-m', 'pip', 'freeze']))
-    print('AMBIENT LOOP INSTALLED. Starting ComfyUI; GPU rendering still needs qualification.', flush=True)
+    print('COMFY_LTX_LOOP INSTALLED. Starting ComfyUI; GPU rendering still needs qualification.', flush=True)
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--comfy-root', default='/workspace/runpod-slim/ComfyUI')
-    parser.add_argument('--project-root', default='/workspace/ambient-loop')
-    parser.add_argument('--vision-model', choices=VISION_REPOS, default=os.environ.get('AMBIENT_VISION_MODEL'),
+    parser.add_argument('--project-root', default='/workspace/comfy-ltx-loop')
+    parser.add_argument('--vision-model', choices=VISION_REPOS, default=os.environ.get('COMFY_LTX_LOOP_VISION_MODEL'),
                         help='Vision snapshot (new installs default to Qwen3.5; existing installs keep their selection)')
     args = parser.parse_args()
     os.environ.setdefault('HF_HOME', '/workspace/.cache/huggingface')
     try:
         install(Path(args.project_root).resolve(), Path(args.comfy_root).resolve(), args.vision_model)
     except (RuntimeError, ValueError, OSError, subprocess.CalledProcessError) as error:
-        print('AMBIENT LOOP SETUP FAILED: ' + str(error), file=sys.stderr, flush=True)
+        print('COMFY_LTX_LOOP SETUP FAILED: ' + str(error), file=sys.stderr, flush=True)
         return 1
     return 0
 

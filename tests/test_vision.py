@@ -11,7 +11,7 @@ from unittest.mock import patch
 import numpy as np
 from PIL import Image
 
-from ambient_loop.vision import analyze
+from comfy_ltx_loop.vision import analyze
 
 
 class VisionTests(unittest.TestCase):

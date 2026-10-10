@@ -18,13 +18,13 @@ const viewURL = path => {
 
 async function queue(stage, target, status, expectedGraph, prepareTarget='character') {
     try {
-        if (!target) throw new Error('Load the Ambient Loop motion workflow first.');
+        if (!target) throw new Error('Load the Comfy LTX Loop motion workflow first.');
         if(expectedGraph && !isCurrentStageSelection(app,expectedGraph,target,stage)) {
             throw new Error('Workflow changed or its target was removed. Reopen Run for the current workflow.');
         }
-        console.info('[ambient-loop] queue', {stage,targetId:target.id,targetClass:target.comfyClass??target.type});
+        console.info('[comfy-ltx-loop] queue', {stage,targetId:target.id,targetClass:target.comfyClass??target.type});
         if(stage==='render') {
-            const editor=find('AmbientMotionEditor');
+            const editor=find('ComfyLTXLoopMotionEditor');
             checkSettings(editor);
             if(JSON.parse(widget(editor,'plan_json').value).review?.state!=='reviewed') {
                 throw new Error('Review points and click Accept point review before Render.');
@@ -37,25 +37,25 @@ async function queue(stage, target, status, expectedGraph, prepareTarget='charac
             throw new Error('Workflow changed or its target was removed. Reopen Run for the current workflow.');
         }
         if(stage==='render') {
-            const editor=find('AmbientMotionEditor');
+            const editor=find('ComfyLTXLoopMotionEditor');
             checkSettings(editor);
             if(JSON.parse(widget(editor,'plan_json').value).review?.state!=='reviewed') {
                 throw new Error('Review points and click Accept point review before Render.');
             }
         }
-        console.info('[ambient-loop] converted', {stage,targetId:target.id,nodeCount:Object.keys(output).length});
+        console.info('[comfy-ltx-loop] converted', {stage,targetId:target.id,nodeCount:Object.keys(output).length});
         let selected;
         try { selected = stageGraph(output,target.id,stage); }
         catch (error) { throw new Error(`${stage} stage graph failed at target ${target.id}: ${error.message}`); }
         if(stage==='prepare') {
-            const editor=find('AmbientMotionEditor');
+            const editor=find('ComfyLTXLoopMotionEditor');
             if((prepareTarget==='background'||prepareTarget==='both')&&!String(widget(editor,'background_prompt')?.value??'').trim())
                 throw new Error('Enter Background motion before preparing background points.');
             selected[String(target.id)].inputs.prepare_target=prepareTarget;
         }
-        console.info('[ambient-loop] selected', {stage,targetId:target.id,nodes:Object.entries(selected).map(([id,node])=>({id,class_type:node.class_type}))});
+        console.info('[comfy-ltx-loop] selected', {stage,targetId:target.id,nodes:Object.entries(selected).map(([id,node])=>({id,class_type:node.class_type}))});
         workflow.extra ??= {};
-        workflow.extra.ambient_motion_plans = Object.fromEntries(nodes()
+        workflow.extra.comfy_ltx_loop_motion_plans = Object.fromEntries(nodes()
             .filter(n => widget(n,'plan_json')).map(n => [n.id,JSON.parse(widget(n,'plan_json').value)]));
         let result;
         try { result = await api.queuePrompt(0,{output:selected,workflow}); }
@@ -65,7 +65,7 @@ async function queue(stage, target, status, expectedGraph, prepareTarget='charac
         status.textContent = `${stage} queued. Progress appears in ComfyUI.`;
         return true;
     } catch (error) {
-        console.error('[ambient-loop] stage failed', {stage,targetId:target?.id,stack:error.stack});
+        console.error('[comfy-ltx-loop] stage failed', {stage,targetId:target?.id,stack:error.stack});
         status.textContent = error.message;
         return false;
     }
@@ -91,11 +91,11 @@ function showStageChooser(graph) {
     if(stageChooser) return;
     const previous=document.activeElement;
     const dialog=document.createElement('dialog');
-    dialog.setAttribute('aria-label','Choose an Ambient Loop stage');
-    const title=element('h2',dialog,'Choose an Ambient Loop stage');
-    title.id='ambient-stage-title';dialog.setAttribute('aria-labelledby',title.id);
+    dialog.setAttribute('aria-label','Choose an Comfy LTX Loop stage');
+    const title=element('h2',dialog,'Choose an Comfy LTX Loop stage');
+    title.id='comfy_ltx_loop-stage-title';dialog.setAttribute('aria-labelledby',title.id);
     const copy=element('p',dialog,'Prepare points, review them, then Render. Upscale uses a saved candidate. Each choice queues one stage.');
-    copy.id='ambient-stage-copy';dialog.setAttribute('aria-describedby',copy.id);
+    copy.id='comfy_ltx_loop-stage-copy';dialog.setAttribute('aria-describedby',copy.id);
     const status=element('p',dialog);status.setAttribute('role','status');
     const actions=element('div',dialog);
     const controls=[];let pending=false;
@@ -134,14 +134,14 @@ function showStageChooser(graph) {
 function showAutoQueueNotice() {
     const notice=document.createElement('p');
     notice.setAttribute('role','status');
-    notice.textContent='Ambient Loop auto-queue is paused. Use Run and choose one stage.';
+    notice.textContent='Comfy LTX Loop auto-queue is paused. Use Run and choose one stage.';
     document.body.append(notice);
 }
 
 function checkSettings(node) {
     if(!node)throw new Error('Load the motion editor first.');
     const p=JSON.parse(widget(node,'plan_json').value);
-    if(p.schema!=='ambient-motion-plan/1')throw new Error('Prepare a valid motion plan before Render.');
+    if(p.schema!=='comfy-ltx-loop-motion-plan/1')throw new Error('Prepare a valid motion plan before Render.');
     const value=name=>widget(node,name)?.value;
     const requested=String(value('requested_parts')).split(',').map(s=>s.trim()).filter(Boolean);
     if(p.prompt!==value('motion_prompt')||JSON.stringify(p.requested)!==JSON.stringify(requested))
@@ -174,7 +174,7 @@ function element(tag,parent,text) {
 function panel(node,height) {
     const root = document.createElement('div');
     Object.assign(root.style,{background:'#151a22',color:'#eee',padding:'10px',font:'13px system-ui',overflow:'auto'});
-    const dom = node.addDOMWidget('ambient_panel','div',root,{serialize:false,hideOnZoom:false});
+    const dom = node.addDOMWidget('comfy_ltx_loop_panel','div',root,{serialize:false,hideOnZoom:false});
     dom.computeSize = () => [480,height];
     node.setSize([520,Math.max(node.size[1],height+220)]);
     return root;
@@ -211,8 +211,8 @@ function editor(node) {
     for(const [value,label] of [['character','Character'],['background','Background'],['all','All']]){
         const option=element('option',visibilityControl,label);option.value=value;
     }
-    groupControl.value=node.properties.ambient_new_point_group??'character';
-    visibilityControl.value=node.properties.ambient_visible_points??'all';
+    groupControl.value=node.properties.comfy_ltx_loop_new_point_group??'character';
+    visibilityControl.value=node.properties.comfy_ltx_loop_visible_points??'all';
     const pointList=element('div',root);
     pointList.setAttribute('aria-label','Landmarks');
     Object.assign(pointList.style,{maxHeight:'160px',overflowY:'auto'});
@@ -248,7 +248,7 @@ function editor(node) {
     }
     function plan() { try { return JSON.parse(widget(node,'plan_json').value); } catch { return {}; } }
     function validPlan(p) {
-        return p?.schema==='ambient-motion-plan/1' && Array.isArray(p.landmarks) &&
+        return p?.schema==='comfy-ltx-loop-motion-plan/1' && Array.isArray(p.landmarks) &&
             Array.isArray(p.requested) && Array.isArray(p.source_size) &&
             Array.isArray(p.transform?.canvas) && Number.isInteger(p.frames) &&
             p.landmarks.every(point=>point && typeof point.label==='string' && point.label.trim() &&
@@ -277,12 +277,12 @@ function editor(node) {
         if(!control)continue;const changed=control.callback;
         control.callback=function(){changed?.apply(this,arguments);saveBackground();};
     }
-    groupControl.onchange=()=>{(node.properties??={}).ambient_new_point_group=groupControl.value;app.graph.setDirtyCanvas(true,true);};
-    visibilityControl.onchange=()=>{(node.properties??={}).ambient_visible_points=visibilityControl.value;selected=-1;drag=null;selection(plan());draw();app.graph.setDirtyCanvas(true,true);};
+    groupControl.onchange=()=>{(node.properties??={}).comfy_ltx_loop_new_point_group=groupControl.value;app.graph.setDirtyCanvas(true,true);};
+    visibilityControl.onchange=()=>{(node.properties??={}).comfy_ltx_loop_visible_points=visibilityControl.value;selected=-1;drag=null;selection(plan());draw();app.graph.setDirtyCanvas(true,true);};
     function persist(p) {
         app.graph.extra??={};
-        app.graph.extra.ambient_motion_plans??={};
-        app.graph.extra.ambient_motion_plans[String(node.id)]=p;
+        app.graph.extra.comfy_ltx_loop_motion_plans??={};
+        app.graph.extra.comfy_ltx_loop_motion_plans[String(node.id)]=p;
     }
     const preparation=widget(node,'preparation'),modelPath=widget(node,'vision_model');
     const bundledPaths=['models/Qwen3-VL-8B-Instruct','models/Qwen3.5-9B'];
@@ -319,7 +319,7 @@ function editor(node) {
         imageWidget.callback=function(){changed?.apply(this,arguments);
             background.src=api.apiURL('/view?'+new URLSearchParams({filename:this.value,type:'input'}));
             widget(node,'plan_json').value='{}';
-            delete app.graph.extra?.ambient_motion_plans?.[String(node.id)];
+            delete app.graph.extra?.comfy_ltx_loop_motion_plans?.[String(node.id)];
             selected=-1;selection({});
             status.textContent='Image changed. Prepare character and background points again.';
         };
@@ -489,20 +489,20 @@ function editor(node) {
     reviewButton=button(controls,'Accept point review',async()=>{
         try {
             const p=checkSettings(node);
-            const response=await api.fetchApi('/ambient-loop/review',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)});
+            const response=await api.fetchApi('/comfy-ltx-loop/review',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)});
             const reviewed=await response.json();if(!response.ok)throw new Error(reviewed.error);
             widget(node,'plan_json').value=JSON.stringify(reviewed);persist(reviewed);renderList();status.textContent='Point review accepted. Render a candidate when ready.';
         }catch(error){status.textContent=error.message;}
     });
-    button(controls,'Render',()=>queue('render',find('AmbientSaveCandidate'),status));
+    button(controls,'Render',()=>queue('render',find('ComfyLTXLoopSaveCandidate'),status));
     const executed=node.onExecuted;
     node.onExecuted=function(message){
         executed?.apply(this,arguments);
         const incoming=message?.motion_plan?.[0];
         if(!validPlan(incoming)) {
             widget(node,'plan_json').value='{}';
-            delete app.graph.extra?.ambient_motion_plans?.[String(node.id)];
-            delete node.properties.ambient_source_image;
+            delete app.graph.extra?.comfy_ltx_loop_motion_plans?.[String(node.id)];
+            delete node.properties.comfy_ltx_loop_source_image;
             selected=-1;selection({});
             background=new Image();background.onload=draw;rect=null;draw();
             app.graph.setDirtyCanvas(true,true);
@@ -511,7 +511,7 @@ function editor(node) {
         }
         widget(node,'plan_json').value=JSON.stringify(incoming);selected=-1;
         persist(incoming);selection(incoming);
-        node.properties.ambient_source_image=widget(find('LoadImage')??{},'image')?.value;
+        node.properties.comfy_ltx_loop_source_image=widget(find('LoadImage')??{},'image')?.value;
         status.textContent=(Array.isArray(incoming.feedback)?incoming.feedback:[]).join(' ')||(incoming.landmarks.length
             ?'Review and edit points, then accept point review.'
             :'No landmarks proposed. Add at least one point manually before review.');
@@ -519,7 +519,7 @@ function editor(node) {
     };
     const configured=node.onConfigure;
     node.onConfigure=function(){configured?.apply(this,arguments);
-        const stored=app.graph.extra?.ambient_motion_plans?.[String(node.id)];
+        const stored=app.graph.extra?.comfy_ltx_loop_motion_plans?.[String(node.id)];
         if(!plan().schema&&stored)widget(node,'plan_json').value=JSON.stringify(stored);
         const reopened=plan(),enabledByPrompt=!!String(bgPrompt?.value??'').trim();
         if(validPlan(reopened) && (reopened.background?.enabled??false)!==enabledByPrompt) {
@@ -567,7 +567,7 @@ function previews(node,upscale=false) {
         const summary={frame_count:record.frame_count,fps:record.fps,
                        dimensions:record.dimensions,feedback:record.feedback,
                        finish_method:record.finish_method};
-        node.properties.ambient_preview={paths,record:summary};
+        node.properties.comfy_ltx_loop_preview={paths,record:summary};
     }
     const executed=node.onExecuted;
     node.onExecuted=function(message){executed?.apply(this,arguments);
@@ -575,15 +575,15 @@ function previews(node,upscale=false) {
             show(message.preview_paths,message.render_handle[0]);
             if(!upscale) {
                 const path=portablePath(message.preview_paths[0]);
-                const candidate=path.slice('ambient-loop/'.length,path.lastIndexOf('/'))+'/record.json';
-                for(const selector of nodes().filter(n=>(n.comfyClass??n.type)==='AmbientSavedCandidate')) {
-                    selector.ambientSelectCandidate?.(candidate);
+                const candidate=path.slice('comfy-ltx-loop/'.length,path.lastIndexOf('/'))+'/record.json';
+                for(const selector of nodes().filter(n=>(n.comfyClass??n.type)==='ComfyLTXLoopSavedCandidate')) {
+                    selector.comfy_ltx_loopSelectCandidate?.(candidate);
                 }
             }
         }};
     const configured=node.onConfigure;
-    node.onConfigure=function(){configured?.apply(this,arguments);const saved=node.properties.ambient_preview;if(saved)show(saved.paths,saved.record);};
-    node.ambientShowPreview=show;
+    node.onConfigure=function(){configured?.apply(this,arguments);const saved=node.properties.comfy_ltx_loop_preview;if(saved)show(saved.paths,saved.record);};
+    node.comfy_ltx_loopShowPreview=show;
     const removed=node.onRemoved;
     node.onRemoved=function(){videos.forEach(video=>video.pause());removed?.apply(this,arguments);};
 }
@@ -605,19 +605,19 @@ function selector(node) {
         const current=++revision,candidate=portablePath(choice.value);
         if(candidate==='Select a saved candidate')return;
         try {
-            const response=await api.fetchApi('/ambient-loop/record?'+new URLSearchParams({candidate}));
+            const response=await api.fetchApi('/comfy-ltx-loop/record?'+new URLSearchParams({candidate}));
             if(!response.ok)throw new Error(await response.text());const record=await response.json();
             if(removed||current!==revision)return;
             const directory=candidate.substring(0,candidate.lastIndexOf('/'));
-            const target=find('AmbientSaveCandidate');
-            target?.ambientShowPreview([`ambient-loop/${directory}/loop.mp4`,`ambient-loop/${directory}/seam.mp4`],record);
+            const target=find('ComfyLTXLoopSaveCandidate');
+            target?.comfy_ltx_loopShowPreview([`comfy-ltx-loop/${directory}/loop.mp4`,`comfy-ltx-loop/${directory}/seam.mp4`],record);
             status.textContent=`Selected ${directory} for upscale.`;
         }catch(error){if(!removed&&current===revision)status.textContent=error.message;}
     }
     async function refresh() {
         const current=++revision;
         try {
-            const response=await api.fetchApi('/ambient-loop/candidates');
+            const response=await api.fetchApi('/comfy-ltx-loop/candidates');
             if(!response.ok)throw new Error(await response.text());
             const records=(await response.json()).map(portablePath);
             if(removed||current!==revision)return;
@@ -632,7 +632,7 @@ function selector(node) {
     button(root,'Refresh candidates',refresh);
     const changed=choice.callback;
     choice.callback=function(){changed?.apply(this,arguments);return previewSelected();};
-    node.ambientSelectCandidate=select;
+    node.comfy_ltx_loopSelectCandidate=select;
     const configured=node.onConfigure;
     node.onConfigure=function(){configured?.apply(this,arguments);void refresh();};
     const onRemoved=node.onRemoved;
@@ -640,16 +640,16 @@ function selector(node) {
     void refresh();
 }
 
-app.registerExtension({name:'ambient-loop.staged',
+app.registerExtension({name:'comfy-ltx-loop.staged',
     async setup(){
         installUnsafePromptGuard(api);
         installStageQueueControl(app,showStageChooser,showAutoQueueNotice);
     },
     nodeCreated(node){
         const type=node.comfyClass??node.type;
-        if(type==='AmbientMotionEditor')editor(node);
-        if(type==='AmbientSaveCandidate')previews(node);
-        if(type==='AmbientUpscale'||type==='AmbientFinish')previews(node,true);
-        if(type==='AmbientSavedCandidate')selector(node);
+        if(type==='ComfyLTXLoopMotionEditor')editor(node);
+        if(type==='ComfyLTXLoopSaveCandidate')previews(node);
+        if(type==='ComfyLTXLoopUpscale'||type==='ComfyLTXLoopFinish')previews(node,true);
+        if(type==='ComfyLTXLoopSavedCandidate')selector(node);
     }
 });

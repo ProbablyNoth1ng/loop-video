@@ -1,4 +1,4 @@
-# One anime still → a seamless ambient loop
+# One anime still → a seamless Comfy LTX Loop
 
 Technical research and implementation blueprint · **26 September 2026** · USD prices
 
@@ -410,14 +410,14 @@ Hardware OOM is a technical failure, not a quality retry. First shrink frame-pro
 | Retry scheduler | Failure class + remaining budget → next parameters or A fallback | Specification only |
 | Export | Accepted frames + output policy → PNG master, MP4, manifest | Existing core/VHS nodes; settings specified |
 
-**No fictional node is presented as installed.** Periodic field creation, procedural rain, metric QC, and bounded dispatch are module specifications for the next implementation phase. A practical first implementation can write numbered PNG assets externally and import them with `VHS_LoadImagesPath`; a future custom-node package can implement the same contracts. No existing official LTX graph supplies this complete ambient-loop system. The blueprint is ready to implement, not ready to drag into ComfyUI.
+**No fictional node is presented as installed.** Periodic field creation, procedural rain, metric QC, and bounded dispatch are module specifications for the next implementation phase. A practical first implementation can write numbered PNG assets externally and import them with `VHS_LoadImagesPath`; a future custom-node package can implement the same contracts. No existing official LTX graph supplies this complete comfy-ltx-loop system. The blueprint is ready to implement, not ready to drag into ComfyUI.
 
 Displacement-map contract: lossless RGB images at the rendering canvas; `R=(dx/Ax+1)/2`, `G=(dy/Ay+1)/2`, `B=.5`; clamp nothing silently, reject excursions outside range. Use a lossless representation with enough bit depth and verify loader precision. At small amplitudes, 8-bit maps quantize displacement to approximately `2A/255`; this can be adequate for previews, while a float tensor/custom node is preferable for final fields. The inspected VHS sequence loader converts images to RGB/RGBA and divides by 255: importing 16-bit PNG through it does **not** establish retained 16-bit map precision. Exact neutral .5 is also not representable in an 8-bit channel; measure that rounding or use float fields. Gray `.5` means no displacement; do not color-manage map values. Masks use the same timebase and transform. Plate sequences may be built manually with a compositor’s periodic curves until a renderer module is implemented. [VHS sequence loader](https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite/blob/4d907bee61e92c2e65af3bd6383a4e4d356126d1/videohelpersuite/load_images_nodes.py).
 
 ### ContentSpec example — declarative data, not executable code
 
 ```yaml
-schema: ambient-loop/1
+schema: comfy-ltx-loop/1
 source:
   asset: finished_anime.png
   sha256: computed_at_ingest
@@ -504,7 +504,7 @@ Have two reviewers judge preservation, motion plausibility, temporal stability a
 
 Promote a diffusion region only when it improves a necessary motion over A without worsening preservation or boundary quality, on both tuned and held-out scenes. Require zero locked-face/topology failures in the accepted set, repeatable recipe execution, and measured all-in accepted-loop cost. Quantized IC-LoRA combinations, cyclic-history tracks, motion-field extraction, and any learned seam repair remain experimental until their own ablations pass.
 
-## Workflow A — ultra cheap: deterministic ambient animation
+## Workflow A — ultra cheap: deterministic Comfy LTX Loop animation
 
 **Production role:** first choice and fallback for every scene. No diffusion model, text encoder, VAE, segmentation model, sampler, or denoising steps. Optional source-only anime enlargement uses the exact Real-ESRGAN file in section 20 after human approval.
 

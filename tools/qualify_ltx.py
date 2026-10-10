@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from urllib.request import Request, urlopen
 
-from ambient_loop.project import atomic_json, sha
+from comfy_ltx_loop.project import atomic_json, sha
 
 
 def command(args):
@@ -47,8 +47,8 @@ def main():
     graph = json.loads(args.api_graph.read_text(encoding='utf-8'))
     if not isinstance(graph,dict) or not graph or any('class_type' not in node for node in graph.values()):
         parser.error('Export the official workflow in API format')
-    if any(node['class_type'].startswith('Ambient') for node in graph.values()):
-        parser.error('Baseline requires the unchanged official workflow, without Ambient nodes')
+    if any(node['class_type'].startswith('ComfyLTXLoop') for node in graph.values()):
+        parser.error('Baseline requires the unchanged official workflow, without Comfy LTX nodes')
     comfy = args.comfy.resolve()
     official = Path(__file__).resolve().parents[1]/'workflows/ltx-2.5-motion-track.official.json'
     record = {'state':'submission_intent','client_id':str(uuid.uuid4()),
